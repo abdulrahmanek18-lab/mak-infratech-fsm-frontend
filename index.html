@@ -1,760 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAK INFRATECH FMS</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #0f172a;
-            --primary-dark: #020617;
-            --accent: #0891b2;
-            --danger: #dc2626;
-            --success: #16a34a;
-            --warning: #ca8a04;
-            --bg: #0f172a;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAK INFRATECH FMS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#0f172a;--accent:#0891b2;--danger:#dc2626;--success:#16a34a;--warning:#ca8a04;--bg:#f8fafc;--card:#fff;--text:#1e293b;--light:#64748b;--border:#e2e8f0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text)}
 
-        .login-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        }
-        .login-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 24px 40px;
-        }
-        .login-logo {
-            width: 44px; height: 44px;
-            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: 18px;
-        }
-        .login-brand { color: white; }
-        .login-brand h2 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
-        .login-brand span { font-size: 12px; color: #94a3b8; }
-        .login-wrapper {
-            flex: 1;
-            display: flex; align-items: center; justify-content: center;
-            padding: 20px;
-        }
-        .login-box {
-            background: var(--card);
-            padding: 48px 40px;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
-            width: 100%; max-width: 440px;
-        }
-        .secure-label {
-            font-size: 12px; font-weight: 700; letter-spacing: 2px;
-            text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
-        }
-        .login-box h1 {
-            font-size: 32px; font-weight: 800; margin-bottom: 8px;
-            color: var(--primary); letter-spacing: -0.5px;
-        }
-        .subtitle { color: var(--text-light); margin-bottom: 32px; font-size: 14px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block; margin-bottom: 8px;
-            font-size: 13px; font-weight: 600; color: var(--text);
-        }
-        .form-group input, .form-group select {
-            width: 100%; padding: 14px 18px;
-            border: 1.5px solid var(--border); border-radius: 12px;
-            font-size: 15px; background: #fafafa;
-        }
-        .form-group input:focus, .form-group select:focus {
-            outline: none; border-color: var(--accent); background: white;
-            box-shadow: 0 0 0 3px rgba(8,145,178,0.1);
-        }
-        .btn {
-            width: 100%; padding: 16px;
-            background: var(--primary); color: white;
-            border: none; border-radius: 12px;
-            font-size: 15px; font-weight: 700; cursor: pointer;
-        }
-        .btn:hover { background: var(--primary-dark); }
-        .btn-secondary { background: #475569; }
-        .btn-danger { background: var(--danger); }
-        .btn-success { background: var(--success); }
-        .btn-sm { padding: 8px 16px; font-size: 13px; width: auto; }
-        .error-msg {
-            color: var(--danger); font-size: 14px; margin-top: 16px;
-            text-align: center; display: none;
-            padding: 10px; background: #fef2f2; border-radius: 8px;
-        }
+/* LOGIN */
+.login-container{display:flex;flex-direction:column;min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%)}
+.login-header{display:flex;align-items:center;gap:12px;padding:24px 40px}
+.login-logo{width:44px;height:44px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+.login-brand h2{font-size:18px;color:#fff;font-weight:700}.login-brand span{font-size:12px;color:#94a3b8}
+.login-wrapper{flex:1;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:#fff;padding:48px 40px;border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.4);width:100%;max-width:440px}
+.secure-label{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.login-box h1{font-size:32px;font-weight:800;margin-bottom:8px;color:var(--primary);letter-spacing:-0.5px}
+.subtitle{color:var(--light);margin-bottom:32px;font-size:14px}
+.form-group{margin-bottom:20px}.form-group label{display:block;margin-bottom:8px;font-size:13px;font-weight:600}
+.form-group input,.form-group select{width:100%;padding:14px 18px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;background:#fafafa}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(8,145,178,0.1)}
+.btn{width:100%;padding:16px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.btn:hover{background:#020617;transform:translateY(-1px);box-shadow:0 10px 25px -5px rgba(15,23,42,0.3)}
+.btn-sm{padding:8px 16px;font-size:13px;width:auto}
+.btn-secondary{background:#475569}.btn-danger{background:var(--danger)}.btn-success{background:var(--success)}
+.error-msg{color:var(--danger);font-size:14px;margin-top:16px;text-align:center;display:none;padding:10px;background:#fef2f2;border-radius:8px}
 
-        .app-layout { display: none; min-height: 100vh; }
-        .sidebar {
-            position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
-            background: var(--card); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; z-index: 100;
-        }
-        .sidebar-header {
-            padding: 24px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; gap: 12px;
-        }
-        .sidebar-logo {
-            width: 36px; height: 36px;
-            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: 14px;
-        }
-        .sidebar-brand h2 { font-size: 16px; font-weight: 700; color: var(--primary); }
-        .sidebar-brand span { font-size: 11px; color: var(--text-light); }
-        .nav-menu { flex: 1; overflow-y: auto; padding: 12px; }
-        .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px; border-radius: 10px; cursor: pointer;
-            color: #334155; font-size: 14px; font-weight: 500;
-            margin-bottom: 4px;
-        }
-        .nav-item:hover, .nav-item.active { background: #f0f9ff; color: var(--accent); }
-        .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
-        .sidebar-footer {
-            padding: 16px; border-top: 1px solid var(--border);
-        }
-        .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .user-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 14px;
-        }
-        .user-details { font-size: 13px; }
-        .user-details div:first-child { font-weight: 600; color: var(--primary); }
-        .user-details div:last-child { color: var(--text-light); font-size: 12px; }
+/* LAYOUT */
+.app-layout{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100}
+.sidebar-header{padding:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-logo{width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.sidebar-brand h2{font-size:16px;font-weight:700;color:var(--primary)}.sidebar-brand span{font-size:11px;color:var(--light)}
+.nav-menu{flex:1;overflow-y:auto;padding:12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;cursor:pointer;color:#334155;font-size:14px;font-weight:500;margin-bottom:4px;transition:all 0.2s}
+.nav-item:hover,.nav-item.active{background:#f0f9ff;color:var(--accent)}
+.nav-item svg{width:20px;height:20px;flex-shrink:0}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+.user-details{font-size:13px}.user-details div:first-child{font-weight:600;color:var(--primary)}.user-details div:last-child{color:var(--light);font-size:12px}
 
-        .main-content { margin-left: 260px; min-height: 100vh; }
-        .topbar {
-            background: white; padding: 16px 32px;
-            border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 50;
-        }
-        .page-title { font-size: 20px; font-weight: 700; color: var(--primary); }
-        .topbar-actions { display: flex; gap: 12px; align-items: center; }
-        .content-area { padding: 32px; background: #f8fafc; min-height: calc(100vh - 65px); }
+.main-content{margin-left:260px;min-height:100vh}
+.topbar{background:#fff;padding:16px 32px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.page-title{font-size:20px;font-weight:700;color:var(--primary)}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.content-area{padding:32px;background:var(--bg);min-height:calc(100vh - 65px)}
 
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px; margin-bottom: 32px;
-        }
-        .stat-card {
-            background: var(--card); padding: 24px; border-radius: 16px;
-            border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .stat-card h3 {
-            font-size: 13px; color: var(--text-light); font-weight: 600;
-            margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .stat-value { font-size: 32px; font-weight: 800; color: var(--primary); }
-        .stat-card.primary { border-left: 4px solid #3b82f6; }
-        .stat-card.success { border-left: 4px solid var(--success); }
-        .stat-card.warning { border-left: 4px solid var(--warning); }
-        .stat-card.danger { border-left: 4px solid var(--danger); }
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:32px}
+.stat-card{background:var(--card);padding:24px;border-radius:16px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.stat-card h3{font-size:13px;color:var(--light);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.stat-value{font-size:32px;font-weight:800;color:var(--primary)}
+.stat-card.primary{border-left:4px solid #3b82f6}.stat-card.success{border-left:4px solid var(--success)}
+.stat-card.warning{border-left:4px solid var(--warning)}.stat-card.danger{border-left:4px solid var(--danger)}
 
-        .card {
-            background: var(--card); border-radius: 16px;
-            border: 1px solid var(--border); overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .card-header {
-            padding: 20px 24px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .card-header h3 { font-size: 16px; font-weight: 700; color: var(--primary); }
-        .card-body { padding: 0; }
+/* TABLE */
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.card-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.card-header h3{font-size:16px;font-weight:700;color:var(--primary)}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;padding:14px 24px;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--light);background:var(--bg);border-bottom:1px solid var(--border);letter-spacing:0.5px}
+.data-table td{padding:14px 24px;border-bottom:1px solid var(--border);font-size:14px}
+.data-table tr:hover td{background:#f8fafc}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-success{background:#dcfce7;color:#166534}.badge-warning{background:#fef9c3;color:#854d0e}
+.badge-danger{background:#fee2e2;color:#991b1b}.badge-info{background:#e0f2fe;color:#0369a1}
 
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th {
-            text-align: left; padding: 14px 24px;
-            font-size: 11px; font-weight: 700; text-transform: uppercase;
-            color: var(--text-light); background: #f8fafc;
-            border-bottom: 1px solid var(--border); letter-spacing: 0.5px;
-        }
-        .data-table td {
-            padding: 14px 24px; border-bottom: 1px solid var(--border);
-            font-size: 14px; color: var(--text);
-        }
-        .data-table tr:hover td { background: #f8fafc; }
-        .badge {
-            display: inline-block; padding: 4px 12px;
-            border-radius: 20px; font-size: 12px; font-weight: 600;
-        }
-        .badge-success { background: #dcfce7; color: #166534; }
-        .badge-warning { background: #fef9c3; color: #854d0e; }
-        .badge-danger { background: #fee2e2; color: #991b1b; }
-        .badge-info { background: #e0f2fe; color: #0369a1; }
+/* MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.active{display:flex}
+.modal{background:var(--card);border-radius:20px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+.modal-header{padding:24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:18px;font-weight:700;color:var(--primary)}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--light);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.modal-close:hover{background:#f1f5f9}
+.modal-body{padding:24px}.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
 
-        .modal-overlay {
-            display: none; position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15,23,42,0.6); z-index: 200;
-            align-items: center; justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-        .modal-overlay.active { display: flex; }
-        .modal {
-            background: var(--card); border-radius: 20px;
-            width: 90%; max-width: 560px; max-height: 90vh;
-            overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-        }
-        .modal-header {
-            padding: 24px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .modal-header h3 { font-size: 18px; font-weight: 700; color: var(--primary); }
-        .modal-close {
-            background: none; border: none; font-size: 24px;
-            cursor: pointer; color: var(--text-light);
-            width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 8px;
-        }
-        .modal-close:hover { background: #f1f5f9; }
-        .modal-body { padding: 24px; }
-        .modal-footer {
-            padding: 16px 24px; border-top: 1px solid var(--border);
-            display: flex; justify-content: flex-end; gap: 10px;
-        }
+.loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--light);font-size:14px}
+.empty-state{text-align:center;padding:60px;color:var(--light)}.empty-state h4{margin-bottom:8px;color:var(--primary);font-weight:700}
 
-        .loading {
-            display: flex; align-items: center; justify-content: center;
-            padding: 60px; color: var(--text-light); font-size: 14px;
-        }
-        .empty-state {
-            text-align: center; padding: 60px; color: var(--text-light);
-        }
-        .empty-state h4 { margin-bottom: 8px; color: var(--primary); font-weight: 700; }
+/* AMC CALCULATOR */
+.calc-box{background:#f0f9ff;padding:16px;border-radius:12px;margin-top:16px;border:1px solid #bae6fd}
+.calc-box h4{font-size:14px;color:#0369a1;margin-bottom:12px}
+.calc-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e0f2fe;font-size:14px}
+.calc-row:last-child{border-bottom:none;font-weight:700;color:var(--primary)}
 
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .login-box { padding: 32px 24px; border-radius: 20px; }
-            .login-header { padding: 20px 24px; }
-        }
-    </style>
+@media(max-width:768px){.sidebar{width:100%;transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.stats-grid{grid-template-columns:1fr}}
+</style>
 <base target="_blank">
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="loginPage" class="login-container">
-    <div class="login-header">
-        <div class="login-logo">MI</div>
-        <div class="login-brand">
-            <h2>MAK INFRATECH</h2>
-            <span>Field Management System</span>
-        </div>
-    </div>
-    <div class="login-wrapper">
-        <div class="login-box">
-            <div class="secure-label">Secure Login</div>
-            <h1>MAK INFRATECH FMS</h1>
-            <p class="subtitle">Sign in using your assigned username and password.</p>
-            <input type="hidden" id="apiUrl" value="https://makinfratech-api.onrender.com">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="email" id="loginEmail" placeholder="Enter your email">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter your password">
-            </div>
-            <button class="btn" onclick="handleLogin()">Login</button>
-            <div id="loginError" class="error-msg"></div>
-        </div>
-    </div>
+<div class="login-header">
+<div class="login-logo">MI</div>
+<div class="login-brand"><h2>MAK INFRATECH</h2><span>Field Management System</span></div>
+</div>
+<div class="login-wrapper">
+<div class="login-box">
+<div class="secure-label">Secure Login</div>
+<h1>MAK INFRATECH FMS</h1>
+<p class="subtitle">Sign in using your assigned username and password.</p>
+<input type="hidden" id="apiUrl" value="https://makinfratech-api.onrender.com">
+<div class="form-group"><label>Username</label><input type="email" id="loginEmail" placeholder="Enter your email"></div>
+<div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Enter your password"></div>
+<button class="btn" id="loginBtn">Login</button>
+<div id="loginError" class="error-msg"></div>
+</div>
+</div>
 </div>
 
+<!-- APP -->
 <div id="appLayout" class="app-layout">
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">MI</div>
-            <div class="sidebar-brand">
-                <h2>MAK INFRATECH</h2>
-                <span>Field Management System</span>
-            </div>
-        </div>
-        <nav class="nav-menu">
-            <div class="nav-item active" onclick="showPage('dashboard')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                Dashboard
-            </div>
-            <div class="nav-item" onclick="showPage('users')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                Users
-            </div>
-            <div class="nav-item" onclick="showPage('customers')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                Customers
-            </div>
-            <div class="nav-item" onclick="showPage('buildings')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                Buildings
-            </div>
-            <div class="nav-item" onclick="showPage('flats')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                Flats
-            </div>
-            <div class="nav-item" onclick="showPage('assets')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
-                Assets
-            </div>
-            <div class="nav-item" onclick="showPage('workorders')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                Work Orders
-            </div>
-            <div class="nav-item" onclick="showPage('invoices')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                Invoices
-            </div>
-            <div class="nav-item" onclick="showPage('expenses')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Expenses
-            </div>
-            <div class="nav-item" onclick="showPage('amc')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                AMC
-            </div>
-            <div class="nav-item" onclick="showPage('reports')">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Reports
-            </div>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">A</div>
-                <div class="user-details">
-                    <div id="userName">Admin</div>
-                    <div id="userRole">Administrator</div>
-                </div>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="handleLogout()">Logout</button>
-        </div>
-    </aside>
+<aside class="sidebar">
+<div class="sidebar-header">
+<div class="sidebar-logo">MI</div>
+<div class="sidebar-brand"><h2>MAK INFRATECH</h2><span>Field Management System</span></div>
+</div>
+<nav class="nav-menu" id="navMenu"></nav>
+<div class="sidebar-footer">
+<div class="user-info">
+<div class="user-avatar" id="userAvatar">A</div>
+<div class="user-details"><div id="userName">Admin</div><div id="userRole">Administrator</div></div>
+</div>
+<button class="btn btn-secondary btn-sm" id="logoutBtn">Logout</button>
+</div>
+</aside>
 
-    <main class="main-content">
-        <div class="topbar">
-            <div class="page-title" id="pageTitle">Dashboard</div>
-            <div class="topbar-actions">
-                <button class="btn btn-success btn-sm" onclick="openModal()">+ Add New</button>
-            </div>
-        </div>
-        <div class="content-area" id="contentArea"></div>
-    </main>
+<main class="main-content">
+<div class="topbar">
+<div class="page-title" id="pageTitle">Dashboard</div>
+<div class="topbar-actions"><button class="btn btn-success btn-sm" id="addNewBtn">+ Add New</button></div>
+</div>
+<div class="content-area" id="contentArea"></div>
+</main>
 </div>
 
+<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 id="modalTitle">Add New Record</h3>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body" id="modalBody"></div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-sm" onclick="saveRecord()">Save</button>
-        </div>
-    </div>
+<div class="modal">
+<div class="modal-header"><h3 id="modalTitle">Add New Record</h3><button class="modal-close" id="modalClose">&times;</button></div>
+<div class="modal-body" id="modalBody"></div>
+<div class="modal-footer">
+<button class="btn btn-secondary btn-sm" id="modalCancel">Cancel</button>
+<button class="btn btn-sm" id="modalSave">Save</button>
+</div>
+</div>
 </div>
 
 <script>
 // ===================== CONFIG =====================
-let API_BASE = localStorage.getItem('apiUrl') || '';
-let AUTH_TOKEN = localStorage.getItem('token') || '';
-let CURRENT_PAGE = 'dashboard';
-let CURRENT_DATA = [];
+var API_BASE = localStorage.getItem("apiUrl") || "";
+var AUTH_TOKEN = localStorage.getItem("token") || "";
+var CURRENT_PAGE = "dashboard";
+var CURRENT_DATA = [];
+
+var NAV_ITEMS = [
+{key:"dashboard",label:"Dashboard",icon:"M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"},
+{key:"users",label:"Users",icon:"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"},
+{key:"customers",label:"Customers",icon:"M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"},
+{key:"buildings",label:"Buildings",icon:"M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"},
+{key:"flats",label:"Flats",icon:"M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"},
+{key:"assets",label:"Assets",icon:"M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"},
+{key:"workorders",label:"Work Orders",icon:"M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"},
+{key:"invoices",label:"Invoices",icon:"M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"},
+{key:"expenses",label:"Expenses",icon:"M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"},
+{key:"amc",label:"AMC",icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"},
+{key:"reports",label:"Reports",icon:"M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"}
+];
+
+// ===================== INIT NAV =====================
+function initNav(){
+var menu=document.getElementById("navMenu");
+menu.innerHTML="";
+NAV_ITEMS.forEach(function(item){
+var div=document.createElement("div");
+div.className="nav-item"+(item.key===CURRENT_PAGE?" active":"");
+div.innerHTML='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="'+item.icon+'"/></svg>'+item.label;
+div.addEventListener("click",function(){showPage(item.key)});
+menu.appendChild(div);
+});
+}
 
 // ===================== AUTH =====================
-async function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const errorDiv = document.getElementById('loginError');
+document.getElementById("loginBtn").addEventListener("click",async function(){
+var email=document.getElementById("loginEmail").value.trim();
+var password=document.getElementById("loginPassword").value;
+var errorDiv=document.getElementById("loginError");
+if(!email||!password){errorDiv.textContent="Please fill all fields";errorDiv.style.display="block";return;}
+API_BASE=document.getElementById("apiUrl").value.replace(/\/$/,"");
+try{
+var res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:password})});
+var data=await res.json();
+if(!res.ok)throw new Error(data.message||"Login failed");
+AUTH_TOKEN=data.access_token||data.token;
+localStorage.setItem("token",AUTH_TOKEN);
+localStorage.setItem("apiUrl",API_BASE);
+localStorage.setItem("user",JSON.stringify(data.user||{email:email}));
+showApp();
+}catch(err){errorDiv.textContent=err.message;errorDiv.style.display="block";}
+});
 
-    if (!email || !password) {
-        errorDiv.textContent = 'Please fill all fields';
-        errorDiv.style.display = 'block';
-        return;
-    }
+document.getElementById("logoutBtn").addEventListener("click",function(){
+localStorage.removeItem("token");localStorage.removeItem("user");AUTH_TOKEN="";
+document.getElementById("loginPage").style.display="flex";
+document.getElementById("appLayout").style.display="none";
+});
 
-    API_BASE = document.getElementById('apiUrl').value.replace(/\/$/, '');
-
-    try {
-        const res = await fetch(API_BASE + '/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            throw new Error(data.message || 'Login failed');
-        }
-
-        AUTH_TOKEN = data.access_token || data.token;
-        localStorage.setItem('token', AUTH_TOKEN);
-        localStorage.setItem('apiUrl', API_BASE);
-        localStorage.setItem('user', JSON.stringify(data.user || { email }));
-
-        showApp();
-    } catch (err) {
-        errorDiv.textContent = err.message;
-        errorDiv.style.display = 'block';
-    }
-}
-
-function handleLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    AUTH_TOKEN = '';
-    document.getElementById('loginPage').style.display = 'flex';
-    document.getElementById('appLayout').style.display = 'none';
-}
-
-function showApp() {
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('appLayout').style.display = 'flex';
-
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    document.getElementById('userName').textContent = user.name || user.email || 'Admin';
-    document.getElementById('userAvatar').textContent = (user.name || user.email || 'A')[0].toUpperCase();
-
-    showPage('dashboard');
+function showApp(){
+document.getElementById("loginPage").style.display="none";
+document.getElementById("appLayout").style.display="flex";
+var user=JSON.parse(localStorage.getItem("user")||"{}");
+document.getElementById("userName").textContent=user.name||user.email||"Admin";
+document.getElementById("userAvatar").textContent=(user.name||user.email||"A")[0].toUpperCase();
+initNav();showPage("dashboard");
 }
 
 // ===================== API =====================
-async function apiGet(endpoint) {
-    const res = await fetch(API_BASE + endpoint, {
-        headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+async function apiGet(endpoint){
+var res=await fetch(API_BASE+endpoint,{headers:{"Authorization":"Bearer "+AUTH_TOKEN}});
+if(!res.ok)throw new Error("HTTP "+res.status);
+return res.json();
 }
-
-async function apiPost(endpoint, data) {
-    const res = await fetch(API_BASE + endpoint, {
-        method: 'POST',
-        headers: { 
-            'Authorization': 'Bearer ' + AUTH_TOKEN,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+async function apiPost(endpoint,data){
+var res=await fetch(API_BASE+endpoint,{method:"POST",headers:{"Authorization":"Bearer "+AUTH_TOKEN,"Content-Type":"application/json"},body:JSON.stringify(data)});
+if(!res.ok)throw new Error("HTTP "+res.status);
+return res.json();
 }
-
-async function apiPatch(endpoint, data) {
-    const res = await fetch(API_BASE + endpoint, {
-        method: 'PATCH',
-        headers: { 
-            'Authorization': 'Bearer ' + AUTH_TOKEN,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+async function apiPatch(endpoint,data){
+var res=await fetch(API_BASE+endpoint,{method:"PATCH",headers:{"Authorization":"Bearer "+AUTH_TOKEN,"Content-Type":"application/json"},body:JSON.stringify(data)});
+if(!res.ok)throw new Error("HTTP "+res.status);
+return res.json();
 }
-
-async function apiDelete(endpoint) {
-    const res = await fetch(API_BASE + endpoint, {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+async function apiDelete(endpoint){
+var res=await fetch(API_BASE+endpoint,{method:"DELETE",headers:{"Authorization":"Bearer "+AUTH_TOKEN}});
+if(!res.ok)throw new Error("HTTP "+res.status);
+return res.json();
 }
 
 // ===================== PAGES =====================
-function showPage(page) {
-    CURRENT_PAGE = page;
-    document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
-    if (event && event.target) event.target.classList.add('active');
+function showPage(page){
+CURRENT_PAGE=page;
+document.querySelectorAll(".nav-item").forEach(function(el){el.classList.remove("active");});
+var activeNav=document.querySelector('.nav-item[data-key="'+page+'"]');
+if(activeNav)activeNav.classList.add("active");
 
-    var titles = {
-        dashboard: 'Dashboard',
-        users: 'Users',
-        customers: 'Customers',
-        buildings: 'Buildings',
-        flats: 'Flats',
-        assets: 'Assets',
-        workorders: 'Work Orders',
-        invoices: 'Invoices',
-        expenses: 'Expenses',
-        amc: 'AMC Contracts',
-        reports: 'Reports'
-    };
-    document.getElementById('pageTitle').textContent = titles[page] || page;
+var titles={dashboard:"Dashboard",users:"Users",customers:"Customers",buildings:"Buildings",flats:"Flats",assets:"Assets",workorders:"Work Orders",invoices:"Invoices",expenses:"Expenses",amc:"AMC Contracts",reports:"Reports"};
+document.getElementById("pageTitle").textContent=titles[page]||page;
 
-    var content = document.getElementById('contentArea');
-    content.innerHTML = '<div class="loading">Loading...</div>';
+var content=document.getElementById("contentArea");
+content.innerHTML='<div class="loading">Loading...</div>';
 
-    switch(page) {
-        case 'dashboard': loadDashboard(); break;
-        case 'users': loadTable('/api/users', ['ID','Name','Email','Role'], function(user) { return [user.id, user.name, user.email, user.role]; }); break;
-        case 'customers': loadTable('/api/customers', ['ID','Name','Email','Phone'], function(c) { return [c.id, c.name, c.email, c.phone]; }); break;
-        case 'buildings': loadTable('/api/buildings', ['ID','Name','Address','Flats'], function(b) { return [b.id, b.name, b.address, b.flatCount || '-']; }); break;
-        case 'flats': loadTable('/api/flats', ['ID','Number','Building','Status'], function(f) { return [f.id, f.number, f.buildingName, f.status]; }); break;
-        case 'assets': loadTable('/api/assets', ['ID','Name','Type','Status'], function(a) { return [a.id, a.name, a.type, a.status]; }); break;
-        case 'workorders': loadTable('/api/work-orders', ['ID','Title','Status','Priority'], function(w) { return [w.id, w.title, w.status, w.priority]; }); break;
-        case 'invoices': loadTable('/api/invoices', ['ID','Number','Amount','Status'], function(i) { return [i.id, i.invoiceNumber, i.totalAmount, i.status]; }); break;
-        case 'expenses': loadTable('/api/expenses', ['ID','Category','Amount','Date'], function(e) { return [e.id, e.category, e.amount, e.date]; }); break;
-        case 'amc': loadTable('/api/amc', ['ID','Title','Vendor','Status'], function(a) { return [a.id, a.title, a.vendor, a.status]; }); break;
-        case 'reports': loadReports(); break;
-        default: content.innerHTML = '<div class="empty-state"><h4>Page Under Construction</h4><p>This feature is coming soon.</p></div>';
-    }
+switch(page){
+case"dashboard":loadDashboard();break;
+case"users":loadTable("/api/users",["ID","Name","Email","Role"],function(u){return[u.id,u.name,u.email,badge(u.role)];});break;
+case"customers":loadTable("/api/customers",["ID","Name","Email","Phone"],function(c){return[c.id,c.name,c.email,c.phone||"-"];});break;
+case"buildings":loadTable("/api/buildings",["ID","Name","Address","City"],function(b){return[b.id,b.name,b.address||"-",b.city||"-"];});break;
+case"flats":loadTable("/api/flats",["ID","Unit","Building","Type"],function(f){return[f.id,f.unitNumber,f.buildingName||"-",f.type||"-"];});break;
+case"assets":loadTable("/api/assets",["ID","Name","Type","Status"],function(a){return[a.id,a.name,a.type||"-",badge(a.status)];});break;
+case"workorders":loadTable("/api/work-orders",["ID","Title","Status","Priority"],function(w){return[w.id,w.title,badge(w.status),badge(w.priority)];});break;
+case"invoices":loadTable("/api/invoices",["ID","Number","Amount","Status"],function(i){return[i.id,i.invoiceNumber,i.totalAmount,badge(i.status)];});break;
+case"expenses":loadTable("/api/expenses",["ID","Category","Amount","Status"],function(e){return[e.id,e.category,e.amount,badge(e.status)];});break;
+case"amc":loadTable("/api/amc",["ID","Contract","Vendor","Status"],function(a){return[a.id,a.contractNumber,a.vendor||"-",badge(a.status)];});break;
+case"reports":loadReports();break;
+default:content.innerHTML='<div class="empty-state"><h4>Page Under Construction</h4><p>This feature is coming soon.</p></div>';
+}
 }
 
 // ===================== DASHBOARD =====================
-async function loadDashboard() {
-    var content = document.getElementById('contentArea');
-    try {
-        var users = [], customers = [], buildings = [], workorders = [], invoices = [], assets = [];
-        try { users = await apiGet('/api/users'); } catch(e) {}
-        try { customers = await apiGet('/api/customers'); } catch(e) {}
-        try { buildings = await apiGet('/api/buildings'); } catch(e) {}
-        try { workorders = await apiGet('/api/work-orders'); } catch(e) {}
-        try { invoices = await apiGet('/api/invoices'); } catch(e) {}
-        try { assets = await apiGet('/api/assets'); } catch(e) {}
+async function loadDashboard(){
+var content=document.getElementById("contentArea");
+try{
+var users=[],customers=[],buildings=[],workorders=[],invoices=[],assets=[];
+try{users=await apiGet("/api/users");}catch(e){}
+try{customers=await apiGet("/api/customers");}catch(e){}
+try{buildings=await apiGet("/api/buildings");}catch(e){}
+try{workorders=await apiGet("/api/work-orders");}catch(e){}
+try{invoices=await apiGet("/api/invoices");}catch(e){}
+try{assets=await apiGet("/api/assets");}catch(e){}
 
-        var stats = [
-            { label: 'Total Users', value: users.length || 0, type: 'primary' },
-            { label: 'Customers', value: customers.length || 0, type: 'success' },
-            { label: 'Buildings', value: buildings.length || 0, type: 'warning' },
-            { label: 'Work Orders', value: workorders.length || 0, type: 'danger' },
-            { label: 'Invoices', value: invoices.length || 0, type: 'primary' },
-            { label: 'Assets', value: assets.length || 0, type: 'success' }
-        ];
+var stats=[
+{label:"Total Users",value:users.length||0,type:"primary"},
+{label:"Customers",value:customers.length||0,type:"success"},
+{label:"Buildings",value:buildings.length||0,type:"warning"},
+{label:"Work Orders",value:workorders.length||0,type:"danger"},
+{label:"Invoices",value:invoices.length||0,type:"primary"},
+{label:"Assets",value:assets.length||0,type:"success"}
+];
 
-        var html = '<div class="stats-grid">';
-        stats.forEach(function(s) {
-            html += '<div class="stat-card ' + s.type + '"><h3>' + s.label + '</h3><div class="stat-value">' + s.value + '</div></div>';
-        });
-        html += '</div>';
+var html='<div class="stats-grid">';
+stats.forEach(function(s){html+='<div class="stat-card '+s.type+'"><h3>'+s.label+'</h3><div class="stat-value">'+s.value+'</div></div>';});
+html+='</div>';
 
-        html += '<div class="card"><div class="card-header"><h3>Recent Work Orders</h3></div><div class="card-body">';
-        if (workorders.length) {
-            html += renderTable(['ID','Title','Status','Priority'], workorders.slice(0,5), function(w) { return [w.id, w.title, badge(w.status), badge(w.priority)]; });
-        } else {
-            html += '<div class="empty-state">No work orders found</div>';
-        }
-        html += '</div></div>';
+html+='<div class="card"><div class="card-header"><h3>Recent Work Orders</h3></div><div class="card-body">';
+if(workorders.length){
+html+=renderTable(["ID","Title","Status","Priority"],workorders.slice(0,5),function(w){return[w.id,w.title,badge(w.status),badge(w.priority)];});
+}else{html+='<div class="empty-state">No work orders found</div>';}
+html+='</div></div>';
 
-        content.innerHTML = html;
-    } catch (err) {
-        content.innerHTML = '<div class="empty-state"><h4>Error</h4><p>' + err.message + '</p></div>';
-    }
+content.innerHTML=html;
+}catch(err){content.innerHTML='<div class="empty-state"><h4>Error</h4><p>'+err.message+'</p></div>';}
 }
 
 // ===================== TABLE =====================
-async function loadTable(endpoint, columns, rowMapper) {
-    var content = document.getElementById('contentArea');
-    try {
-        var data = await apiGet(endpoint);
-        CURRENT_DATA = Array.isArray(data) ? data : (data.data || data.items || []);
-
-        var html = '<div class="card"><div class="card-body">';
-        html += renderTable(columns, CURRENT_DATA, rowMapper);
-        html += '</div></div>';
-        content.innerHTML = html;
-    } catch (err) {
-        content.innerHTML = '<div class="empty-state"><h4>Error Loading Data</h4><p>' + err.message + '</p><p>Make sure your backend API is running and the endpoint exists.</p></div>';
-    }
+async function loadTable(endpoint,columns,rowMapper){
+var content=document.getElementById("contentArea");
+try{
+var data=await apiGet(endpoint);
+CURRENT_DATA=Array.isArray(data)?data:(data.data||data.items||[]);
+var html='<div class="card"><div class="card-body">';
+html+=renderTable(columns,CURRENT_DATA,rowMapper);
+html+='</div></div>';
+content.innerHTML=html;
+}catch(err){content.innerHTML='<div class="empty-state"><h4>Error Loading Data</h4><p>'+err.message+'</p></div>';}
 }
 
-function renderTable(columns, rows, rowMapper) {
-    if (!rows || rows.length === 0) {
-        return '<div class="empty-state"><h4>No Data</h4><p>No records found.</p></div>';
-    }
-
-    var html = '<table class="data-table"><thead><tr>';
-    columns.forEach(function(c) { html += '<th>' + c + '</th>'; });
-    html += '<th>Actions</th></tr></thead><tbody>';
-
-    rows.forEach(function(row) {
-        var cells = rowMapper(row);
-        html += '<tr>';
-        cells.forEach(function(c) { html += '<td>' + c + '</td>'; });
-        html += '<td><button class="btn btn-sm btn-secondary" onclick="editRecord('' + row.id + '')">Edit</button> <button class="btn btn-sm btn-danger" onclick="deleteRecord('' + row.id + '')">Delete</button></td>';
-        html += '</tr>';
-    });
-
-    html += '</tbody></table>';
-    return html;
+function renderTable(columns,rows,rowMapper){
+if(!rows||rows.length===0){return'<div class="empty-state"><h4>No Data</h4><p>No records found.</p></div>';}
+var html='<table class="data-table"><thead><tr>';
+columns.forEach(function(c){html+='<th>'+c+'</th>';});
+html+='<th>Actions</th></tr></thead><tbody>';
+rows.forEach(function(row){
+var cells=rowMapper(row);
+html+='<tr>';
+cells.forEach(function(c){html+='<td>'+c+'</td>';});
+html+='<td><button class="btn btn-sm btn-secondary" onclick="editRecord(''+row.id+'')">Edit</button> <button class="btn btn-sm btn-danger" onclick="deleteRecord(''+row.id+'')">Delete</button></td>';
+html+='</tr>';
+});
+html+='</tbody></table>';
+return html;
 }
 
-function badge(text) {
-    if (!text) return '-';
-    var t = text.toString().toLowerCase();
-    var cls = 'badge-info';
-    if (['active','completed','paid','approved','success'].indexOf(t) !== -1) cls = 'badge-success';
-    else if (['pending','in progress','partial','review'].indexOf(t) !== -1) cls = 'badge-warning';
-    else if (['cancelled','overdue','rejected','failed','urgent'].indexOf(t) !== -1) cls = 'badge-danger';
-    return '<span class="badge ' + cls + '">' + text + '</span>';
+function badge(text){
+if(!text)return"-";
+var t=text.toString().toLowerCase();
+var cls="badge-info";
+if(["active","completed","paid","approved","success"].indexOf(t)!==-1)cls="badge-success";
+else if(["pending","in progress","partial","review","draft","sent"].indexOf(t)!==-1)cls="badge-warning";
+else if(["cancelled","overdue","rejected","failed","urgent","void"].indexOf(t)!==-1)cls="badge-danger";
+return'<span class="badge '+cls+'">'+text+'</span>';
 }
 
 // ===================== REPORTS =====================
-async function loadReports() {
-    var content = document.getElementById('contentArea');
-    try {
-        var vat = null;
-        try { vat = await apiGet('/api/invoices/reports/vat'); } catch(e) {}
-
-        var html = '<div class="stats-grid">';
-        html += '<div class="stat-card primary"><h3>VAT Report</h3><div class="stat-value">' + (vat ? 'Available' : 'N/A') + '</div></div>';
-        html += '</div>';
-
-        if (vat) {
-            html += '<div class="card"><div class="card-header"><h3>VAT Summary</h3></div><div class="card-body"><pre style="padding:24px;overflow:auto">' + JSON.stringify(vat, null, 2) + '</pre></div></div>';
-        }
-
-        content.innerHTML = html;
-    } catch (err) {
-        content.innerHTML = '<div class="empty-state"><h4>Error</h4><p>' + err.message + '</p></div>';
-    }
+async function loadReports(){
+var content=document.getElementById("contentArea");
+try{
+var vat=null;
+try{vat=await apiGet("/api/invoices/reports/vat");}catch(e){}
+var html='<div class="stats-grid">';
+html+='<div class="stat-card primary"><h3>VAT Report</h3><div class="stat-value">'+(vat?'Available':'N/A')+'</div></div>';
+html+='</div>';
+if(vat){html+='<div class="card"><div class="card-header"><h3>VAT Summary</h3></div><div class="card-body"><pre style="padding:24px;overflow:auto">'+JSON.stringify(vat,null,2)+'</pre></div></div>';}
+content.innerHTML=html;
+}catch(err){content.innerHTML='<div class="empty-state"><h4>Error</h4><p>'+err.message+'</p></div>';}
 }
 
-// ===================== MODAL / CRUD =====================
-function openModal() {
-    document.getElementById('modalOverlay').classList.add('active');
-    var body = document.getElementById('modalBody');
+// ===================== MODAL / FORMS =====================
+document.getElementById("addNewBtn").addEventListener("click",openModal);
+document.getElementById("modalClose").addEventListener("click",closeModal);
+document.getElementById("modalCancel").addEventListener("click",closeModal);
+document.getElementById("modalSave").addEventListener("click",saveRecord);
 
-    var forms = {};
+function openModal(){
+document.getElementById("modalOverlay").classList.add("active");
+var body=document.getElementById("modalBody");
+body.innerHTML="";
 
-    forms.users = '<div class="form-group"><label>Name</label><input type="text" id="formName" placeholder="Full name"></div><div class="form-group"><label>Email</label><input type="email" id="formEmail" placeholder="Email address"></div><div class="form-group"><label>Password</label><input type="password" id="formPassword" placeholder="Password"></div><div class="form-group"><label>Role</label><select id="formRole"><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="TECHNICIAN">Technician</option><option value="COORDINATOR">Coordinator</option><option value="ACCOUNTANT">Accountant</option><option value="VIEWER">Viewer</option><option value="SUPER_ADMIN">Super Admin</option></select></div>';
+var title=document.getElementById("modalTitle");
+title.textContent="Add New "+CURRENT_PAGE.charAt(0).toUpperCase()+CURRENT_PAGE.slice(1);
 
-    forms.customers = '<div class="form-group"><label>Name</label><input type="text" id="formName" placeholder="Customer name"></div><div class="form-group"><label>Email</label><input type="email" id="formEmail" placeholder="Email"></div><div class="form-group"><label>Phone</label><input type="text" id="formPhone" placeholder="Phone number"></div><div class="form-group"><label>Address</label><input type="text" id="formAddress" placeholder="Address"></div>';
+if(CURRENT_PAGE==="users"){
+body.appendChild(makeInput("Name","formName","text","Full name"));
+body.appendChild(makeInput("Email","formEmail","email","Email address"));
+body.appendChild(makeInput("Password","formPassword","password","Password"));
+body.appendChild(makeSelect("Role","formRole",[
+{value:"ADMIN",label:"Admin"},
+{value:"MANAGER",label:"Manager"},
+{value:"TECHNICIAN",label:"Technician"},
+{value:"COORDINATOR",label:"Coordinator"},
+{value:"ACCOUNTANT",label:"Accountant"},
+{value:"VIEWER",label:"Viewer"},
+{value:"SUPER_ADMIN",label:"Super Admin"}
+]));
+}
+else if(CURRENT_PAGE==="customers"){
+body.appendChild(makeInput("Name","formName","text","Customer name"));
+body.appendChild(makeInput("Email","formEmail","email","Email"));
+body.appendChild(makeInput("Phone","formPhone","text","Phone number"));
+body.appendChild(makeInput("Address","formAddress","text","Address"));
+}
+else if(CURRENT_PAGE==="buildings"){
+body.appendChild(makeInput("Name","formName","text","Building name"));
+body.appendChild(makeInput("Address","formAddress","text","Address"));
+body.appendChild(makeInput("City","formCity","text","City"));
+}
+else if(CURRENT_PAGE==="workorders"){
+body.appendChild(makeInput("Title","formTitle","text","Work order title"));
+body.appendChild(makeInput("Description","formDescription","text","Description"));
+body.appendChild(makeSelect("Priority","formPriority",[
+{value:"LOW",label:"Low"},
+{value:"MEDIUM",label:"Medium"},
+{value:"HIGH",label:"High"},
+{value:"URGENT",label:"Urgent"}
+]));
+}
+else if(CURRENT_PAGE==="invoices"){
+body.appendChild(makeInput("Invoice Number","formNumber","text","INV-001"));
+body.appendChild(makeInput("Amount","formAmount","number","0.00"));
+body.appendChild(makeSelect("Status","formStatus",[
+{value:"DRAFT",label:"Draft"},
+{value:"SENT",label:"Sent"},
+{value:"PAID",label:"Paid"},
+{value:"OVERDUE",label:"Overdue"}
+]));
+}
+else if(CURRENT_PAGE==="expenses"){
+body.appendChild(makeInput("Category","formCategory","text","Category"));
+body.appendChild(makeInput("Amount","formAmount","number","0.00"));
+body.appendChild(makeInput("Date","formDate","date",""));
+body.appendChild(makeInput("Description","formDescription","text","Description"));
+}
+else if(CURRENT_PAGE==="amc"){
+body.appendChild(makeInput("Contract Title","formTitle","text","Contract title"));
+body.appendChild(makeInput("Vendor","formVendor","text","Vendor name"));
+body.appendChild(makeInput("Contract Value (AED)","formValue","number","0.00"));
+body.appendChild(makeInput("PPM Count (per year)","formPpmCount","number","3"));
+body.appendChild(makeInput("EMI Count","formEmiCount","number","12"));
+body.appendChild(makeInput("Start Date","formStartDate","date",""));
+body.appendChild(makeInput("End Date","formEndDate","date",""));
 
-    forms.buildings = '<div class="form-group"><label>Name</label><input type="text" id="formName" placeholder="Building name"></div><div class="form-group"><label>Address</label><input type="text" id="formAddress" placeholder="Address"></div>';
+// EMI Calculator
+var calcBox=document.createElement("div");
+calcBox.className="calc-box";
+calcBox.id="emiCalcBox";
+calcBox.style.display="none";
+calcBox.innerHTML='<h4>EMI Calculation</h4><div id="calcContent"></div>';
+body.appendChild(calcBox);
 
-    forms.workorders = '<div class="form-group"><label>Title</label><input type="text" id="formTitle" placeholder="Work order title"></div><div class="form-group"><label>Description</label><input type="text" id="formDescription" placeholder="Description"></div><div class="form-group"><label>Priority</label><select id="formPriority"><option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option><option value="URGENT">Urgent</option></select></div>';
-
-    forms.invoices = '<div class="form-group"><label>Invoice Number</label><input type="text" id="formNumber" placeholder="INV-001"></div><div class="form-group"><label>Amount</label><input type="number" id="formAmount" placeholder="0.00"></div><div class="form-group"><label>Status</label><select id="formStatus"><option value="DRAFT">Draft</option><option value="SENT">Sent</option><option value="PAID">Paid</option><option value="OVERDUE">Overdue</option></select></div>';
-
-    forms.expenses = '<div class="form-group"><label>Category</label><input type="text" id="formCategory" placeholder="Category"></div><div class="form-group"><label>Amount</label><input type="number" id="formAmount" placeholder="0.00"></div><div class="form-group"><label>Date</label><input type="date" id="formDate"></div><div class="form-group"><label>Description</label><input type="text" id="formDescription" placeholder="Description"></div>';
-
-    forms.amc = '<div class="form-group"><label>Title</label><input type="text" id="formTitle" placeholder="Contract title"></div><div class="form-group"><label>Vendor</label><input type="text" id="formVendor" placeholder="Vendor name"></div><div class="form-group"><label>Start Date</label><input type="date" id="formStartDate"></div><div class="form-group"><label>End Date</label><input type="date" id="formEndDate"></div>';
-
-    body.innerHTML = forms[CURRENT_PAGE] || '<p>No form available for this page.</p>';
-    document.getElementById('modalTitle').textContent = 'Add New ' + (CURRENT_PAGE.charAt(0).toUpperCase() + CURRENT_PAGE.slice(1));
+// Auto-calculate EMI
+function updateEmiCalc(){
+var val=parseFloat(document.getElementById("formValue").value)||0;
+var count=parseInt(document.getElementById("formEmiCount").value)||1;
+if(val>0&&count>0){
+var emi=(val/count).toFixed(2);
+var box=document.getElementById("emiCalcBox");
+box.style.display="block";
+document.getElementById("calcContent").innerHTML=
+'<div class="calc-row"><span>Contract Value</span><span>AED '+val.toFixed(2)+'</span></div>'+
+'<div class="calc-row"><span>EMI Count</span><span>'+count+'</span></div>'+
+'<div class="calc-row"><span>EMI Amount</span><span>AED '+emi+'</span></div>'+
+'<div class="calc-row"><span>Total</span><span>AED '+val.toFixed(2)+'</span></div>';
+}
+}
+document.getElementById("formValue").addEventListener("input",updateEmiCalc);
+document.getElementById("formEmiCount").addEventListener("input",updateEmiCalc);
+}
+else{
+body.innerHTML='<p>No form available for this page.</p>';
+}
 }
 
-function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('active');
+function closeModal(){
+document.getElementById("modalOverlay").classList.remove("active");
 }
 
-async function saveRecord() {
-    var endpoints = {
-        users: '/api/users',
-        customers: '/api/customers',
-        buildings: '/api/buildings',
-        workorders: '/api/work-orders',
-        invoices: '/api/invoices',
-        expenses: '/api/expenses',
-        amc: '/api/amc'
-    };
-
-    var endpoint = endpoints[CURRENT_PAGE];
-    if (!endpoint) return;
-
-    var data = {};
-    var name = document.getElementById('formName');
-    var email = document.getElementById('formEmail');
-    var phone = document.getElementById('formPhone');
-    var address = document.getElementById('formAddress');
-    var title = document.getElementById('formTitle');
-    var description = document.getElementById('formDescription');
-    var priority = document.getElementById('formPriority');
-    var status = document.getElementById('formStatus');
-    var amount = document.getElementById('formAmount');
-    var category = document.getElementById('formCategory');
-    var date = document.getElementById('formDate');
-    var vendor = document.getElementById('formVendor');
-    var startDate = document.getElementById('formStartDate');
-    var endDate = document.getElementById('formEndDate');
-    var password = document.getElementById('formPassword');
-    var role = document.getElementById('formRole');
-    var number = document.getElementById('formNumber');
-
-    if (name && name.value) data.name = name.value;
-    if (email && email.value) data.email = email.value;
-    if (phone && phone.value) data.phone = phone.value;
-    if (address && address.value) data.address = address.value;
-    if (title && title.value) data.title = title.value;
-    if (description && description.value) data.description = description.value;
-    if (priority && priority.value) data.priority = priority.value;
-    if (status && status.value) data.status = status.value;
-    if (amount && amount.value) data.amount = parseFloat(amount.value);
-    if (category && category.value) data.category = category.value;
-    if (date && date.value) data.date = date.value;
-    if (vendor && vendor.value) data.vendor = vendor.value;
-    if (startDate && startDate.value) data.startDate = startDate.value;
-    if (endDate && endDate.value) data.endDate = endDate.value;
-    if (password && password.value) data.password = password.value;
-    if (role && role.value) data.role = role.value;
-    if (number && number.value) data.invoiceNumber = number.value;
-
-    try {
-        await apiPost(endpoint, data);
-        closeModal();
-        showPage(CURRENT_PAGE);
-    } catch (err) {
-        alert('Error: ' + err.message);
-    }
+function makeInput(label,id,type,placeholder){
+var div=document.createElement("div");div.className="form-group";
+var lbl=document.createElement("label");lbl.textContent=label;
+var inp=document.createElement("input");inp.type=type;inp.id=id;inp.placeholder=placeholder;
+div.appendChild(lbl);div.appendChild(inp);
+return div;
 }
 
-async function editRecord(id) {
-    alert('Edit feature: Implement PATCH /api/' + CURRENT_PAGE + '/' + id);
+function makeSelect(label,id,options){
+var div=document.createElement("div");div.className="form-group";
+var lbl=document.createElement("label");lbl.textContent=label;
+var sel=document.createElement("select");sel.id=id;
+options.forEach(function(opt){
+var o=document.createElement("option");
+o.value=opt.value;o.textContent=opt.label;
+sel.appendChild(o);
+});
+div.appendChild(lbl);div.appendChild(sel);
+return div;
 }
 
-async function deleteRecord(id) {
-    if (!confirm('Are you sure you want to delete this record?')) return;
+async function saveRecord(){
+var endpoints={users:"/api/users",customers:"/api/customers",buildings:"/api/buildings",workorders:"/api/work-orders",invoices:"/api/invoices",expenses:"/api/expenses",amc:"/api/amc"};
+var endpoint=endpoints[CURRENT_PAGE];
+if(!endpoint)return;
 
-    var endpoints = {
-        users: '/api/users',
-        customers: '/api/customers',
-        buildings: '/api/buildings',
-        workorders: '/api/work-orders',
-        invoices: '/api/invoices',
-        expenses: '/api/expenses',
-        amc: '/api/amc'
-    };
+var data={};
+var nameEl=document.getElementById("formName");
+var emailEl=document.getElementById("formEmail");
+var phoneEl=document.getElementById("formPhone");
+var addressEl=document.getElementById("formAddress");
+var cityEl=document.getElementById("formCity");
+var titleEl=document.getElementById("formTitle");
+var descEl=document.getElementById("formDescription");
+var priorityEl=document.getElementById("formPriority");
+var statusEl=document.getElementById("formStatus");
+var amountEl=document.getElementById("formAmount");
+var categoryEl=document.getElementById("formCategory");
+var dateEl=document.getElementById("formDate");
+var vendorEl=document.getElementById("formVendor");
+var startDateEl=document.getElementById("formStartDate");
+var endDateEl=document.getElementById("formEndDate");
+var passwordEl=document.getElementById("formPassword");
+var roleEl=document.getElementById("formRole");
+var numberEl=document.getElementById("formNumber");
+var valueEl=document.getElementById("formValue");
+var ppmCountEl=document.getElementById("formPpmCount");
+var emiCountEl=document.getElementById("formEmiCount");
 
-    try {
-        await apiDelete(endpoints[CURRENT_PAGE] + '/' + id);
-        showPage(CURRENT_PAGE);
-    } catch (err) {
-        alert('Error: ' + err.message);
-    }
+if(nameEl&&nameEl.value)data.name=nameEl.value;
+if(emailEl&&emailEl.value)data.email=emailEl.value;
+if(phoneEl&&phoneEl.value)data.phone=phoneEl.value;
+if(addressEl&&addressEl.value)data.address=addressEl.value;
+if(cityEl&&cityEl.value)data.city=cityEl.value;
+if(titleEl&&titleEl.value)data.title=titleEl.value;
+if(descEl&&descEl.value)data.description=descEl.value;
+if(priorityEl&&priorityEl.value)data.priority=priorityEl.value;
+if(statusEl&&statusEl.value)data.status=statusEl.value;
+if(amountEl&&amountEl.value)data.amount=parseFloat(amountEl.value);
+if(categoryEl&&categoryEl.value)data.category=categoryEl.value;
+if(dateEl&&dateEl.value)data.date=dateEl.value;
+if(vendorEl&&vendorEl.value)data.vendor=vendorEl.value;
+if(startDateEl&&startDateEl.value)data.startDate=startDateEl.value;
+if(endDateEl&&endDateEl.value)data.endDate=endDateEl.value;
+if(passwordEl&&passwordEl.value)data.password=passwordEl.value;
+if(roleEl&&roleEl.value)data.role=roleEl.value;
+if(numberEl&&numberEl.value)data.invoiceNumber=numberEl.value;
+if(valueEl&&valueEl.value)data.value=parseFloat(valueEl.value);
+if(ppmCountEl&&ppmCountEl.value)data.ppmFrequency=parseInt(ppmCountEl.value);
+if(emiCountEl&&emiCountEl.value)data.emiCount=parseInt(emiCountEl.value);
+
+try{
+await apiPost(endpoint,data);
+closeModal();
+showPage(CURRENT_PAGE);
+}catch(err){alert("Error: "+err.message);}
+}
+
+function editRecord(id){
+alert("Edit: "+id);
+}
+
+async function deleteRecord(id){
+if(!confirm("Delete this record?"))return;
+var endpoints={users:"/api/users",customers:"/api/customers",buildings:"/api/buildings",workorders:"/api/work-orders",invoices:"/api/invoices",expenses:"/api/expenses",amc:"/api/amc"};
+try{
+await apiDelete(endpoints[CURRENT_PAGE]+"/"+id);
+showPage(CURRENT_PAGE);
+}catch(err){alert("Error: "+err.message);}
 }
 
 // ===================== INIT =====================
-window.onload = function() {
-    if (AUTH_TOKEN && API_BASE) {
-        showApp();
-    }
+window.onload=function(){
+if(AUTH_TOKEN&&API_BASE){showApp();}
 };
 </script>
 </body>
