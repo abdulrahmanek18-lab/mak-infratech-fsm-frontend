@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAK INFRATECH FMS | Secure Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gradient-custom flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 md:p-10 text-center">
+
+        <div class="mb-8">
+            <p class="text-sm font-semibold text-blue-600 tracking-widest uppercase mb-2">Secure Login</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800">MAK INFRATECH FMS</h1>
+            <p class="text-gray-500 text-sm mt-3">Please enter your User ID and Password to access the system.</p>
+        </div>
+
+        <form id="loginForm" class="space-y-5 text-left">
+
+            <div>
+                <label for="userId" class="block text-sm font-medium text-slate-700 mb-1">User ID</label>
+                <input type="text" id="userId" name="userId" required
+                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition outline-none"
+                    placeholder="Enter your User ID">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" required
+                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition outline-none"
+                        placeholder="Enter your Password">
+                    <button type="button" id="togglePassword"
+                        class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                            viewBox="0 0 16 16" id="eyeIcon">
+                            <path
+                                d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
+                            <path
+                                d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="errorMessage"
+                class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+                Invalid User ID or Password.
+            </div>
+
+            <button type="submit" id="submitBtn"
+                class="w-full bg-black text-white py-3.5 rounded-lg font-semibold hover:bg-gray-800 transition focus:outline-none focus:ring-4 focus:ring-gray-300 flex items-center justify-center">
+                <span id="btnText">Login</span>
+                <svg class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+            </button>
+        </form>
+
+        <p class="text-gray-400 text-xs mt-8">© 2024 MAK INFRATECH. All rights reserved.</p>
+    </div>
+
+    <script>
+        // =====================================================================
+        // API CONFIGURATION 
+        // Change 'http://localhost:3000' to your live backend URL if deployed
+        // =====================================================================
+        const API_BASE_URL = 'http://localhost:3000';
+        const LOGIN_ENDPOINT = `${API_BASE_URL}/api/auth/login`;
+        // =====================================================================
+
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            if (type === 'text') {
+                eyeIcon.innerHTML = '<path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.061-2.061a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/>';
+            } else {
+                eyeIcon.innerHTML = '<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>';
+            }
+        });
+
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            btnText.textContent = 'Logging in...';
+            submitBtn.querySelector('svg').classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(LOGIN_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: userId, password: password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('fsm_token', data.access_token || data.token);
+                    window.location.href = 'index.html';
+                } else {
+                    throw new Error('Login failed');
+                }
+            } catch (error) {
+                errorMessage.classList.remove('hidden');
+                submitBtn.disabled = false;
+                btnText.textContent = 'Login';
+                submitBtn.querySelector('svg').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>
