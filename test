@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family:sans-serif;max-width:400px;margin:50px auto;padding:20px">
+<h2>MAK INFRATECH FMS - Test</h2>
+<input id="e" placeholder="Email" style="width:100%;padding:10px;margin:5px 0">
+<input id="p" type="password" placeholder="Password" style="width:100%;padding:10px;margin:5px 0">
+<button onclick="login()" style="width:100%;padding:10px;background:#0f172a;color:white;border:none;cursor:pointer">Login</button>
+<p id="r" style="margin-top:10px;padding:10px;background:#f0f9ff;font-size:12px;word-break:break-all"></p>
+
+<script>
+var API = "https://makinfratech-api.onrender.com";
+function login(){
+  var email = document.getElementById("e").value;
+  var pass = document.getElementById("p").value;
+  var out = document.getElementById("r");
+  out.innerHTML = "Sending to: " + API + "/api/auth/login<br>Email: " + email + "<br>Waiting...";
+  
+  fetch(API + "/api/auth/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({email: email, password: pass})
+  })
+  .then(function(r){
+    return r.json().then(function(d){
+      out.innerHTML += "<br>Status: " + r.status;
+      out.innerHTML += "<br>Response: " + JSON.stringify(d).substring(0, 200);
+      if(d.access_token){
+        out.innerHTML += "<br><b style='color:green'>LOGIN SUCCESS!</b>";
+        localStorage.setItem("token", d.access_token);
+      }
+    });
+  })
+  .catch(function(e){
+    out.innerHTML += "<br><b style='color:red'>Error: " + e.message + "</b>";
+  });
+}
+</script>
+</body>
+</html>
