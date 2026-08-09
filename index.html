@@ -337,7 +337,7 @@
         }
 
         // Fetch and Render Table Data
-        async function fetchAndRender(endpoint, tableId, columns) {
+                async function fetchAndRender(endpoint, tableId, columns) {
             const tbody = document.getElementById(tableId);
             if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
