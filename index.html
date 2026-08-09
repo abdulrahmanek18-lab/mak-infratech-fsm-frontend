@@ -14,66 +14,73 @@
         .page-content.active { display: block; }
         .modal { display: none; }
         .modal.active { display: flex; }
+        
+        /* Excel-like Table Styling */
+        .excel-table { border-collapse: collapse; width: 100%; }
+        .excel-table th, .excel-table td { border: 1px solid #e5e7eb; padding: 12px 16px; text-align: left; font-size: 14px; }
+        .excel-table th { background-color: #f8fafc; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; position: sticky; top: 0; }
+        .excel-table tbody tr:nth-child(even) { background-color: #f9fafb; }
+        .excel-table tbody tr:hover { background-color: #eff6ff; transition: background-color 0.2s; }
     </style>
 </head>
-<body class="bg-gray-100 flex">
+<body class="bg-slate-50 flex">
 
     <!-- Sidebar -->
     <aside class="w-64 bg-slate-900 text-white min-h-screen flex flex-col fixed lg:relative z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out" id="sidebar">
-        <div class="h-16 flex items-center justify-center border-b border-slate-800">
-            <h1 class="text-xl font-bold text-blue-400">MAK INFRATECH</h1>
+        <div class="h-16 flex items-center justify-center border-b border-slate-800 shadow-md">
+            <h1 class="text-xl font-bold text-blue-400 tracking-wide">MAK INFRATECH</h1>
         </div>
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="#" onclick="showPage('dashboard', this)" class="sidebar-link active flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm font-medium transition">
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="#" onclick="showPage('dashboard', this)" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-md text-sm font-medium transition">
                 <span>📊</span> <span>Dashboard</span>
             </a>
             
-            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider">Operations</div>
-            <a href="#" onclick="showPage('work-orders', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Operations</div>
+            <a href="#" onclick="showPage('work-orders', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🛠️</span> <span>Work Orders</span>
             </a>
-            <a href="#" onclick="showPage('customers', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('customers', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🤝</span> <span>Customers</span>
             </a>
-            <a href="#" onclick="showPage('buildings', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('buildings', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🏢</span> <span>Buildings & Flats</span>
             </a>
-            <a href="#" onclick="showPage('amc', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('amc', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📋</span> <span>Services & AMC</span>
             </a>
 
-            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider">Finance</div>
-            <a href="#" onclick="showPage('invoices', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Finance</div>
+            <a href="#" onclick="showPage('invoices', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🧾</span> <span>Invoices</span>
             </a>
-            <a href="#" onclick="showPage('expenses', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('expenses', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>💳</span> <span>Expenses</span>
             </a>
-            <a href="#" onclick="showPage('po', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('po', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📦</span> <span>Purchase Orders</span>
             </a>
 
-            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider">Management</div>
-            <a href="#" onclick="showPage('inventory', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Management</div>
+            <a href="#" onclick="showPage('inventory', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🔧</span> <span>Inventory & Assets</span>
             </a>
-            <a href="#" onclick="showPage('users', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('users', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>👥</span> <span>Users</span>
             </a>
-            <a href="#" onclick="showPage('reports', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('reports', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📈</span> <span>Reports</span>
             </a>
         </nav>
         <div class="p-4 border-t border-slate-800">
-            <button onclick="logout()" class="w-full text-left flex items-center space-x-3 text-gray-300 hover:text-white">
+            <button onclick="logout()" class="w-full text-left flex items-center space-x-3 text-gray-300 hover:text-white transition">
                 <span>🚪</span> <span>Logout</span>
             </button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 lg:ml-0 min-h-screen">
-        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 sticky top-0 z-40">
+    <main class="flex-1 lg:ml-0 min-h-screen flex flex-col">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 sticky top-0 z-40 border-b border-gray-200">
             <div class="flex items-center space-x-4">
                 <button class="lg:hidden text-2xl text-gray-600" onclick="toggleSidebar()">&#9776;</button>
                 <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard Overview</h2>
@@ -86,32 +93,33 @@
             </div>
         </header>
 
-        <div class="p-6">
+        <div class="p-8 flex-1">
+            
             <!-- DASHBOARD PAGE -->
             <section id="page-dashboard" class="page-content active">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-500 text-sm font-medium">Open Work Orders</h3>
                             <span class="text-2xl">🛠️</span>
                         </div>
                         <p class="text-3xl font-bold text-gray-800">0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-500 text-sm font-medium">Active AMCs</h3>
                             <span class="text-2xl">📅</span>
                         </div>
                         <p class="text-3xl font-bold text-gray-800">0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-500 text-sm font-medium">Pending Invoices</h3>
                             <span class="text-2xl">🧾</span>
                         </div>
-                        <p class="text-3xl font-bold text-gray-800">د.إ 0</p>
+                        <p class="text-3xl font-bold text-gray-800">AED 0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-500 text-sm font-medium">Low Stock Items</h3>
                             <span class="text-2xl">📦</span>
@@ -123,108 +131,153 @@
 
             <!-- WORK ORDERS PAGE -->
             <section id="page-work-orders" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">All Work Orders</h3>
-                        <button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Work Order</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">All Work Orders</h3>
+                        <button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Work Order</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Work Orders found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>WO Number</th><th>Title</th><th>Status</th><th>Priority</th></tr></thead>
+                            <tbody id="tbody-work-orders"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- CUSTOMERS PAGE -->
             <section id="page-customers" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">All Customers</h3>
-                        <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Customer</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">All Customers</h3>
+                        <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Customer</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Customers found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead>
+                            <tbody id="tbody-customers"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Customers found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- BUILDINGS PAGE -->
             <section id="page-buildings" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">Buildings & Flats</h3>
-                        <button onclick="openBuildingModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Building</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Buildings & Flats</h3>
+                        <button onclick="openBuildingModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Building</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Buildings found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>Name</th><th>City</th><th>Emirate</th></tr></thead>
+                            <tbody id="tbody-buildings"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Buildings found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- AMC PAGE -->
             <section id="page-amc" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">Annual Maintenance Contracts (AMC)</h3>
-                        <button onclick="openAmcModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New AMC</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Annual Maintenance Contracts (AMC)</h3>
+                        <button onclick="openAmcModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New AMC</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No AMCs found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>Contract No.</th><th>Value (AED)</th><th>Status</th></tr></thead>
+                            <tbody id="tbody-amc"><tr><td colspan="3" class="p-6 text-center text-gray-500">No AMCs found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- INVOICES PAGE -->
             <section id="page-invoices" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">All Invoices</h3>
-                        <button onclick="openInvoiceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Invoice</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">All Invoices</h3>
+                        <button onclick="openInvoiceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Invoice</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Invoices found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>Invoice No.</th><th>Total (AED)</th><th>Status</th></tr></thead>
+                            <tbody id="tbody-invoices"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Invoices found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- EXPENSES PAGE -->
             <section id="page-expenses" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">All Expenses</h3>
-                        <button onclick="openExpenseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Expense</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">All Expenses</h3>
+                        <button onclick="openExpenseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Expense</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Expenses found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>Category</th><th>Amount (AED)</th><th>Status</th></tr></thead>
+                            <tbody id="tbody-expenses"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Expenses found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- PO PAGE -->
             <section id="page-po" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">Purchase Orders (PO)</h3>
-                        <button onclick="openPoModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New PO</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Purchase Orders (PO)</h3>
+                        <button onclick="openPoModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New PO</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Purchase Orders found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>PO Number</th><th>Supplier</th><th>Total (AED)</th></tr></thead>
+                            <tbody id="tbody-po"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Purchase Orders found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- INVENTORY PAGE -->
             <section id="page-inventory" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">Inventory & Assets</h3>
-                        <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Item</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Inventory & Assets</h3>
+                        <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Item</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Inventory items found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>SKU</th><th>Name</th><th>Qty</th></tr></thead>
+                            <tbody id="tbody-inventory"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Inventory items found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- USERS PAGE -->
             <section id="page-users" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">System Users</h3>
-                        <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New User</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">System Users</h3>
+                        <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New User</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">No Users found.</div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table">
+                            <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+                            <tbody id="tbody-users"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Users found.</td></tr></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- REPORTS PAGE -->
             <section id="page-reports" class="page-content">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-                    <h3 class="font-semibold text-gray-800 mb-4">Reports & Analytics</h3>
-                    <div class="p-6 text-center text-gray-500">No reports generated yet.</div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                    <h3 class="font-semibold text-gray-800 mb-4 text-lg">Reports & Analytics</h3>
+                    <div class="p-6 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">No reports generated yet.</div>
                 </div>
             </section>
         </div>
@@ -232,10 +285,10 @@
 
     <!-- GENERIC MODAL FOR FORMS -->
     <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h3 id="modal-title" class="text-xl font-bold text-gray-800">Add New</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-3xl leading-none">&times;</button>
             </div>
             <form id="modal-form" class="space-y-4">
                 <div id="modal-fields" class="space-y-4"></div>
@@ -265,6 +318,53 @@
             window.location.href = 'login.html';
         }
 
+        // API Helper
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: body ? JSON.stringify(body) : null
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: 'API Error' }));
+                throw new Error(err.message || 'Failed to fetch');
+            }
+            return res.json();
+        }
+
+        // Fetch and Render Table Data
+        async function fetchAndRender(endpoint, tableId, columns) {
+            const tbody = document.getElementById(tableId);
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch(endpoint);
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">No data found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        ${columns.map(col => `<td class="px-4 py-3">${item[col] !== null && item[col] !== undefined ? item[col] : '-'}</td>`).join('')}
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        async function fetchDropdown(endpoint) {
+            try {
+                const data = await apiFetch(endpoint);
+                return data.map(item => `<option value="${item.id}">${item.name || item.email || item.poNumber || item.sku || item.contractNumber || item.invoiceNumber}</option>`).join('');
+            } catch (e) {
+                return '<option value="">Error loading</option>';
+            }
+        }
+
         function showPage(pageId, element) {
             event.preventDefault();
             document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
@@ -288,34 +388,19 @@
             };
             document.getElementById('page-title').innerText = titles[pageId];
 
+            // Load data for the active page
+            if (pageId === 'users') fetchAndRender('/users', 'tbody-users', ['name', 'email', 'role']);
+            if (pageId === 'customers') fetchAndRender('/customers', 'tbody-customers', ['name', 'phone', 'email', 'address']);
+            if (pageId === 'work-orders') fetchAndRender('/work-orders', 'tbody-work-orders', ['woNumber', 'title', 'status', 'priority']);
+            if (pageId === 'buildings') fetchAndRender('/buildings', 'tbody-buildings', ['name', 'city', 'emirate']);
+            if (pageId === 'amc') fetchAndRender('/amc', 'tbody-amc', ['contractNumber', 'value', 'status']);
+            if (pageId === 'invoices') fetchAndRender('/invoices', 'tbody-invoices', ['invoiceNumber', 'total', 'status']);
+            if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
+            if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
+            if (pageId === 'inventory') fetchAndRender('/inventory', 'tbody-inventory', ['sku', 'name', 'quantity']);
+
             if (window.innerWidth < 1024) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
-            }
-        }
-
-        // API Helper
-        async function apiFetch(endpoint, method = 'GET', body = null) {
-            const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: body ? JSON.stringify(body) : null
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({ message: 'API Error' }));
-                throw new Error(err.message || 'Failed to fetch');
-            }
-            return res.json();
-        }
-
-        async function fetchDropdown(endpoint) {
-            try {
-                const data = await apiFetch(endpoint);
-                return data.map(item => `<option value="${item.id}">${item.name || item.email || item.poNumber || item.sku}</option>`).join('');
-            } catch (e) {
-                return '<option value="">Error loading data</option>';
             }
         }
 
@@ -339,13 +424,16 @@
             modalError.classList.add('hidden');
         }
 
-        async function handleSubmit(endpoint, data, successMsg) {
+        async function handleSubmit(endpoint, data, successMsg, refreshPage) {
             modalSubmitBtn.innerText = 'Saving...';
             modalError.classList.add('hidden');
             try {
                 await apiFetch(endpoint, 'POST', data);
                 closeModal();
                 alert(successMsg);
+                if (refreshPage) {
+                    fetchAndRender(refreshPage.endpoint, refreshPage.tableId, refreshPage.columns);
+                }
             } catch (error) {
                 modalError.innerText = error.message;
                 modalError.classList.remove('hidden');
@@ -374,7 +462,7 @@
                     phone: getInput('c_phone'),
                     email: getInput('c_email'),
                     address: getInput('c_address')
-                }, 'Customer created successfully!');
+                }, 'Customer created successfully!', { endpoint: '/customers', tableId: 'tbody-customers', columns: ['name', 'phone', 'email', 'address'] });
             };
         }
 
@@ -396,7 +484,7 @@
                     address: getInput('b_address'),
                     city: getInput('b_city'),
                     emirate: getInput('b_emirate')
-                }, 'Building created successfully!');
+                }, 'Building created successfully!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] });
             };
         }
 
@@ -416,11 +504,11 @@
                     description: getInput('w_description'),
                     customerId: getInput('w_customerId') || null,
                     priority: getInput('w_priority')
-                }, 'Work Order created successfully!');
+                }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
             };
         }
 
-                async function openAmcModal() {
+        async function openAmcModal() {
             const custOpts = await fetchDropdown('/customers');
             const fields = `
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Customer</label><select id="a_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select></div>
@@ -443,7 +531,6 @@
             `;
             openModal('Add New AMC', fields);
             
-            // Set default dates to today and 1 year from now
             document.getElementById('a_startDate').valueAsDate = new Date();
             let nextYear = new Date();
             nextYear.setFullYear(nextYear.getFullYear() + 1);
@@ -464,7 +551,6 @@
             };
         }
 
-        // Helper to show/hide EMI field
         function toggleEmiField() {
             const paymentType = document.getElementById('a_paymentType').value;
             const emiDiv = document.getElementById('emiCountDiv');
@@ -474,16 +560,14 @@
                 emiDiv.style.display = 'none';
             }
         }
-                async function openInvoiceModal() {
+
+        async function openInvoiceModal() {
             const custOpts = await fetchDropdown('/customers');
-            
-            // Fetch all AMCs to extract their pending EMIs
             let emiOpts = '<option value="">Select Pending EMI</option>';
             try {
                 const amcs = await apiFetch('/amc');
                 amcs.forEach(amc => {
                     if(amc.emiSchedules && amc.emiSchedules.length > 0) {
-                        // Only show EMIs that don't have an invoice yet
                         const pendingEmis = amc.emiSchedules.filter(e => e.status === 'PENDING' && !e.invoiceId);
                         pendingEmis.forEach(emi => {
                             const dueDate = new Date(emi.dueDate).toLocaleDateString();
@@ -491,9 +575,7 @@
                         });
                     }
                 });
-            } catch (e) {
-                console.error("Failed to load EMIs", e);
-            }
+            } catch (e) { console.error("Failed to load EMIs", e); }
 
             const fields = `
                 <div>
@@ -503,43 +585,26 @@
                         <option value="EMI">AMC EMI Payment</option>
                     </select>
                 </div>
-
-                <!-- EMI Selection (Hidden by default) -->
                 <div id="emi_select_div" style="display:none;">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select Pending EMI</label>
-                    <select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        ${emiOpts}
-                    </select>
+                    <select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">${emiOpts}</select>
                 </div>
-
-                <!-- Customer -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                    <select id="i_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">Select Customer</option>
-                        ${custOpts}
-                    </select>
+                    <select id="i_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select>
                 </div>
-
-                <!-- Description -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label>
                     <textarea id="i_notes" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., AC Maintenance for May 2024"></textarea>
                 </div>
-
-                <!-- Due Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                     <input type="date" id="i_dueDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
-
-                <!-- Subtotal -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (AED)</label>
                     <input type="number" id="i_subtotal" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00">
                 </div>
-
-                <!-- Status -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select id="i_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
@@ -549,10 +614,7 @@
                     </select>
                 </div>
             `;
-            
             openModal('Add New Invoice', fields);
-            
-            // Set default due date to 15 days from today
             let dueDate = new Date();
             dueDate.setDate(dueDate.getDate() + 15);
             document.getElementById('i_dueDate').valueAsDate = dueDate;
@@ -565,12 +627,11 @@
                     subtotal: parseFloat(getInput('i_subtotal')),
                     status: getInput('i_status'),
                     notes: getInput('i_notes'),
-                    emiId: getInput('i_emiId') || null // Pass EMI ID if selected
+                    emiId: getInput('i_emiId') || null
                 }, 'Invoice created successfully!', { endpoint: '/invoices', tableId: 'tbody-invoices', columns: ['invoiceNumber', 'total', 'status'] });
             };
         }
 
-        // Helper to show/hide EMI dropdown
         function toggleInvoiceFields() {
             const type = document.getElementById('i_type').value;
             const emiDiv = document.getElementById('emi_select_div');
@@ -585,19 +646,13 @@
             }
         }
 
-        // Helper to auto-fill data when an EMI is selected
         function autoFillEmiData() {
             const emiSelect = document.getElementById('i_emiId');
             const selectedOption = emiSelect.options[emiSelect.selectedIndex];
-            
             if (selectedOption.value) {
-                const amount = selectedOption.getAttribute('data-amount');
-                const customerId = selectedOption.getAttribute('data-customer');
-                const contractNumber = selectedOption.getAttribute('data-contract');
-
-                document.getElementById('i_subtotal').value = amount;
-                document.getElementById('i_customerId').value = customerId;
-                document.getElementById('i_notes').value = `AMC EMI Payment for Contract: ${contractNumber}`;
+                document.getElementById('i_subtotal').value = selectedOption.getAttribute('data-amount');
+                document.getElementById('i_customerId').value = selectedOption.getAttribute('data-customer');
+                document.getElementById('i_notes').value = `AMC EMI Payment for Contract: ${selectedOption.getAttribute('data-contract')}`;
             }
         }
 
@@ -614,7 +669,7 @@
                     category: getInput('e_category'),
                     amount: parseFloat(getInput('e_amount')),
                     description: getInput('e_description')
-                }, 'Expense created successfully!');
+                }, 'Expense created successfully!', { endpoint: '/expenses', tableId: 'tbody-expenses', columns: ['category', 'amount', 'status'] });
             };
         }
 
@@ -636,7 +691,7 @@
                     subtotal: total,
                     vatAmount: total * 0.05,
                     total: total + (total * 0.05)
-                }, 'Purchase Order created successfully!');
+                }, 'Purchase Order created successfully!', { endpoint: '/po', tableId: 'tbody-po', columns: ['poNumber', 'supplierName', 'total'] });
             };
         }
 
@@ -657,7 +712,7 @@
                     quantity: parseFloat(getInput('inv_quantity')),
                     minStock: parseFloat(getInput('inv_minStock')),
                     costPrice: parseFloat(getInput('inv_costPrice'))
-                }, 'Inventory item created successfully!');
+                }, 'Inventory item created successfully!', { endpoint: '/inventory', tableId: 'tbody-inventory', columns: ['sku', 'name', 'quantity'] });
             };
         }
 
@@ -676,7 +731,7 @@
                     email: getInput('u_email'),
                     password: getInput('u_password'),
                     role: getInput('u_role')
-                }, 'User created successfully!');
+                }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] });
             };
         }
     </script>
