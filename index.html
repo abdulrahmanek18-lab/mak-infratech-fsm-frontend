@@ -395,7 +395,7 @@
             if (pageId === 'work-orders') fetchAndRender('/work-orders', 'tbody-work-orders', ['woNumber', 'title', 'status', 'priority']);
             if (pageId === 'buildings') fetchAndRender('/buildings', 'tbody-buildings', ['name', 'city', 'emirate']);
             if (pageId === 'amc') fetchAndRender('/amc', 'tbody-amc', ['contractNumber', 'value', 'status']);
-            if (pageId === 'invoices') fetchAndRender('/invoices', 'tbody-invoices', ['invoiceNumber', 'total', 'status']);
+            if (pageId === 'invoices') fetchAndRender('/invoices', 'tbody-invoices', ['invoiceNumber', 'customer.name', 'total', 'status']);
             if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
             if (pageId === 'inventory') fetchAndRender('/inventory', 'tbody-inventory', ['sku', 'name', 'quantity']);
