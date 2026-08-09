@@ -703,24 +703,24 @@
             };
         }
 
-        async function openInventoryModal() {
+                async function openInventoryModal() {
             const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">SKU</label><input type="text" id="inv_sku" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Item Name</label><input type="text" id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label><input type="number" id="inv_quantity" required value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Min Stock Level</label><input type="number" id="inv_minStock" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Cost Price (AED)</label><input type="number" id="inv_costPrice" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Asset / AC Name</label><input type="text" id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Split AC 2 Ton"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Location</label><input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Manufacturer</label><input type="text" id="inv_manufacturer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Daikin"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Model</label><input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label><input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
             `;
-            openModal('Add New Inventory Item', fields);
+            openModal('Register New Asset', fields);
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                handleSubmit('/inventory', {
-                    sku: getInput('inv_sku'),
+                handleSubmit('/assets', {
                     name: getInput('inv_name'),
-                    quantity: parseFloat(getInput('inv_quantity')),
-                    minStock: parseFloat(getInput('inv_minStock')),
-                    costPrice: parseFloat(getInput('inv_costPrice'))
-                }, 'Inventory item created successfully!', { endpoint: '/inventory', tableId: 'tbody-inventory', columns: ['sku', 'name', 'quantity'] });
+                    location: getInput('inv_location'),
+                    manufacturer: getInput('inv_manufacturer'),
+                    model: getInput('inv_model'),
+                    serialNumber: getInput('inv_serial')
+                }, 'Asset registered successfully! Asset Number generated.', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
             };
         }
 
