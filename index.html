@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAK INFRA TECH FMS | Dashboard</title>
+    <title>MAK INFRATECH FMS | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .sidebar-link.active { background-color: #2563eb; color: white; }
         .sidebar-link:hover { background-color: #1e40af; color: white; }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
     </style>
 </head>
 <body class="bg-gray-100 flex">
@@ -17,50 +19,48 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-slate-900 text-white min-h-screen flex flex-col fixed lg:relative z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out" id="sidebar">
         <div class="h-16 flex items-center justify-center border-b border-slate-800">
-            <h1 class="text-xl font-bold text-blue-400">MAK INFRA TECH</h1>
+            <h1 class="text-xl font-bold text-blue-400">MAK INFRATECH</h1>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="#" class="sidebar-link active flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm font-medium transition">
+            
+            <a href="#" onclick="showPage('dashboard', this)" class="sidebar-link active flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm font-medium transition">
                 <span>📊</span> <span>Dashboard</span>
             </a>
             
             <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider">Operations</div>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('work-orders', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🛠️</span> <span>Work Orders</span>
             </a>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('customers', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🤝</span> <span>Customers</span>
             </a>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('buildings', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🏢</span> <span>Buildings & Flats</span>
             </a>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('amc', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📋</span> <span>Services & AMC</span>
             </a>
 
             <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider">Finance</div>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('invoices', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🧾</span> <span>Invoices</span>
             </a>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('expenses', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>💳</span> <span>Expenses</span>
             </a>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>📦</span> <span>Purchase Orders (PO)</span>
+            <a href="#" onclick="showPage('po', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>📦</span> <span>Purchase Orders</span>
             </a>
 
             <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider">Management</div>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('inventory', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🔧</span> <span>Inventory & Assets</span>
             </a>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>👥</span> <span>Users & Auth</span>
+            <a href="#" onclick="showPage('users', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>👥</span> <span>Users</span>
             </a>
-            <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('reports', this)" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📈</span> <span>Reports</span>
-            </a>
-             <a href="#" class="sidebar-link flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>🔔</span> <span>Notifications</span>
             </a>
         </nav>
         <div class="p-4 border-t border-slate-800">
@@ -76,13 +76,9 @@
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 sticky top-0 z-40">
             <div class="flex items-center space-x-4">
                 <button class="lg:hidden text-2xl text-gray-600" onclick="toggleSidebar()">&#9776;</button>
-                <h2 class="text-xl font-semibold text-gray-800">Dashboard Overview</h2>
+                <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard Overview</h2>
             </div>
             <div class="flex items-center space-x-6">
-                <div class="relative">
-                    <input type="text" placeholder="Search work orders, customers..." class="bg-gray-100 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 hidden md:block">
-                    <span class="absolute left-3 top-2.5 text-gray-400 hidden md:block">🔍</span>
-                </div>
                 <button class="relative text-gray-500 hover:text-gray-700">
                     <span class="text-2xl">🔔</span>
                     <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -93,90 +89,53 @@
         <!-- Dashboard Content -->
         <div class="p-6">
             
-            <!-- Stat Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-gray-500 text-sm font-medium">Open Work Orders</h3>
-                        <span class="text-2xl">🛠️</span>
+            <!-- DASHBOARD PAGE -->
+            <section id="page-dashboard" class="page-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-500 text-sm font-medium">Open Work Orders</h3>
+                            <span class="text-2xl">🛠️</span>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-800">0</p>
+                        <p class="text-gray-400 text-sm mt-2">No new orders</p>
                     </div>
-                    <p class="text-3xl font-bold text-gray-800">24</p>
-                    <p class="text-green-500 text-sm mt-2">↑ 12% from yesterday</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-gray-500 text-sm font-medium">Active AMCs</h3>
-                        <span class="text-2xl">📅</span>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-500 text-sm font-medium">Active AMCs</h3>
+                            <span class="text-2xl">📅</span>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-800">0</p>
+                        <p class="text-gray-400 text-sm mt-2">--</p>
                     </div>
-                    <p class="text-3xl font-bold text-gray-800">148</p>
-                    <p class="text-blue-500 text-sm mt-2">8 expiring this month</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-gray-500 text-sm font-medium">Pending Invoices</h3>
-                        <span class="text-2xl">🧾</span>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-500 text-sm font-medium">Pending Invoices</h3>
+                            <span class="text-2xl">🧾</span>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-800">AED 0</p>
+                        <p class="text-gray-400 text-sm mt-2">--</p>
                     </div>
-                    <p class="text-3xl font-bold text-gray-800">$12,400</p>
-                    <p class="text-red-500 text-sm mt-2">↓ 5% from last week</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-gray-500 text-sm font-medium">Low Stock Items</h3>
-                        <span class="text-2xl">📦</span>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-500 text-sm font-medium">Low Stock Items</h3>
+                            <span class="text-2xl">📦</span>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-800">0</p>
+                        <p class="text-gray-400 text-sm mt-2">--</p>
                     </div>
-                    <p class="text-3xl font-bold text-gray-800">7</p>
-                    <p class="text-yellow-500 text-sm mt-2">Requires PO creation</p>
-                </div>
-            </div>
-
-            <!-- Main Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Recent Work Orders Table -->
-                <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-semibold text-gray-800">Recent Work Orders</h3>
-                        <button class="text-blue-600 text-sm font-medium hover:underline">View All</button>
-                    </div>
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase">
-                                <th class="px-6 py-3">WO ID</th>
-                                <th class="px-6 py-3">Customer</th>
-                                <th class="px-6 py-3">Building/Flat</th>
-                                <th class="px-6 py-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm">
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-blue-600">#WO-9021</td>
-                                <td class="px-6 py-4">John Doe</td>
-                                <td class="px-6 py-4">Sunshine Towers, 4B</td>
-                                <td class="px-6 py-4"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs">In Progress</span></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-blue-600">#WO-9020</td>
-                                <td class="px-6 py-4">Sarah Connor</td>
-                                <td class="px-6 py-4">Tech Park, Block C</td>
-                                <td class="px-6 py-4"><span class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">Pending Parts</span></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-blue-600">#WO-9019</td>
-                                <td class="px-6 py-4">Acme Corp</td>
-                                <td class="px-6 py-4">Warehouse 12</td>
-                                <td class="px-6 py-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Completed</span></td>
-                            </tr>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-blue-600">#WO-9018</td>
-                                <td class="px-6 py-4">Mike Smith</td>
-                                <td class="px-6 py-4">The Greens, 2A</td>
-                                <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">Assigned</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
 
-                <!-- Quick Actions & Notifications -->
-                <div class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="font-semibold text-gray-800">Recent Work Orders</h3>
+                        </div>
+                        <div class="p-6 text-center text-gray-500">
+                            No work orders found. Create one to see it here.
+                        </div>
+                    </div>
+
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                         <h3 class="font-semibold text-gray-800 mb-4">Quick Actions</h3>
                         <div class="grid grid-cols-2 gap-3">
@@ -186,35 +145,136 @@
                             <button class="bg-gray-100 text-gray-700 py-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition">+ PO</button>
                         </div>
                     </div>
+                </div>
+            </section>
 
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                        <h3 class="font-semibold text-gray-800 mb-4">Recent Notifications</h3>
-                        <ul class="space-y-4 text-sm">
-                            <li class="flex items-start space-x-3">
-                                <span class="bg-green-100 p-2 rounded-full text-green-600">✓</span>
-                                <div>
-                                    <p class="text-gray-800">Work Order #9019 marked as completed.</p>
-                                    <p class="text-gray-400 text-xs">10 mins ago</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <span class="bg-red-100 p-2 rounded-full text-red-600">!</span>
-                                <div>
-                                    <p class="text-gray-800">Inventory Alert: "HVAC Filter" low on stock.</p>
-                                    <p class="text-gray-400 text-xs">1 hour ago</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start space-x-3">
-                                <span class="bg-blue-100 p-2 rounded-full text-blue-600">⬆</span>
-                                <div>
-                                    <p class="text-gray-800">New file uploaded to Building 4 documents.</p>
-                                    <p class="text-gray-400 text-xs">3 hours ago</p>
-                                </div>
-                            </li>
-                        </ul>
+            <!-- WORK ORDERS PAGE -->
+            <section id="page-work-orders" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">All Work Orders</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Work Order</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Work Orders found.
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- CUSTOMERS PAGE -->
+            <section id="page-customers" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">All Customers</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Customer</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Customers found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- BUILDINGS PAGE -->
+            <section id="page-buildings" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">Buildings & Flats</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Building</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Buildings found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- AMC PAGE -->
+            <section id="page-amc" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">Annual Maintenance Contracts (AMC)</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New AMC</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No AMCs found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- INVOICES PAGE -->
+            <section id="page-invoices" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">All Invoices</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Invoice</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Invoices found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- EXPENSES PAGE -->
+            <section id="page-expenses" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">All Expenses</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Expense</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Expenses found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- PO PAGE -->
+            <section id="page-po" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">Purchase Orders (PO)</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New PO</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Purchase Orders found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- INVENTORY PAGE -->
+            <section id="page-inventory" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">Inventory & Assets</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Item</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Inventory items found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- USERS PAGE -->
+            <section id="page-users" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800">System Users</h3>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New User</button>
+                    </div>
+                    <div class="p-6 text-center text-gray-500">
+                        No Users found.
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPORTS PAGE -->
+            <section id="page-reports" class="page-content">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4">Reports & Analytics</h3>
+                    <div class="p-6 text-center text-gray-500">
+                        No reports generated yet.
+                    </div>
+                </div>
+            </section>
+
         </div>
     </main>
 
@@ -233,14 +293,46 @@
             window.location.href = 'login.html';
         }
 
-        const sidebarLinks = document.querySelectorAll('.sidebar-link');
-        sidebarLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                sidebarLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+        // Simple SPA Routing to switch tabs
+        function showPage(pageId, element) {
+            // Prevent default link behavior
+            event.preventDefault();
+
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
             });
-        });
+
+            // Show the selected page
+            document.getElementById(`page-${pageId}`).classList.add('active');
+
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Update Header Title
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'work-orders': 'Work Orders',
+                'customers': 'Customers',
+                'buildings': 'Buildings & Flats',
+                'amc': 'Services & AMC',
+                'invoices': 'Invoices',
+                'expenses': 'Expenses',
+                'po': 'Purchase Orders',
+                'inventory': 'Inventory & Assets',
+                'users': 'System Users',
+                'reports': 'Reports & Analytics'
+            };
+            document.getElementById('page-title').innerText = titles[pageId];
+
+            // Close sidebar on mobile after click
+            if (window.innerWidth < 1024) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+            }
+        }
     </script>
 </body>
 </html>
