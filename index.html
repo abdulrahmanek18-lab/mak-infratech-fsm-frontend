@@ -405,7 +405,7 @@
             if (pageId === 'invoices') fetchAndRender('/invoices', 'tbody-invoices', ['invoiceNumber', 'customer.name', 'total', 'status']);
             if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
-            if (pageId === 'inventory') fetchAndRender('/inventory', 'tbody-inventory', ['sku', 'name', 'quantity']);
+            if (pageId === 'inventory') fetchAndRender('/assets', 'tbody-inventory', ['assetNumber', 'name', 'manufacturer', 'location']);
 
             if (window.innerWidth < 1024) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
