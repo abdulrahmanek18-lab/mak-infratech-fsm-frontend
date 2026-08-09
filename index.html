@@ -337,7 +337,7 @@
         }
 
         // Fetch and Render Table Data
-                async function fetchAndRender(endpoint, tableId, columns) {
+                        async function fetchAndRender(endpoint, tableId, columns) {
             const tbody = document.getElementById(tableId);
             if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
@@ -349,7 +349,14 @@
                 }
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        ${columns.map(col => `<td class="px-4 py-3">${item[col] !== null && item[col] !== undefined ? item[col] : '-'}</td>`).join('')}
+                        ${columns.map(col => {
+                            // This allows us to read nested objects like 'customer.name'
+                            let val = item;
+                            col.split('.').forEach(part => {
+                                val = val ? val[part] : null;
+                            });
+                            return `<td class="px-3 py-2 text-sm text-gray-700">${val !== null && val !== undefined ? val : '-'}</td>`;
+                        }).join('')}
                     </tr>
                 `).join('');
             } catch (e) {
