@@ -275,10 +275,32 @@
             </section>
 
             <!-- REPORTS PAGE -->
+                        <!-- REPORTS PAGE -->
             <section id="page-reports" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                    <h3 class="font-semibold text-gray-800 mb-4 text-lg">Reports & Analytics</h3>
-                    <div class="p-6 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">No reports generated yet.</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Total Revenue (Invoiced)</h3>
+                        <p id="rep-revenue" class="text-2xl font-bold text-gray-800">AED 0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Collected (Paid)</h3>
+                        <p id="rep-collected" class="text-2xl font-bold text-green-600">AED 0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Total Expenses</h3>
+                        <p id="rep-expenses" class="text-2xl font-bold text-red-600">AED 0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Net Profit</h3>
+                        <p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="font-semibold text-gray-800 text-lg mb-4">Work Order Status Breakdown</h3>
+                    <div id="rep-wo-stats" class="flex flex-wrap gap-3">
+                        <span class="text-gray-500">Loading stats...</span>
+                    </div>
                 </div>
             </section>
         </div>
