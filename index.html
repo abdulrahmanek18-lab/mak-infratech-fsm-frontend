@@ -420,10 +420,18 @@
         const modalError = document.getElementById('modal-error');
         const modalSubmitBtn = document.getElementById('modal-submit-btn');
 
-        function openModal(title, fieldsHtml) {
+                function openModal(title, fieldsHtml, isViewOnly = false) {
             modalTitle.innerText = title;
             modalFields.innerHTML = fieldsHtml;
             modal.classList.add('active');
+            
+            // Hide the Save button if it's just a view modal
+            const submitBtn = document.getElementById('modal-submit-btn');
+            if (isViewOnly) {
+                submitBtn.style.display = 'none';
+            } else {
+                submitBtn.style.display = 'block';
+            }
         }
 
         function closeModal() {
