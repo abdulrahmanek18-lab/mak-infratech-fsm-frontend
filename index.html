@@ -325,7 +325,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
 
         if (!token) {
@@ -358,8 +358,8 @@
             return res.json();
         }
 
-        // Fetch and Render Table Data
-                        async function fetchAndRender(endpoint, tableId, columns) {
+        // Fetch and Render Table Data (Supports nested data like customer.name)
+        async function fetchAndRender(endpoint, tableId, columns) {
             const tbody = document.getElementById(tableId);
             if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
@@ -372,11 +372,8 @@
                 tbody.innerHTML = data.map(item => `
                     <tr>
                         ${columns.map(col => {
-                            // This allows us to read nested objects like 'customer.name'
                             let val = item;
-                            col.split('.').forEach(part => {
-                                val = val ? val[part] : null;
-                            });
+                            col.split('.').forEach(part => { val = val ? val[part] : null; });
                             return `<td class="px-3 py-2 text-sm text-gray-700">${val !== null && val !== undefined ? val : '-'}</td>`;
                         }).join('')}
                     </tr>
@@ -424,17 +421,101 @@
             if (pageId === 'work-orders') fetchAndRender('/work-orders', 'tbody-work-orders', ['woNumber', 'title', 'status', 'priority']);
             if (pageId === 'buildings') fetchAndRender('/buildings', 'tbody-buildings', ['name', 'city', 'emirate']);
             if (pageId === 'amc') fetchAndRender('/amc', 'tbody-amc', ['contractNumber', 'value', 'status']);
-            if (pageId === 'invoices') fetchAndRenderInvoices();
+            if (pageId === 'invoices') fetchAndRenderInvoices(); // SPECIAL FUNCTION FOR CLICKABLE INVOICES
             if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
-            if (pageId === 'inventory') fetchAndRender('/assets', 'tbody-inventory', ['assetNumber', 'name', 'manufacturer', 'location']);
-            if (pageId === 'reports') loadReports();
+            if (pageId === 'inventory') fetchAndRender('/assets', 'tbody-inventory', ['assetNumber', 'name', 'location']);
+            if (pageId === 'reports') loadReports(); // SPECIAL FUNCTION FOR REPORTS
+
             if (window.innerWidth < 1024) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
             }
         }
 
-        // MODAL LOGIC
+        // --- INVOICE SPECIFIC FUNCTIONS ---
+        async function fetchAndRenderInvoices() {
+            const tbody = document.getElementById('tbody-invoices');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/invoices');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Invoices found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr class="cursor-pointer hover:bg-blue-50 transition" onclick="viewInvoice('${item.id}')">
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.invoiceNumber}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">AED ${item.total}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            <span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        async function viewInvoice(id) {
+            try {
+                const inv = await apiFetch(`/invoices/${id}`);
+                const fields = `
+                    <div class="space-y-4 text-gray-800">
+                        <div class="flex justify-between border-b pb-3">
+                            <span class="font-bold text-lg text-blue-600">Invoice ${inv.invoiceNumber}</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">${inv.status}</span>
+                        </div>
+                        <div><strong>Customer:</strong> ${inv.customer ? inv.customer.name : 'N/A'}</div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div><strong>Issue Date:</strong> ${new Date(inv.issueDate).toLocaleDateString()}</div>
+                            <div><strong>Due Date:</strong> ${new Date(inv.dueDate).toLocaleDateString()}</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-4 border-t pt-4">
+                            <div>Subtotal:</div><div class="text-right">AED ${inv.subtotal}</div>
+                            <div>VAT (5%):</div><div class="text-right">AED ${inv.vatAmount}</div>
+                            <div class="font-bold text-lg border-t pt-2">Total:</div><div class="text-right font-bold text-lg border-t pt-2">AED ${inv.total}</div>
+                        </div>
+                        ${inv.notes ? `<div class="mt-4 bg-gray-50 p-3 rounded text-sm"><strong>Notes:</strong><br>${inv.notes}</div>` : ''}
+                    </div>
+                `;
+                openModal('Invoice Details', fields, true); 
+            } catch (e) {
+                alert('Failed to load invoice details');
+            }
+        }
+
+        // --- REPORTS FUNCTION ---
+        async function loadReports() {
+            try {
+                const data = await apiFetch('/reports/summary');
+                const formatNum = (num) => parseFloat(num).toFixed(2);
+                
+                document.getElementById('rep-revenue').innerText = `AED ${formatNum(data.revenue.total)}`;
+                document.getElementById('rep-collected').innerText = `AED ${formatNum(data.revenue.paid)}`;
+                document.getElementById('rep-expenses').innerText = `AED ${formatNum(data.expenses.total)}`;
+                document.getElementById('rep-profit').innerText = `AED ${formatNum(data.netProfit)}`;
+                
+                let woHtml = '';
+                if (data.workOrders && data.workOrders.length > 0) {
+                    data.workOrders.forEach(stat => {
+                        let color = 'bg-gray-100 text-gray-700';
+                        if (stat.status === 'COMPLETED') color = 'bg-green-100 text-green-700';
+                        if (stat.status === 'IN_PROGRESS') color = 'bg-blue-100 text-blue-700';
+                        if (stat.status === 'PENDING') color = 'bg-yellow-100 text-yellow-700';
+                        woHtml += `<span class="px-4 py-2 rounded-lg text-sm font-medium ${color}">${stat.status.replace('_', ' ')}: ${stat._count.status}</span>`;
+                    });
+                } else {
+                    woHtml = '<span class="text-gray-500">No work orders found.</span>';
+                }
+                document.getElementById('rep-wo-stats').innerHTML = woHtml;
+            } catch (e) {
+                console.error('Failed to load reports', e);
+            }
+        }
+
+        // --- MODAL LOGIC ---
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
         const modalFields = document.getElementById('modal-fields');
@@ -442,17 +523,14 @@
         const modalError = document.getElementById('modal-error');
         const modalSubmitBtn = document.getElementById('modal-submit-btn');
 
-                function openModal(title, fieldsHtml, isViewOnly = false) {
+        function openModal(title, fieldsHtml, isViewOnly = false) {
             modalTitle.innerText = title;
             modalFields.innerHTML = fieldsHtml;
             modal.classList.add('active');
-            
-            // Hide the Save button if it's just a view modal
-            const submitBtn = document.getElementById('modal-submit-btn');
             if (isViewOnly) {
-                submitBtn.style.display = 'none';
+                modalSubmitBtn.style.display = 'none';
             } else {
-                submitBtn.style.display = 'block';
+                modalSubmitBtn.style.display = 'block';
             }
         }
 
@@ -484,7 +562,7 @@
             return el ? el.value : '';
         }
 
-        // FORM MODALS
+        // --- FORM MODALS ---
         async function openCustomerModal() {
             const fields = `
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Name</label><input type="text" id="c_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
@@ -733,7 +811,7 @@
             };
         }
 
-                       async function openInventoryModal() {
+        async function openInventoryModal() {
             const fields = `
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -764,7 +842,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label>
@@ -775,12 +852,10 @@
                         <input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Location / Flat</label>
                     <input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom">
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Refrigerant Type</label>
@@ -802,7 +877,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Condenser Coil Condition</label>
@@ -818,7 +892,6 @@
                         <input type="number" step="0.1" id="inv_ampere" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 12.5">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Gas Pressure (PSI)</label>
                     <input type="number" step="0.1" id="inv_pressure" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 150">
@@ -827,20 +900,18 @@
             openModal('Register New AC / Asset', fields);
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                
-                // Bundle extra technical details into a single string to save in the description column
                 const techDetails = `Refrigerant: ${getInput('inv_refrigerant')} | Tonnage: ${getInput('inv_tonnage')} | Coil: ${getInput('inv_coil')} | Ampere: ${getInput('inv_ampere')}A | Gas Pressure: ${getInput('inv_pressure')} PSI`;
-
                 handleSubmit('/assets', {
                     name: getInput('inv_name'),
                     manufacturer: getInput('inv_manufacturer'),
                     model: getInput('inv_model'),
                     serialNumber: getInput('inv_serial'),
                     location: getInput('inv_location'),
-                    description: techDetails // Saving all extra details here!
+                    description: techDetails
                 }, 'Asset registered successfully! Asset Number generated.', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
             };
         }
+
         async function openUserModal() {
             const fields = `
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label><input type="text" id="u_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
