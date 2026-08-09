@@ -12,6 +12,8 @@
         .sidebar-link:hover { background-color: #1e40af; color: white; }
         .page-content { display: none; }
         .page-content.active { display: block; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
     </style>
 </head>
 <body class="bg-gray-100 flex">
@@ -22,7 +24,6 @@
             <h1 class="text-xl font-bold text-blue-400">MAK INFRATECH</h1>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            
             <a href="#" onclick="showPage('dashboard', this)" class="sidebar-link active flex items-center space-x-3 px-4 py-2.5 rounded-md text-sm font-medium transition">
                 <span>📊</span> <span>Dashboard</span>
             </a>
@@ -72,7 +73,6 @@
 
     <!-- Main Content -->
     <main class="flex-1 lg:ml-0 min-h-screen">
-        <!-- Top Header -->
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 sticky top-0 z-40">
             <div class="flex items-center space-x-4">
                 <button class="lg:hidden text-2xl text-gray-600" onclick="toggleSidebar()">&#9776;</button>
@@ -86,7 +86,6 @@
             </div>
         </header>
 
-        <!-- Dashboard Content -->
         <div class="p-6">
             
             <!-- DASHBOARD PAGE -->
@@ -113,7 +112,7 @@
                             <h3 class="text-gray-500 text-sm font-medium">Pending Invoices</h3>
                             <span class="text-2xl">🧾</span>
                         </div>
-                        <p class="text-3xl font-bold text-gray-800">AED 0</p>
+                        <p class="text-3xl font-bold text-gray-800">د.إ 0</p>
                         <p class="text-gray-400 text-sm mt-2">--</p>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
@@ -125,22 +124,18 @@
                         <p class="text-gray-400 text-sm mt-2">--</p>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-100">
                         <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                             <h3 class="font-semibold text-gray-800">Recent Work Orders</h3>
                         </div>
-                        <div class="p-6 text-center text-gray-500">
-                            No work orders found. Create one to see it here.
-                        </div>
+                        <div class="p-6 text-center text-gray-500">No work orders found. Create one to see it here.</div>
                     </div>
-
                     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                         <h3 class="font-semibold text-gray-800 mb-4">Quick Actions</h3>
                         <div class="grid grid-cols-2 gap-3">
                             <button class="bg-blue-600 text-white py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition">+ Work Order</button>
-                            <button class="bg-gray-100 text-gray-700 py-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition">+ Customer</button>
+                            <button onclick="showPage('customers', document.querySelector('[onclick*=\"customers\"]'));" class="bg-gray-100 text-gray-700 py-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition">+ Customer</button>
                             <button class="bg-gray-100 text-gray-700 py-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition">+ Invoice</button>
                             <button class="bg-gray-100 text-gray-700 py-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition">+ PO</button>
                         </div>
@@ -155,9 +150,7 @@
                         <h3 class="font-semibold text-gray-800">All Work Orders</h3>
                         <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Work Order</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Work Orders found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Work Orders found.</div>
                 </div>
             </section>
 
@@ -166,11 +159,9 @@
                 <div class="bg-white rounded-lg shadow-sm border border-gray-100">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="font-semibold text-gray-800">All Customers</h3>
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Customer</button>
+                        <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Customer</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Customers found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Customers found. Click "+ New Customer" to add one.</div>
                 </div>
             </section>
 
@@ -181,9 +172,7 @@
                         <h3 class="font-semibold text-gray-800">Buildings & Flats</h3>
                         <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Building</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Buildings found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Buildings found.</div>
                 </div>
             </section>
 
@@ -194,9 +183,7 @@
                         <h3 class="font-semibold text-gray-800">Annual Maintenance Contracts (AMC)</h3>
                         <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New AMC</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No AMCs found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No AMCs found.</div>
                 </div>
             </section>
 
@@ -207,9 +194,7 @@
                         <h3 class="font-semibold text-gray-800">All Invoices</h3>
                         <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Invoice</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Invoices found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Invoices found.</div>
                 </div>
             </section>
 
@@ -220,9 +205,7 @@
                         <h3 class="font-semibold text-gray-800">All Expenses</h3>
                         <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Expense</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Expenses found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Expenses found.</div>
                 </div>
             </section>
 
@@ -233,9 +216,7 @@
                         <h3 class="font-semibold text-gray-800">Purchase Orders (PO)</h3>
                         <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New PO</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Purchase Orders found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Purchase Orders found.</div>
                 </div>
             </section>
 
@@ -246,9 +227,7 @@
                         <h3 class="font-semibold text-gray-800">Inventory & Assets</h3>
                         <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Item</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Inventory items found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Inventory items found.</div>
                 </div>
             </section>
 
@@ -257,11 +236,9 @@
                 <div class="bg-white rounded-lg shadow-sm border border-gray-100">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="font-semibold text-gray-800">System Users</h3>
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New User</button>
+                        <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New User</button>
                     </div>
-                    <div class="p-6 text-center text-gray-500">
-                        No Users found.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No Users found. Click "+ New User" to add one.</div>
                 </div>
             </section>
 
@@ -269,18 +246,35 @@
             <section id="page-reports" class="page-content">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                     <h3 class="font-semibold text-gray-800 mb-4">Reports & Analytics</h3>
-                    <div class="p-6 text-center text-gray-500">
-                        No reports generated yet.
-                    </div>
+                    <div class="p-6 text-center text-gray-500">No reports generated yet.</div>
                 </div>
             </section>
-
         </div>
     </main>
 
+    <!-- GENERIC MODAL FOR FORMS -->
+    <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800">Add New</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="modal-form" class="space-y-4">
+                <div id="modal-fields"></div>
+                <div id="modal-error" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center"></div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">Cancel</button>
+                    <button type="submit" id="modal-submit-btn" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Security: Redirect to login if not authenticated
-        if (!localStorage.getItem('fsm_token')) {
+        const API_BASE_URL = 'https://makinfratech-api.onrender.com';
+        const token = localStorage.getItem('fsm_token');
+
+        if (!token) {
             window.location.href = 'login.html';
         }
 
@@ -293,26 +287,14 @@
             window.location.href = 'login.html';
         }
 
-        // Simple SPA Routing to switch tabs
         function showPage(pageId, element) {
-            // Prevent default link behavior
             event.preventDefault();
-
-            // Hide all pages
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.classList.remove('active');
-            });
-
-            // Show the selected page
+            document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
             document.getElementById(`page-${pageId}`).classList.add('active');
-
-            // Update sidebar active state
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-            });
+            
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
             element.classList.add('active');
 
-            // Update Header Title
             const titles = {
                 'dashboard': 'Dashboard Overview',
                 'work-orders': 'Work Orders',
@@ -328,10 +310,141 @@
             };
             document.getElementById('page-title').innerText = titles[pageId];
 
-            // Close sidebar on mobile after click
             if (window.innerWidth < 1024) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
             }
+        }
+
+        // MODAL LOGIC
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalFields = document.getElementById('modal-fields');
+        const modalForm = document.getElementById('modal-form');
+        const modalError = document.getElementById('modal-error');
+        const modalSubmitBtn = document.getElementById('modal-submit-btn');
+
+        function openModal(title, fieldsHtml) {
+            modalTitle.innerText = title;
+            modalFields.innerHTML = fieldsHtml;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            modalForm.reset();
+            modalError.classList.add('hidden');
+        }
+
+        function openCustomerModal() {
+            const fields = `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                    <input type="text" id="cust_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="text" id="cust_phone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="cust_email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+            `;
+            openModal('Add New Customer', fields);
+            modalForm.onsubmit = async (e) => {
+                e.preventDefault();
+                modalSubmitBtn.innerText = 'Saving...';
+                modalError.classList.add('hidden');
+                
+                const data = {
+                    name: document.getElementById('cust_name').value,
+                    phone: document.getElementById('cust_phone').value,
+                    email: document.getElementById('cust_email').value
+                };
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/customers`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (res.ok) {
+                        closeModal();
+                        alert('Customer created successfully!');
+                    } else {
+                        const errData = await res.json();
+                        throw new Error(errData.message || 'Failed to create customer');
+                    }
+                } catch (error) {
+                    modalError.innerText = error.message;
+                    modalError.classList.remove('hidden');
+                    modalSubmitBtn.innerText = 'Save';
+                }
+            };
+        }
+
+        function openUserModal() {
+            const fields = `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="user_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email (User ID)</label>
+                    <input type="email" id="user_email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="user_password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                    <select id="user_role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="STAFF">Staff</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+            `;
+            openModal('Add New User', fields);
+            modalForm.onsubmit = async (e) => {
+                e.preventDefault();
+                modalSubmitBtn.innerText = 'Saving...';
+                modalError.classList.add('hidden');
+
+                const data = {
+                    name: document.getElementById('user_name').value,
+                    email: document.getElementById('user_email').value,
+                    password: document.getElementById('user_password').value,
+                    role: document.getElementById('user_role').value
+                };
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/users`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (res.ok) {
+                        closeModal();
+                        alert('User created successfully!');
+                    } else {
+                        const errData = await res.json();
+                        throw new Error(errData.message || 'Failed to create user');
+                    }
+                } catch (error) {
+                    modalError.innerText = error.message;
+                    modalError.classList.remove('hidden');
+                    modalSubmitBtn.innerText = 'Save';
+                }
+            };
         }
     </script>
 </body>
