@@ -465,7 +465,7 @@
     </div>
 
     <script>
-                        const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+                  const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
 
         if (!token) {
@@ -480,122 +480,7 @@
             localStorage.removeItem('fsm_token');
             window.location.href = 'login.html';
         }
-        let companyImageData = { logoUrl: null, invoiceHeader: null, invoiceFooter: null };
 
-        // Handle Image Upload (Convert to Base64)
-        function handleImageUpload(event, fieldName, previewId) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                companyImageData[fieldName] = e.target.result; // Base64 string
-                document.getElementById(previewId).src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Load Company Settings when clicking the tab
-        async function loadCompanySettings() {
-            try {
-                const data = await apiFetch('/company');
-                document.getElementById('set_name').value = data.name || '';
-                document.getElementById('set_trn').value = data.trn || '';
-                document.getElementById('set_phone').value = data.phone || '';
-                document.getElementById('set_email').value = data.email || '';
-                document.getElementById('set_address').value = data.address || '';
-                document.getElementById('set_vat').value = data.vatPercent || 5;
-                document.getElementById('set_invPrefix').value = data.invoicePrefix || 'INV-';
-                document.getElementById('set_poPrefix').value = data.poPrefix || 'PO-';
-                document.getElementById('set_woPrefix').value = data.woPrefix || 'WO-';
-
-                if (data.logoUrl) document.getElementById('img-preview-logo').src = data.logoUrl;
-                if (data.invoiceHeader) document.getElementById('img-preview-header').src = data.invoiceHeader;
-                if (data.invoiceFooter) document.getElementById('img-preview-footer').src = data.invoiceFooter;
-            } catch (e) {
-                console.error("Failed to load company settings", e);
-            }
-        }
-
-        // Save Settings
-        async function saveCompanySettings() {
-            const data = {
-                name: document.getElementById('set_name').value,
-                trn: document.getElementById('set_trn').value,
-                phone: document.getElementById('set_phone').value,
-                email: document.getElementById('set_email').value,
-                address: document.getElementById('set_address').value,
-                vatPercent: document.getElementById('set_vat').value,
-                invoicePrefix: document.getElementById('set_invPrefix').value,
-                poPrefix: document.getElementById('set_poPrefix').value,
-                woPrefix: document.getElementById('set_woPrefix').value,
-                logoUrl: companyImageData.logoUrl, 
-                invoiceHeader: companyImageData.invoiceHeader,
-                invoiceFooter: companyImageData.invoiceFooter
-            };
-
-            // If no new image was uploaded, don't send null (so it doesn't overwrite existing)
-            if (!data.logoUrl) delete data.logoUrl;
-            if (!data.invoiceHeader) delete data.invoiceHeader;
-            if (!data.invoiceFooter) delete data.invoiceFooter;
-
-            try {
-                await apiFetch('/company', 'POST', data);
-                alert('Company settings saved successfully!');
-            } catch (e) {
-                alert('Failed to save settings: ' + e.message);
-            }
-        }
-                    <!-- SYSTEM SETTINGS PAGE -->
-            <section id="page-settings" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">System Settings</h3>
-                        <button onclick="saveSystemSettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Settings</button>
-                    </div>
-                    <div class="p-6 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">System Name</label>
-                                <input type="text" id="set_sysName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Default Currency</label>
-                                <select id="set_currency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="AED">AED (United Arab Emirates Dirham)</option>
-                                    <option value="USD">USD (US Dollar)</option>
-                                    <option value="SAR">SAR (Saudi Riyal)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
-                                <select id="set_timezone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="Asia/Dubai">Asia/Dubai (GMT+4)</option>
-                                    <option value="Asia/Riyadh">Asia/Riyadh (GMT+3)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Low Stock Alert Threshold</label>
-                                <input type="number" id="set_lowStock" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-                        
-                        <hr class="border-gray-200">
-
-                        <div class="space-y-4">
-                            <h4 class="font-medium text-gray-800">Notification Preferences</h4>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="set_emailNotif" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                <label for="set_emailNotif" class="ml-2 text-sm text-gray-700">Enable Email Notifications</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="set_smsNotif" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                <label for="set_smsNotif" class="ml-2 text-sm text-gray-700">Enable SMS Notifications</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         async function apiFetch(endpoint, method = 'GET', body = null) {
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method,
@@ -670,8 +555,9 @@
                 'po': 'Purchase Orders',
                 'inventory': 'Inventory & Assets',
                 'users': 'System Users',
-                'reports': 'Reports & Analytics',
-                'settings': 'System Settings'
+                'company': 'Company Profile',
+                'settings': 'System Settings',
+                'reports': 'Reports & Analytics'
             };
             document.getElementById('page-title').innerText = titles[pageId];
 
@@ -820,6 +706,100 @@
                 document.getElementById('rep-wo-stats').innerHTML = woHtml;
             } catch (e) {
                 console.error('Failed to load reports', e);
+            }
+        }
+
+        // --- COMPANY SETTINGS FUNCTIONS ---
+        let companyImageData = { logoUrl: null, invoiceHeader: null, invoiceFooter: null };
+
+        function handleImageUpload(event, fieldName, previewId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                companyImageData[fieldName] = e.target.result;
+                document.getElementById(previewId).src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function loadCompanySettings() {
+            try {
+                const data = await apiFetch('/company');
+                document.getElementById('set_name').value = data.name || '';
+                document.getElementById('set_trn').value = data.trn || '';
+                document.getElementById('set_phone').value = data.phone || '';
+                document.getElementById('set_email').value = data.email || '';
+                document.getElementById('set_address').value = data.address || '';
+                document.getElementById('set_vat').value = data.vatPercent || 5;
+                document.getElementById('set_invPrefix').value = data.invoicePrefix || 'INV-';
+                document.getElementById('set_poPrefix').value = data.poPrefix || 'PO-';
+                document.getElementById('set_woPrefix').value = data.woPrefix || 'WO-';
+
+                if (data.logoUrl) document.getElementById('img-preview-logo').src = data.logoUrl;
+                if (data.invoiceHeader) document.getElementById('img-preview-header').src = data.invoiceHeader;
+                if (data.invoiceFooter) document.getElementById('img-preview-footer').src = data.invoiceFooter;
+            } catch (e) {
+                console.error("Failed to load company settings", e);
+            }
+        }
+
+        async function saveCompanySettings() {
+            const data = {
+                name: document.getElementById('set_name').value,
+                trn: document.getElementById('set_trn').value,
+                phone: document.getElementById('set_phone').value,
+                email: document.getElementById('set_email').value,
+                address: document.getElementById('set_address').value,
+                vatPercent: document.getElementById('set_vat').value,
+                invoicePrefix: document.getElementById('set_invPrefix').value,
+                poPrefix: document.getElementById('set_poPrefix').value,
+                woPrefix: document.getElementById('set_woPrefix').value,
+                logoUrl: companyImageData.logoUrl, 
+                invoiceHeader: companyImageData.invoiceHeader,
+                invoiceFooter: companyImageData.invoiceFooter
+            };
+            if (!data.logoUrl) delete data.logoUrl;
+            if (!data.invoiceHeader) delete data.invoiceHeader;
+            if (!data.invoiceFooter) delete data.invoiceFooter;
+
+            try {
+                await apiFetch('/company', 'POST', data);
+                alert('Company settings saved successfully!');
+            } catch (e) {
+                alert('Failed to save settings: ' + e.message);
+            }
+        }
+
+        // --- SYSTEM SETTINGS FUNCTIONS ---
+        async function loadSystemSettings() {
+            try {
+                const data = await apiFetch('/settings');
+                document.getElementById('set_sysName').value = data.systemName || '';
+                document.getElementById('set_currency').value = data.currency || 'AED';
+                document.getElementById('set_timezone').value = data.timezone || 'Asia/Dubai';
+                document.getElementById('set_lowStock').value = data.lowStockThreshold || 5;
+                document.getElementById('set_emailNotif').checked = data.enableEmailNotifications;
+                document.getElementById('set_smsNotif').checked = data.enableSMSNotifications;
+            } catch (e) {
+                console.error("Failed to load system settings", e);
+            }
+        }
+
+        async function saveSystemSettings() {
+            const data = {
+                systemName: document.getElementById('set_sysName').value,
+                currency: document.getElementById('set_currency').value,
+                timezone: document.getElementById('set_timezone').value,
+                lowStockThreshold: parseInt(document.getElementById('set_lowStock').value),
+                enableEmailNotifications: document.getElementById('set_emailNotif').checked,
+                enableSMSNotifications: document.getElementById('set_smsNotif').checked
+            };
+            try {
+                await apiFetch('/settings', 'POST', data);
+                alert('System settings saved successfully!');
+            } catch (e) {
+                alert('Failed to save settings: ' + e.message);
             }
         }
 
