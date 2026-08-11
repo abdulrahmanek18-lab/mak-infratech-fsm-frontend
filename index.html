@@ -420,7 +420,72 @@
             localStorage.removeItem('fsm_token');
             window.location.href = 'login.html';
         }
+        let companyImageData = { logoUrl: null, invoiceHeader: null, invoiceFooter: null };
 
+        // Handle Image Upload (Convert to Base64)
+        function handleImageUpload(event, fieldName, previewId) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                companyImageData[fieldName] = e.target.result; // Base64 string
+                document.getElementById(previewId).src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Load Company Settings when clicking the tab
+        async function loadCompanySettings() {
+            try {
+                const data = await apiFetch('/company');
+                document.getElementById('set_name').value = data.name || '';
+                document.getElementById('set_trn').value = data.trn || '';
+                document.getElementById('set_phone').value = data.phone || '';
+                document.getElementById('set_email').value = data.email || '';
+                document.getElementById('set_address').value = data.address || '';
+                document.getElementById('set_vat').value = data.vatPercent || 5;
+                document.getElementById('set_invPrefix').value = data.invoicePrefix || 'INV-';
+                document.getElementById('set_poPrefix').value = data.poPrefix || 'PO-';
+                document.getElementById('set_woPrefix').value = data.woPrefix || 'WO-';
+
+                if (data.logoUrl) document.getElementById('img-preview-logo').src = data.logoUrl;
+                if (data.invoiceHeader) document.getElementById('img-preview-header').src = data.invoiceHeader;
+                if (data.invoiceFooter) document.getElementById('img-preview-footer').src = data.invoiceFooter;
+            } catch (e) {
+                console.error("Failed to load company settings", e);
+            }
+        }
+
+        // Save Settings
+        async function saveCompanySettings() {
+            const data = {
+                name: document.getElementById('set_name').value,
+                trn: document.getElementById('set_trn').value,
+                phone: document.getElementById('set_phone').value,
+                email: document.getElementById('set_email').value,
+                address: document.getElementById('set_address').value,
+                vatPercent: document.getElementById('set_vat').value,
+                invoicePrefix: document.getElementById('set_invPrefix').value,
+                poPrefix: document.getElementById('set_poPrefix').value,
+                woPrefix: document.getElementById('set_woPrefix').value,
+                logoUrl: companyImageData.logoUrl, 
+                invoiceHeader: companyImageData.invoiceHeader,
+                invoiceFooter: companyImageData.invoiceFooter
+            };
+
+            // If no new image was uploaded, don't send null (so it doesn't overwrite existing)
+            if (!data.logoUrl) delete data.logoUrl;
+            if (!data.invoiceHeader) delete data.invoiceHeader;
+            if (!data.invoiceFooter) delete data.invoiceFooter;
+
+            try {
+                await apiFetch('/company', 'POST', data);
+                alert('Company settings saved successfully!');
+            } catch (e) {
+                alert('Failed to save settings: ' + e.message);
+            }
+        }
         async function apiFetch(endpoint, method = 'GET', body = null) {
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method,
