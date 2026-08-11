@@ -650,7 +650,6 @@
                 tbody.innerHTML = '';
                 data.forEach(item => {
                     const tr = document.createElement('tr');
-                    // Pass the id, name, and assetNumber to the QR function
                     tr.innerHTML = `
                         <td class="px-3 py-2 text-sm text-gray-700">${item.assetNumber}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.name}</td>
@@ -666,33 +665,12 @@
             }
         }
 
-                // Generate QR Code using a reliable image API
+        // Generate QR Code using a reliable image API
         function generateAssetQR(assetId, assetName, assetNumber) {
-            // The data we encode inside the QR code
             const qrData = JSON.stringify({ type: 'ASSET', id: assetId, number: assetNumber });
-            
-            // Encode the data so it can be passed in a URL
             const encodedData = encodeURIComponent(qrData);
-            
-            // Generate the QR image URL
             const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodedData}`;
 
-            // Show it in the modal
-            const fields = `
-                <div class="text-center space-y-4">
-                    <h3 class="font-bold text-lg text-gray-800">${assetName} (${assetNumber})</h3>
-                    <img src="${imgSrc}" alt="QR Code" class="mx-auto w-64 h-64 border-2 border-gray-100 rounded-lg p-2">
-                    <p class="text-sm text-gray-500">Scan this code with your phone to instantly view the asset's service history.</p>
-                    <a href="${imgSrc}" download="${assetNumber}_QR.png" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Download QR</a>
-                </div>
-            `;
-            openModal('Asset QR Code', fields, true);
-        }
-            
-            // Get the generated image URL
-            const imgSrc = tempDiv.querySelector('img').src;
-
-            // Show it in the modal
             const fields = `
                 <div class="text-center space-y-4">
                     <h3 class="font-bold text-lg text-gray-800">${assetName} (${assetNumber})</h3>
