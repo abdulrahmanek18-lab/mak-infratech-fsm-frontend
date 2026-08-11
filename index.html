@@ -260,7 +260,84 @@
                     </div>
                 </div>
             </section>
+            <!-- COMPANY SETTINGS PAGE -->
+            <section id="page-company" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Company Profile & Settings</h3>
+                        <button onclick="saveCompanySettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Changes</button>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        
+                        <!-- Branding Images -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
+                                <img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logoUrl', 'img-preview-logo')" class="block w-full text-sm text-gray-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Header Image</label>
+                                <img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceHeader', 'img-preview-header')" class="block w-full text-sm text-gray-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Footer Image</label>
+                                <img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceFooter', 'img-preview-footer')" class="block w-full text-sm text-gray-500">
+                            </div>
+                        </div>
 
+                        <hr class="border-gray-200">
+
+                        <!-- Basic Info -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                                <input type="text" id="set_name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">TRN (Tax Reg. Number)</label>
+                                <input type="text" id="set_trn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="100123456700003">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                <input type="text" id="set_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" id="set_email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <textarea id="set_address" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        </div>
+
+                        <hr class="border-gray-200">
+
+                        <!-- Document & Financial Settings -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">VAT (%)</label>
+                                <input type="number" step="0.01" id="set_vat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="5">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Prefix</label>
+                                <input type="text" id="set_invPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="INV-">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">PO Prefix</label>
+                                <input type="text" id="set_poPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="PO-">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">WO Prefix</label>
+                                <input type="text" id="set_woPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="WO-">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
             <!-- USERS PAGE -->
             <section id="page-users" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
