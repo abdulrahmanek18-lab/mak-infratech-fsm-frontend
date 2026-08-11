@@ -574,6 +574,7 @@
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
             if (pageId === 'inventory') fetchAndRenderAssets();
             if (pageId === 'reports') loadReports();
+            if (pageId === 'company') loadCompanySettings();
         }
 
         // --- INVOICE FUNCTIONS ---
