@@ -325,7 +325,7 @@
     </div>
 
     <script>
-                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+                        const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
 
         if (!token) {
@@ -341,7 +341,6 @@
             window.location.href = 'login.html';
         }
 
-        // API Helper
         async function apiFetch(endpoint, method = 'GET', body = null) {
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method,
@@ -358,7 +357,6 @@
             return res.json();
         }
 
-        // Fetch and Render Table Data (Supports nested data like customer.name)
         async function fetchAndRender(endpoint, tableId, columns) {
             const tbody = document.getElementById(tableId);
             if (!tbody) return;
@@ -392,12 +390,10 @@
             }
         }
 
-                function showPage(pageId, element, e) {
-            // Safely prevent default behavior without causing mobile errors
+        function showPage(pageId, element, e) {
             if (e && e.preventDefault) e.preventDefault();
             else if (window.event && window.event.preventDefault) window.event.preventDefault();
 
-            // CLOSE SIDEBAR IMMEDIATELY ON MOBILE
             if (window.innerWidth < 1024) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
             }
@@ -423,7 +419,6 @@
             };
             document.getElementById('page-title').innerText = titles[pageId];
 
-            // Load data for the active page
             if (pageId === 'users') fetchAndRender('/users', 'tbody-users', ['name', 'email', 'role']);
             if (pageId === 'customers') fetchAndRender('/customers', 'tbody-customers', ['name', 'phone', 'email', 'address']);
             if (pageId === 'work-orders') fetchAndRender('/work-orders', 'tbody-work-orders', ['woNumber', 'title', 'status', 'priority']);
@@ -432,12 +427,11 @@
             if (pageId === 'invoices') fetchAndRenderInvoices();
             if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
-            if (pageId === 'inventory') fetchAndRender('/assets', 'tbody-inventory', ['assetNumber', 'name', 'location']);
+            if (pageId === 'inventory') fetchAndRenderAssets();
             if (pageId === 'reports') loadReports();
         }
-        }
 
-        // --- INVOICE SPECIFIC FUNCTIONS ---
+        // --- INVOICE FUNCTIONS ---
         async function fetchAndRenderInvoices() {
             const tbody = document.getElementById('tbody-invoices');
             if (!tbody) return;
@@ -448,16 +442,21 @@
                     tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Invoices found.</td></tr>`;
                     return;
                 }
-                tbody.innerHTML = data.map(item => `
-                    <tr class="cursor-pointer hover:bg-blue-50 transition" onclick="viewInvoice('${item.id}')">
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
+                    tr.addEventListener('click', () => viewInvoice(item.id));
+                    tr.innerHTML = `
                         <td class="px-3 py-2 text-sm text-gray-700">${item.invoiceNumber}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">AED ${item.total}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">
                             <span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span>
                         </td>
-                    </tr>
-                `).join('');
+                    `;
+                    tbody.appendChild(tr);
+                });
             } catch (e) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
             }
@@ -488,6 +487,52 @@
                 openModal('Invoice Details', fields, true); 
             } catch (e) {
                 alert('Failed to load invoice details');
+            }
+        }
+
+        // --- ASSET & QR FUNCTIONS ---
+        async function fetchAndRenderAssets() {
+            const tbody = document.getElementById('tbody-inventory');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/assets');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.assetNumber}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.name}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.location}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            <button onclick="generateAssetQR('${item.id}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">View QR</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        async function generateAssetQR(assetId) {
+            try {
+                const res = await apiFetch(`/qr/asset/${assetId}`);
+                const fields = `
+                    <div class="text-center space-y-4">
+                        <h3 class="font-bold text-lg text-gray-800">${res.asset.name} (${res.asset.assetNumber})</h3>
+                        <img src="${res.qrCode}" alt="QR Code" class="mx-auto w-64 h-64 border-2 border-gray-100 rounded-lg p-2">
+                        <p class="text-sm text-gray-500">Scan this code with your phone to instantly view the asset's service history.</p>
+                        <a href="${res.qrCode}" download="${res.asset.assetNumber}_QR.png" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Download QR</a>
+                    </div>
+                `;
+                openModal('Asset QR Code', fields, true);
+            } catch (e) {
+                alert('Failed to generate QR code.');
             }
         }
 
