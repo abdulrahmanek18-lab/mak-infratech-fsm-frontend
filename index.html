@@ -589,6 +589,7 @@
             if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
             if (pageId === 'inventory') fetchAndRenderAssets();
+            if (pageId === 'staff') fetchAndRenderStaff();
             if (pageId === 'reports') loadReports();
             if (pageId === 'company') loadCompanySettings();
             if (pageId === 'settings') loadSystemSettings();
