@@ -255,6 +255,22 @@
                 </div>
             </section>
 
+                        <!-- STAFF PAGE -->
+            <section id="page-staff" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Staff Management</h3>
+                        <button onclick="openStaffModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ Add Staff</button>
+                    </div>
+                    <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
+                        <table class="excel-table">
+                            <thead><tr><th>Photo</th><th>Name</th><th>Job Title</th><th>Nationality</th><th>Phone</th><th>Passport Exp.</th><th>Emirates ID Exp.</th></tr></thead>
+                            <tbody id="tbody-staff"><tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
             <!-- INVENTORY PAGE -->
             <section id="page-inventory" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
