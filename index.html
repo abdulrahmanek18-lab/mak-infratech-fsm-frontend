@@ -479,7 +479,7 @@
     </div>
 
     <script>
-                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+                        const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
 
         if (!token) {
@@ -560,7 +560,7 @@
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
             element.classList.add('active');
 
-                        const titles = {
+            const titles = {
                 'dashboard': 'Dashboard Overview',
                 'company': 'Company Profile',
                 'work-orders': 'Work Orders',
@@ -580,7 +580,7 @@
 
             if (pageId === 'users') fetchAndRender('/users', 'tbody-users', ['name', 'email', 'role']);
             if (pageId === 'customers') fetchAndRender('/customers', 'tbody-customers', ['name', 'phone', 'email', 'address']);
-            if (pageId === 'work-orders') fetchAndRender('/work-orders', 'tbody-work-orders', ['woNumber', 'title', 'status', 'priority']);
+            if (pageId === 'work-orders') fetchAndRenderWorkOrders();
             if (pageId === 'buildings') fetchAndRender('/buildings', 'tbody-buildings', ['name', 'city', 'emirate']);
             if (pageId === 'amc') fetchAndRender('/amc', 'tbody-amc', ['contractNumber', 'value', 'status']);
             if (pageId === 'invoices') fetchAndRenderInvoices();
@@ -681,7 +681,6 @@
             }
         }
 
-        // Generate QR Code using a reliable image API
         function generateAssetQR(assetId, assetName, assetNumber) {
             const qrData = JSON.stringify({ type: 'ASSET', id: assetId, number: assetNumber });
             const encodedData = encodeURIComponent(qrData);
@@ -696,6 +695,201 @@
                 </div>
             `;
             openModal('Asset QR Code', fields, true);
+        }
+
+        // --- WORK ORDERS & SERVICE REPORTS ---
+        async function fetchAndRenderWorkOrders() {
+            const tbody = document.getElementById('tbody-work-orders');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/work-orders');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.woNumber}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.title}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            <span class="px-2 py-1 text-xs rounded-full ${item.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span>
+                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.priority}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            <button onclick="openServiceReportModal('${item.id}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">Service Report</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        let signaturePad = null;
+
+        async function openServiceReportModal(workOrderId) {
+            try {
+                const wo = await apiFetch(`/work-orders/${workOrderId}`);
+                const fields = `
+                    <div class="space-y-4 text-gray-800">
+                        <div class="flex justify-between border-b pb-3">
+                            <span class="font-bold text-lg text-blue-600">Service Report</span>
+                            <span class="text-sm text-gray-500">WO: ${wo.woNumber}</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div><strong>Client:</strong> ${wo.customer ? wo.customer.name : 'N/A'}</div>
+                            <div><strong>Building:</strong> ${wo.building ? wo.building.name : 'N/A'}</div>
+                            <div><strong>Asset Brand:</strong> ${wo.asset ? wo.asset.manufacturer : 'N/A'}</div>
+                            <div><strong>Asset Model:</strong> ${wo.asset ? wo.asset.model : 'N/A'}</div>
+                        </div>
+
+                        <div class="text-sm"><strong>Nature of Complaint:</strong><br>${wo.description || wo.title}</div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Work Started At</label>
+                                <input type="datetime-local" id="sr_startedAt" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Work Ended At</label>
+                                <input type="datetime-local" id="sr_completedAt" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Work Performed</label>
+                            <textarea id="sr_workPerformed" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Materials Used</label>
+                            <textarea id="sr_materials" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 2x Air Filter, 1kg R410 Gas"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Observations & Recommendations</label>
+                            <textarea id="sr_observations" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Client Signature</label>
+                            <div class="border-2 border-gray-300 rounded-lg p-2 bg-white">
+                                <canvas id="signature-canvas" width="400" height="150" class="w-full touch-none"></canvas>
+                            </div>
+                            <button type="button" onclick="clearSignature()" class="text-xs text-red-500 mt-1">Clear Signature</button>
+                        </div>
+
+                        <div class="flex gap-3 pt-4">
+                            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200">Cancel</button>
+                            <button type="button" onclick="saveAndDownloadPDF('${wo.id}')" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Save & Download PDF</button>
+                        </div>
+                    </div>
+                `;
+                openModal('Complete Service Report', fields, true);
+
+                const canvas = document.getElementById('signature-canvas');
+                signaturePad = new SignaturePad(canvas);
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+
+            } catch (e) {
+                alert('Failed to load Work Order details');
+            }
+        }
+
+        function clearSignature() {
+            if (signaturePad) signaturePad.clear();
+        }
+
+        async function saveAndDownloadPDF(workOrderId) {
+            const startedAt = document.getElementById('sr_startedAt').value;
+            const completedAt = document.getElementById('sr_completedAt').value;
+            const workPerformed = document.getElementById('sr_workPerformed').value;
+            const materials = document.getElementById('sr_materials').value;
+            const observations = document.getElementById('sr_observations').value;
+            const signatureData = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
+
+            if (!workPerformed || !startedAt || !completedAt) {
+                alert('Please fill in the Start Time, End Time, and Work Performed.');
+                return;
+            }
+
+            try {
+                await apiFetch(`/work-orders/${workOrderId}`, 'PATCH', {
+                    startedAt,
+                    completedAt,
+                    workPerformed,
+                    materialsUsed: { items: materials },
+                    observations,
+                    clientSignature: signatureData,
+                    technicianName: 'Admin User'
+                });
+
+                generatePDF({
+                    woId: workOrderId,
+                    startedAt,
+                    completedAt,
+                    workPerformed,
+                    materials,
+                    observations,
+                    signature: signatureData
+                });
+
+                closeModal();
+                fetchAndRenderWorkOrders();
+            } catch (e) {
+                alert('Failed to save Service Report: ' + e.message);
+            }
+        }
+
+        function generatePDF(data) {
+            const formatTime = (t) => new Date(t).toLocaleString();
+            
+            const pdfContent = document.createElement('div');
+            pdfContent.style.padding = '20px';
+            pdfContent.style.fontFamily = 'Arial, sans-serif';
+            pdfContent.innerHTML = `
+                <h2 style="text-align:center; color:#1e3a8a; border-bottom: 2px solid #333; padding-bottom: 10px;">MAK INFRATECH FMS - Service Report</h2>
+                <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                <hr style="margin: 10px 0;">
+                <div style="display: flex; justify-content: space-between;">
+                    <p><strong>Start Time:</strong> ${formatTime(data.startedAt)}</p>
+                    <p><strong>End Time:</strong> ${formatTime(data.completedAt)}</p>
+                </div>
+                <h4>Work Performed:</h4>
+                <p>${data.workPerformed}</p>
+                <h4>Materials Used:</h4>
+                <p>${data.materials}</p>
+                <h4>Observations:</h4>
+                <p>${data.observations}</p>
+                <hr style="margin: 20px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <p><strong>Technician:</strong> Admin User</p>
+                    </div>
+                    <div style="text-align: center;">
+                        ${data.signature ? `<img src="${data.signature}" height="80" width="200" /><br>` : ''}
+                        <span style="border-top: 1px solid #000; padding-top: 5px; display: inline-block; width: 200px;">Client Signature</span>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(pdfContent);
+
+            const opt = {
+                margin: 10,
+                filename: `Service_Report_${data.woId.substring(0, 8)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(pdfContent).save().then(() => {
+                document.body.removeChild(pdfContent);
+            });
         }
 
         // --- REPORTS FUNCTION ---
@@ -819,6 +1013,122 @@
             } catch (e) {
                 alert('Failed to save settings: ' + e.message);
             }
+        }
+
+        // --- STAFF FUNCTIONS ---
+        let staffPhotoData = null;
+
+        function handleStaffPhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                staffPhotoData = e.target.result;
+                document.getElementById('staff_photo_preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function fetchAndRenderStaff() {
+            const tbody = document.getElementById('tbody-staff');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/staff');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}
+                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.firstName} ${item.lastName}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.jobTitle || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.nationality || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.phone || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        async function openStaffModal() {
+            staffPhotoData = null; 
+            const fields = `
+                <div class="flex flex-col items-center mb-4">
+                    <img id="staff_photo_preview" src="https://via.placeholder.com/100?text=Photo" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 mb-2">
+                    <input type="file" accept="image/png, image/jpeg" onchange="handleStaffPhotoUpload(event)" class="block text-sm text-gray-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">First Name</label><input type="text" id="st_fname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label><input type="text" id="st_lname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label><input type="text" id="st_job" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., HVAC Technician"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="st_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+                    <select id="st_nat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="United Arab Emirates">United Arab Emirates</option>
+                        <option value="India">India</option>
+                        <option value="Pakistan">Pakistan</option>
+                        <option value="Philippines">Philippines</option>
+                        <option value="Egypt">Egypt</option>
+                        <option value="Nepal">Nepal</option>
+                        <option value="Bangladesh">Bangladesh</option>
+                        <option value="Sri Lanka">Sri Lanka</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Number</label><input type="text" id="st_pp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Expiry</label><input type="date" id="st_ppExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID</label><input type="text" id="st_eid" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID Expiry</label><input type="date" id="st_eidExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Number</label><input type="text" id="st_visa" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                
+                <hr class="border-gray-200 my-2">
+                <h4 class="text-sm font-medium text-gray-800">Insurance Details</h4>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Nextcare"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Policy Number</label><input type="text" id="st_insPol" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Expiry</label><input type="date" id="st_insExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+            `;
+            openModal('Add New Staff', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/staff', {
+                    firstName: getInput('st_fname'),
+                    lastName: getInput('st_lname'),
+                    photoUrl: staffPhotoData, 
+                    jobTitle: getInput('st_job'),
+                    phone: getInput('st_phone'),
+                    nationality: getInput('st_nat'),
+                    passportNumber: getInput('st_pp'),
+                    passportExpiry: getInput('st_ppExp'),
+                    emiratesId: getInput('st_eid'),
+                    emiratesIdExpiry: getInput('st_eidExp'),
+                    visaNumber: getInput('st_visa'),
+                    visaExpiry: getInput('st_visaExp'),
+                    insuranceProvider: getInput('st_insProv'),
+                    insurancePolicyNumber: getInput('st_insPol'),
+                    insuranceExpiry: getInput('st_insExp')
+                }, 'Staff added successfully!', { endpoint: '/staff', tableId: 'tbody-staff', columns: ['firstName', 'lastName', 'jobTitle', 'nationality', 'phone', 'passportExpiry', 'emiratesIdExpiry'] });
+            };
         }
 
         // --- MODAL LOGIC ---
@@ -1009,348 +1319,7 @@
                 </div>
                 <div id="emi_select_div" style="display:none;">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select Pending EMI</label>
-                    <select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">${emiOpts}</select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                    <select id="i_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label>
-                    <textarea id="i_notes" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., AC Maintenance for May 2024"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                    <input type="date" id="i_dueDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (AED)</label>
-                    <input type="number" id="i_subtotal" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select id="i_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="DRAFT">Draft</option>
-                        <option value="SENT">Sent</option>
-                        <option value="PAID">Paid</option>
-                    </select>
-                </div>
-            `;
-            openModal('Add New Invoice', fields);
-            let dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 15);
-            document.getElementById('i_dueDate').valueAsDate = dueDate;
-
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/invoices', {
-                    customerId: getInput('i_customerId'),
-                    dueDate: getInput('i_dueDate'),
-                    subtotal: parseFloat(getInput('i_subtotal')),
-                    status: getInput('i_status'),
-                    notes: getInput('i_notes'),
-                    emiId: getInput('i_emiId') || null
-                }, 'Invoice created successfully!', { endpoint: '/invoices', tableId: 'tbody-invoices', columns: ['invoiceNumber', 'total', 'status'] });
-            };
-        }
-
-        function toggleInvoiceFields() {
-            const type = document.getElementById('i_type').value;
-            const emiDiv = document.getElementById('emi_select_div');
-            if (type === 'EMI') {
-                emiDiv.style.display = 'block';
-            } else {
-                emiDiv.style.display = 'none';
-                document.getElementById('i_emiId').value = '';
-                document.getElementById('i_notes').value = '';
-                document.getElementById('i_subtotal').value = '';
-                document.getElementById('i_customerId').value = '';
-            }
-        }
-
-        function autoFillEmiData() {
-            const emiSelect = document.getElementById('i_emiId');
-            const selectedOption = emiSelect.options[emiSelect.selectedIndex];
-            if (selectedOption.value) {
-                document.getElementById('i_subtotal').value = selectedOption.getAttribute('data-amount');
-                document.getElementById('i_customerId').value = selectedOption.getAttribute('data-customer');
-                document.getElementById('i_notes').value = `AMC EMI Payment for Contract: ${selectedOption.getAttribute('data-contract')}`;
-            }
-        }
-
-        async function openExpenseModal() {
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Category</label><input type="text" id="e_category" required placeholder="e.g. Travel, Parts" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount (AED)</label><input type="number" id="e_amount" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="e_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
-            `;
-            openModal('Add New Expense', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/expenses', {
-                    category: getInput('e_category'),
-                    amount: parseFloat(getInput('e_amount')),
-                    description: getInput('e_description')
-                }, 'Expense created successfully!', { endpoint: '/expenses', tableId: 'tbody-expenses', columns: ['category', 'amount', 'status'] });
-            };
-        }
-
-        async function openPoModal() {
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">PO Number</label><input type="text" id="p_poNumber" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label><input type="text" id="p_supplierName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Phone</label><input type="text" id="p_supplierPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Total (AED)</label><input type="number" id="p_total" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-            `;
-            openModal('Add New Purchase Order', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                const total = parseFloat(getInput('p_total'));
-                handleSubmit('/po', {
-                    poNumber: getInput('p_poNumber'),
-                    supplierName: getInput('p_supplierName'),
-                    supplierPhone: getInput('p_supplierPhone'),
-                    subtotal: total,
-                    vatAmount: total * 0.05,
-                    total: total + (total * 0.05)
-                }, 'Purchase Order created successfully!', { endpoint: '/po', tableId: 'tbody-po', columns: ['poNumber', 'supplierName', 'total'] });
-            };
-        }
-
-        async function openInventoryModal() {
-            const fields = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Instrument Type</label>
-                        <select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="Split AC">Split AC</option>
-                            <option value="Window AC">Window AC</option>
-                            <option value="Cassette AC">Cassette AC</option>
-                            <option value="Ducted AC">Ducted AC</option>
-                            <option value="Package Unit">Package Unit</option>
-                            <option value="Chiller">Chiller</option>
-                            <option value="VRF System">VRF System</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
-                        <select id="inv_manufacturer" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="Daikin">Daikin</option>
-                            <option value="LG">LG</option>
-                            <option value="Samsung">Samsung</option>
-                            <option value="Gree">Gree</option>
-                            <option value="Midea">Midea</option>
-                            <option value="O General">O General</option>
-                            <option value="Carrier">Carrier</option>
-                            <option value="Trane">Trane</option>
-                            <option value="York">York</option>
-                            <option value="Fujitsu">Fujitsu</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label>
-                        <input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
-                        <input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Location / Flat</label>
-                    <input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Refrigerant Type</label>
-                        <select id="inv_refrigerant" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="R410A">R410A</option>
-                            <option value="R32">R32</option>
-                            <option value="R22">R22</option>
-                            <option value="R134a">R134a</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tonnage / BTU</label>
-                        <select id="inv_tonnage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="1 Ton">1 Ton</option>
-                            <option value="1.5 Ton">1.5 Ton</option>
-                            <option value="2 Ton">2 Ton</option>
-                            <option value="3 Ton">3 Ton</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Condenser Coil Condition</label>
-                        <select id="inv_coil" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="Good">Good</option>
-                            <option value="Needs Cleaning">Needs Cleaning</option>
-                            <option value="Needs Replacement">Needs Replacement</option>
-                            <option value="Corroded">Corroded</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Ampere (A)</label>
-                        <input type="number" step="0.1" id="inv_ampere" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 12.5">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Gas Pressure (PSI)</label>
-                    <input type="number" step="0.1" id="inv_pressure" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 150">
-                </div>
-            `;
-            openModal('Register New AC / Asset', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                const techDetails = `Refrigerant: ${getInput('inv_refrigerant')} | Tonnage: ${getInput('inv_tonnage')} | Coil: ${getInput('inv_coil')} | Ampere: ${getInput('inv_ampere')}A | Gas Pressure: ${getInput('inv_pressure')} PSI`;
-                handleSubmit('/assets', {
-                    name: getInput('inv_name'),
-                    manufacturer: getInput('inv_manufacturer'),
-                    model: getInput('inv_model'),
-                    serialNumber: getInput('inv_serial'),
-                    location: getInput('inv_location'),
-                    description: techDetails
-                }, 'Asset registered successfully! Asset Number generated.', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
-            };
-        }
-
-        async function openUserModal() {
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label><input type="text" id="u_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Email (User ID)</label><input type="email" id="u_email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" id="u_password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Role</label><select id="u_role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="SUPER_ADMIN">Super Admin</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="COORDINATOR">Coordinator</option><option value="TECHNICIAN" selected>Technician</option><option value="ACCOUNTANT">Accountant</option><option value="VIEWER">Viewer</option></select></div>
-            `;
-            openModal('Add New User', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/users', {
-                    name: getInput('u_name'),
-                    email: getInput('u_email'),
-                    password: getInput('u_password'),
-                    role: getInput('u_role')
-                }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] });
-            };
-        }
-            // --- STAFF FUNCTIONS ---
-        let staffPhotoData = null;
-
-        function handleStaffPhotoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                staffPhotoData = e.target.result;
-                document.getElementById('staff_photo_preview').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function fetchAndRenderStaff() {
-            const tbody = document.getElementById('tbody-staff');
-            if (!tbody) return;
-            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-            try {
-                const data = await apiFetch('/staff');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr>`;
-                    return;
-                }
-                tbody.innerHTML = data.map(item => `
-                    <tr>
-                        <td class="px-3 py-2 text-sm text-gray-700">
-                            ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}
-                        </td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.firstName} ${item.lastName}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.jobTitle || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.nationality || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.phone || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>
-                    </tr>
-                `).join('');
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
-            }
-        }
-
-        async function openStaffModal() {
-            staffPhotoData = null; // Reset photo
-            const fields = `
-                <div class="flex flex-col items-center mb-4">
-                    <img id="staff_photo_preview" src="https://via.placeholder.com/100?text=Photo" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 mb-2">
-                    <input type="file" accept="image/png, image/jpeg" onchange="handleStaffPhotoUpload(event)" class="block text-sm text-gray-500">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">First Name</label><input type="text" id="st_fname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label><input type="text" id="st_lname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label><input type="text" id="st_job" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., HVAC Technician"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="st_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
-                    <select id="st_nat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="United Arab Emirates">United Arab Emirates</option>
-                        <option value="India">India</option>
-                        <option value="Pakistan">Pakistan</option>
-                        <option value="Philippines">Philippines</option>
-                        <option value="Egypt">Egypt</option>
-                        <option value="Nepal">Nepal</option>
-                        <option value="Bangladesh">Bangladesh</option>
-                        <option value="Sri Lanka">Sri Lanka</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Number</label><input type="text" id="st_pp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Expiry</label><input type="date" id="st_ppExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID</label><input type="text" id="st_eid" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID Expiry</label><input type="date" id="st_eidExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Number</label><input type="text" id="st_visa" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                
-                <hr class="border-gray-200 my-2">
-                <h4 class="text-sm font-medium text-gray-800">Insurance Details</h4>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Nextcare"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Policy Number</label><input type="text" id="st_insPol" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Expiry</label><input type="date" id="st_insExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-            `;
-            openModal('Add New Staff', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/staff', {
-                    firstName: getInput('st_fname'),
-                    lastName: getInput('st_lname'),
-                    photoUrl: staffPhotoData, 
-                    jobTitle: getInput('st_job'),
-                    phone: getInput('st_phone'),
-                    nationality: getInput('st_nat'),
-                    passportNumber: getInput('st_pp'),
-                    passportExpiry: getInput('st_ppExp'),
-                    emiratesId: getInput('st_eid'),
-                    emiratesIdExpiry: getInput('st_eidExp'),
-                    visaNumber: getInput('st_visa'),
-                    visaExpiry: getInput('st_visaExp'),
-                    insuranceProvider: getInput('st_insProv'),
-                    insurancePolicyNumber: getInput('st_insPol'),
-                    insuranceExpiry: getInput('st_insExp')
-                }, 'Staff added successfully!', { endpoint: '/staff', tableId: 'tbody-staff', columns: ['firstName', 'lastName', 'jobTitle', 'nationality', 'phone', 'passportExpiry', 'emiratesIdExpiry'] });
-            };
-        }
+                    <select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300
     </script>
 </body>
 </html>
