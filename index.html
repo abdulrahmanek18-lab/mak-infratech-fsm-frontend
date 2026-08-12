@@ -31,46 +31,28 @@
         <div class="h-16 flex items-center justify-center border-b border-slate-800 shadow-md">
             <h1 class="text-xl font-bold text-blue-400 tracking-wide">MAK INFRATECH</h1>
         </div>
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <a href="#" onclick="showPage('dashboard', this)" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-md text-sm font-medium transition">
+                <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="#" onclick="showPage('dashboard', this, event)" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-md text-sm font-medium transition">
                 <span>📊</span> <span>Dashboard</span>
+            </a>
+            <a href="#" onclick="showPage('company', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>🏢</span> <span>Company Profile</span>
             </a>
             
             <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Operations</div>
-            <a href="#" onclick="showPage('work-orders', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('work-orders', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🛠️</span> <span>Work Orders</span>
             </a>
-            <a href="#" onclick="showPage('customers', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('customers', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🤝</span> <span>Customers</span>
             </a>
-            <a href="#" onclick="showPage('buildings', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>🏢</span> <span>Buildings & Flats</span>
+            <a href="#" onclick="showPage('buildings', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>🏠</span> <span>Buildings & Flats</span>
             </a>
-            <a href="#" onclick="showPage('amc', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+            <a href="#" onclick="showPage('amc', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📋</span> <span>Services & AMC</span>
             </a>
 
-            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Finance</div>
-            <a href="#" onclick="showPage('invoices', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>🧾</span> <span>Invoices</span>
-            </a>
-            <a href="#" onclick="showPage('expenses', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>💳</span> <span>Expenses</span>
-            </a>
-            <a href="#" onclick="showPage('po', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>📦</span> <span>Purchase Orders</span>
-            </a>
-
-            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Management</div>
-            <a href="#" onclick="showPage('inventory', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>🔧</span> <span>Inventory & Assets</span>
-            </a>
-            <a href="#" onclick="showPage('company', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>🏢</span> <span>Company Settings</span>
-            </a>
-            <a href="#" onclick="showPage('users', this)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>👥</span> <span>Users</span>
-            </a>
             <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Management</div>
             <a href="#" onclick="showPage('staff', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>👷</span> <span>Staff Management</span>
@@ -81,14 +63,24 @@
             <a href="#" onclick="showPage('users', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>👥</span> <span>Users</span>
             </a>
-            <a href="#" onclick="showPage('company', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>🏢</span> <span>Company Profile</span>
+
+            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Finance & Reports</div>
+            <a href="#" onclick="showPage('invoices', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>🧾</span> <span>Invoices</span>
             </a>
-            <a href="#" onclick="showPage('settings', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
-                <span>⚙️</span> <span>System Settings</span>
+            <a href="#" onclick="showPage('expenses', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>💳</span> <span>Expenses</span>
+            </a>
+            <a href="#" onclick="showPage('po', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>📦</span> <span>Purchase Orders</span>
             </a>
             <a href="#" onclick="showPage('reports', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📈</span> <span>Reports</span>
+            </a>
+
+            <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">System</div>
+            <a href="#" onclick="showPage('settings', this, event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>⚙️</span> <span>System Settings</span>
             </a>
         </nav>
         <div class="p-4 border-t border-slate-800">
@@ -568,21 +560,21 @@
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
             element.classList.add('active');
 
-            const titles = {
+                        const titles = {
                 'dashboard': 'Dashboard Overview',
+                'company': 'Company Profile',
                 'work-orders': 'Work Orders',
                 'customers': 'Customers',
                 'buildings': 'Buildings & Flats',
                 'amc': 'Services & AMC',
+                'staff': 'Staff Management',
+                'inventory': 'Inventory & Assets',
+                'users': 'System Users',
                 'invoices': 'Invoices',
                 'expenses': 'Expenses',
                 'po': 'Purchase Orders',
-                'inventory': 'Inventory & Assets',
-                'users': 'System Users',
-                'company': 'Company Profile',
-                'staff': 'Staff Management',
-                'settings': 'System Settings',
-                'reports': 'Reports & Analytics'
+                'reports': 'Reports & Analytics',
+                'settings': 'System Settings'
             };
             document.getElementById('page-title').innerText = titles[pageId];
 
