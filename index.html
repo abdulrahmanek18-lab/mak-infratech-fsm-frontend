@@ -1238,6 +1238,121 @@
                 }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] });
             };
         }
+            // --- STAFF FUNCTIONS ---
+        let staffPhotoData = null;
+
+        function handleStaffPhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                staffPhotoData = e.target.result;
+                document.getElementById('staff_photo_preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function fetchAndRenderStaff() {
+            const tbody = document.getElementById('tbody-staff');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/staff');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}
+                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.firstName} ${item.lastName}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.jobTitle || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.nationality || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.phone || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        async function openStaffModal() {
+            staffPhotoData = null; // Reset photo
+            const fields = `
+                <div class="flex flex-col items-center mb-4">
+                    <img id="staff_photo_preview" src="https://via.placeholder.com/100?text=Photo" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 mb-2">
+                    <input type="file" accept="image/png, image/jpeg" onchange="handleStaffPhotoUpload(event)" class="block text-sm text-gray-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">First Name</label><input type="text" id="st_fname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label><input type="text" id="st_lname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label><input type="text" id="st_job" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., HVAC Technician"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="st_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+                    <select id="st_nat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="United Arab Emirates">United Arab Emirates</option>
+                        <option value="India">India</option>
+                        <option value="Pakistan">Pakistan</option>
+                        <option value="Philippines">Philippines</option>
+                        <option value="Egypt">Egypt</option>
+                        <option value="Nepal">Nepal</option>
+                        <option value="Bangladesh">Bangladesh</option>
+                        <option value="Sri Lanka">Sri Lanka</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Number</label><input type="text" id="st_pp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Expiry</label><input type="date" id="st_ppExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID</label><input type="text" id="st_eid" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID Expiry</label><input type="date" id="st_eidExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Number</label><input type="text" id="st_visa" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                
+                <hr class="border-gray-200 my-2">
+                <h4 class="text-sm font-medium text-gray-800">Insurance Details</h4>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Nextcare"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Policy Number</label><input type="text" id="st_insPol" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Expiry</label><input type="date" id="st_insExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+            `;
+            openModal('Add New Staff', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/staff', {
+                    firstName: getInput('st_fname'),
+                    lastName: getInput('st_lname'),
+                    photoUrl: staffPhotoData, 
+                    jobTitle: getInput('st_job'),
+                    phone: getInput('st_phone'),
+                    nationality: getInput('st_nat'),
+                    passportNumber: getInput('st_pp'),
+                    passportExpiry: getInput('st_ppExp'),
+                    emiratesId: getInput('st_eid'),
+                    emiratesIdExpiry: getInput('st_eidExp'),
+                    visaNumber: getInput('st_visa'),
+                    visaExpiry: getInput('st_visaExp'),
+                    insuranceProvider: getInput('st_insProv'),
+                    insurancePolicyNumber: getInput('st_insPol'),
+                    insuranceExpiry: getInput('st_insExp')
+                }, 'Staff added successfully!', { endpoint: '/staff', tableId: 'tbody-staff', columns: ['firstName', 'lastName', 'jobTitle', 'nationality', 'phone', 'passportExpiry', 'emiratesIdExpiry'] });
+            };
+        }
     </script>
 </body>
 </html>
