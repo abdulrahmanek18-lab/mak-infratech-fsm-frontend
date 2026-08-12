@@ -484,7 +484,7 @@
     </div>
 
     <script>
-                        const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
 
         if (!token) {
@@ -1324,7 +1324,233 @@
                 </div>
                 <div id="emi_select_div" style="display:none;">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select Pending EMI</label>
-                    <select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300
+                    <select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">${emiOpts}</select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                    <select id="i_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label>
+                    <textarea id="i_notes" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., AC Maintenance for May 2024"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                    <input type="date" id="i_dueDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (AED)</label>
+                    <input type="number" id="i_subtotal" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select id="i_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="DRAFT">Draft</option>
+                        <option value="SENT">Sent</option>
+                        <option value="PAID">Paid</option>
+                    </select>
+                </div>
+            `;
+            openModal('Add New Invoice', fields);
+            let dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 15);
+            document.getElementById('i_dueDate').valueAsDate = dueDate;
+
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/invoices', {
+                    customerId: getInput('i_customerId'),
+                    dueDate: getInput('i_dueDate'),
+                    subtotal: parseFloat(getInput('i_subtotal')),
+                    status: getInput('i_status'),
+                    notes: getInput('i_notes'),
+                    emiId: getInput('i_emiId') || null
+                }, 'Invoice created successfully!', { endpoint: '/invoices', tableId: 'tbody-invoices', columns: ['invoiceNumber', 'total', 'status'] });
+            };
+        }
+
+        function toggleInvoiceFields() {
+            const type = document.getElementById('i_type').value;
+            const emiDiv = document.getElementById('emi_select_div');
+            if (type === 'EMI') {
+                emiDiv.style.display = 'block';
+            } else {
+                emiDiv.style.display = 'none';
+                document.getElementById('i_emiId').value = '';
+                document.getElementById('i_notes').value = '';
+                document.getElementById('i_subtotal').value = '';
+                document.getElementById('i_customerId').value = '';
+            }
+        }
+
+        function autoFillEmiData() {
+            const emiSelect = document.getElementById('i_emiId');
+            const selectedOption = emiSelect.options[emiSelect.selectedIndex];
+            if (selectedOption.value) {
+                document.getElementById('i_subtotal').value = selectedOption.getAttribute('data-amount');
+                document.getElementById('i_customerId').value = selectedOption.getAttribute('data-customer');
+                document.getElementById('i_notes').value = `AMC EMI Payment for Contract: ${selectedOption.getAttribute('data-contract')}`;
+            }
+        }
+
+        async function openExpenseModal() {
+            const fields = `
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Category</label><input type="text" id="e_category" required placeholder="e.g. Travel, Parts" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount (AED)</label><input type="number" id="e_amount" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="e_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
+            `;
+            openModal('Add New Expense', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/expenses', {
+                    category: getInput('e_category'),
+                    amount: parseFloat(getInput('e_amount')),
+                    description: getInput('e_description')
+                }, 'Expense created successfully!', { endpoint: '/expenses', tableId: 'tbody-expenses', columns: ['category', 'amount', 'status'] });
+            };
+        }
+
+        async function openPoModal() {
+            const fields = `
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">PO Number</label><input type="text" id="p_poNumber" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label><input type="text" id="p_supplierName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Phone</label><input type="text" id="p_supplierPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Total (AED)</label><input type="number" id="p_total" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+            `;
+            openModal('Add New Purchase Order', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                const total = parseFloat(getInput('p_total'));
+                handleSubmit('/po', {
+                    poNumber: getInput('p_poNumber'),
+                    supplierName: getInput('p_supplierName'),
+                    supplierPhone: getInput('p_supplierPhone'),
+                    subtotal: total,
+                    vatAmount: total * 0.05,
+                    total: total + (total * 0.05)
+                }, 'Purchase Order created successfully!', { endpoint: '/po', tableId: 'tbody-po', columns: ['poNumber', 'supplierName', 'total'] });
+            };
+        }
+
+        async function openInventoryModal() {
+            const fields = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Instrument Type</label>
+                        <select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Split AC">Split AC</option>
+                            <option value="Window AC">Window AC</option>
+                            <option value="Cassette AC">Cassette AC</option>
+                            <option value="Ducted AC">Ducted AC</option>
+                            <option value="Package Unit">Package Unit</option>
+                            <option value="Chiller">Chiller</option>
+                            <option value="VRF System">VRF System</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                        <select id="inv_manufacturer" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Daikin">Daikin</option>
+                            <option value="LG">LG</option>
+                            <option value="Samsung">Samsung</option>
+                            <option value="Gree">Gree</option>
+                            <option value="Midea">Midea</option>
+                            <option value="O General">O General</option>
+                            <option value="Carrier">Carrier</option>
+                            <option value="Trane">Trane</option>
+                            <option value="York">York</option>
+                            <option value="Fujitsu">Fujitsu</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label>
+                        <input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
+                        <input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Location / Flat</label>
+                    <input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Refrigerant Type</label>
+                        <select id="inv_refrigerant" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="R410A">R410A</option>
+                            <option value="R32">R32</option>
+                            <option value="R22">R22</option>
+                            <option value="R134a">R134a</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tonnage / BTU</label>
+                        <select id="inv_tonnage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="1 Ton">1 Ton</option>
+                            <option value="1.5 Ton">1.5 Ton</option>
+                            <option value="2 Ton">2 Ton</option>
+                            <option value="3 Ton">3 Ton</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Condenser Coil Condition</label>
+                        <select id="inv_coil" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Good">Good</option>
+                            <option value="Needs Cleaning">Needs Cleaning</option>
+                            <option value="Needs Replacement">Needs Replacement</option>
+                            <option value="Corroded">Corroded</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ampere (A)</label>
+                        <input type="number" step="0.1" id="inv_ampere" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 12.5">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Gas Pressure (PSI)</label>
+                    <input type="number" step="0.1" id="inv_pressure" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 150">
+                </div>
+            `;
+            openModal('Register New AC / Asset', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                const techDetails = `Refrigerant: ${getInput('inv_refrigerant')} | Tonnage: ${getInput('inv_tonnage')} | Coil: ${getInput('inv_coil')} | Ampere: ${getInput('inv_ampere')}A | Gas Pressure: ${getInput('inv_pressure')} PSI`;
+                handleSubmit('/assets', {
+                    name: getInput('inv_name'),
+                    manufacturer: getInput('inv_manufacturer'),
+                    model: getInput('inv_model'),
+                    serialNumber: getInput('inv_serial'),
+                    location: getInput('inv_location'),
+                    description: techDetails
+                }, 'Asset registered successfully! Asset Number generated.', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
+            };
+        }
+
+        async function openUserModal() {
+            const fields = `
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label><input type="text" id="u_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Email (User ID)</label><input type="email" id="u_email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" id="u_password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Role</label><select id="u_role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="SUPER_ADMIN">Super Admin</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="COORDINATOR">Coordinator</option><option value="TECHNICIAN" selected>Technician</option><option value="ACCOUNTANT">Accountant</option><option value="VIEWER">Viewer</option></select></div>
+            `;
+            openModal('Add New User', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/users', {
+                    name: getInput('u_name'),
+                    email: getInput('u_email'),
+                    password: getInput('u_password'),
+                    role: getInput('u_role')
+                }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] });
+            };
+        }
     </script>
 </body>
 </html>
