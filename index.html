@@ -484,7 +484,7 @@
     </div>
 
     <script>
-                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+               const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
 
         if (!token) {
@@ -897,6 +897,155 @@
             });
         }
 
+        // --- WORK ORDER CASCADING FORM ---
+        let allWoBuildings = [];
+        let allWoFlats = [];
+
+        async function openWorkOrderModal() {
+            // Fetch all Customers, Buildings, and Flats upfront for instant filtering
+            const customers = await apiFetch('/customers');
+            allWoBuildings = await apiFetch('/buildings');
+            allWoFlats = await apiFetch('/flats');
+
+            const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+            const fields = `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
+                    <select id="wo_customerId" required onchange="filterWoBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Select Client</option>
+                        ${custOpts}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label>
+                    <select id="wo_buildingId" required onchange="filterWoFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
+                        <option value="">Select Client First</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Service Address</label>
+                    <input type="text" id="wo_address" readonly placeholder="Auto-filled on building selection" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none bg-gray-100 text-gray-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number</label>
+                    <select id="wo_flatId" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
+                        <option value="">Select Building First</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date *</label>
+                        <input type="date" id="wo_scheduledDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Time *</label>
+                        <input type="time" id="wo_scheduledTime" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nature of Complaint *</label>
+                    <textarea id="wo_complaint" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Describe the client's issue or job scope..."></textarea>
+                </div>
+            `;
+            
+            openModal('Create New Work Order', fields);
+            
+            // Set default date to today
+            document.getElementById('wo_scheduledDate').valueAsDate = new Date();
+
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                
+                // Combine Date and Time into one ISO string for the backend
+                const dateVal = getInput('wo_scheduledDate');
+                const timeVal = getInput('wo_scheduledTime');
+                const scheduledDateTime = new Date(`${dateVal}T${timeVal}`);
+
+                handleSubmit('/work-orders', {
+                    title: 'Service Request', 
+                    description: getInput('wo_complaint'),
+                    customerId: getInput('wo_customerId'),
+                    buildingId: getInput('wo_buildingId'),
+                    flatId: getInput('wo_flatId') || null,
+                    scheduledDate: scheduledDateTime,
+                    priority: 'MEDIUM'
+                }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
+            };
+        }
+
+        // Helper: Filter Buildings when Client changes
+        function filterWoBuildings() {
+            const custId = document.getElementById('wo_customerId').value;
+            const bldgSelect = document.getElementById('wo_buildingId');
+            const addrInput = document.getElementById('wo_address');
+            const flatSelect = document.getElementById('wo_flatId');
+            
+            // Reset downstream fields
+            addrInput.value = '';
+            flatSelect.innerHTML = '<option value="">Select Building First</option>';
+            flatSelect.disabled = true;
+            flatSelect.classList.add('bg-gray-100');
+            bldgSelect.innerHTML = '<option value="">Select Building</option>';
+            
+            if (custId) {
+                bldgSelect.disabled = false;
+                bldgSelect.classList.remove('bg-gray-100');
+                const filtered = allWoBuildings.filter(b => b.customerId === custId);
+                
+                if (filtered.length > 0) {
+                    filtered.forEach(b => {
+                        bldgSelect.innerHTML += `<option value="${b.id}" data-address="${b.address || ''}">${b.name}</option>`;
+                    });
+                } else {
+                    bldgSelect.innerHTML = '<option value="">No Buildings for this Client</option>';
+                }
+            } else {
+                bldgSelect.disabled = true;
+                bldgSelect.classList.add('bg-gray-100');
+                bldgSelect.innerHTML = '<option value="">Select Client First</option>';
+            }
+        }
+
+        // Helper: Filter Flats and Auto-fill Address when Building changes
+        function filterWoFlats() {
+            const bldgSelect = document.getElementById('wo_buildingId');
+            const bldgId = bldgSelect.value;
+            const selectedOption = bldgSelect.options[bldgSelect.selectedIndex];
+            
+            const addrInput = document.getElementById('wo_address');
+            const flatSelect = document.getElementById('wo_flatId');
+
+            // Auto-fill Address
+            addrInput.value = selectedOption.getAttribute('data-address') || 'N/A';
+
+            // Reset Flat dropdown
+            flatSelect.innerHTML = '<option value="">Select Flat</option>';
+            
+            if (bldgId) {
+                flatSelect.disabled = false;
+                flatSelect.classList.remove('bg-gray-100');
+                const filtered = allWoFlats.filter(f => f.buildingId === bldgId);
+                
+                if (filtered.length > 0) {
+                    filtered.forEach(f => {
+                        flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`;
+                    });
+                } else {
+                    flatSelect.innerHTML = '<option value="">No Flats for this Building</option>';
+                }
+            } else {
+                flatSelect.disabled = true;
+                flatSelect.classList.add('bg-gray-100');
+                flatSelect.innerHTML = '<option value="">Select Building First</option>';
+            }
+        }
+
         // --- REPORTS FUNCTION ---
         async function loadReports() {
             try {
@@ -1169,7 +1318,17 @@
                 closeModal();
                 alert(successMsg);
                 if (refreshPage) {
-                    fetchAndRender(refreshPage.endpoint, refreshPage.tableId, refreshPage.columns);
+                    if (refreshPage.tableId === 'tbody-work-orders') {
+                        fetchAndRenderWorkOrders();
+                    } else if (refreshPage.tableId === 'tbody-invoices') {
+                        fetchAndRenderInvoices();
+                    } else if (refreshPage.tableId === 'tbody-inventory') {
+                        fetchAndRenderAssets();
+                    } else if (refreshPage.tableId === 'tbody-staff') {
+                        fetchAndRenderStaff();
+                    } else {
+                        fetchAndRender(refreshPage.endpoint, refreshPage.tableId, refreshPage.columns);
+                    }
                 }
             } catch (error) {
                 modalError.innerText = error.message;
@@ -1222,68 +1381,6 @@
                     city: getInput('b_city'),
                     emirate: getInput('b_emirate')
                 }, 'Building created successfully!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] });
-            };
-        }
-
-                async function openWorkOrderModal() {
-            const custOpts = await fetchDropdown('/customers');
-            const bldgOpts = await fetchDropdown('/buildings');
-            const assetOpts = await fetchDropdown('/assets');
-            
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Title / Complaint</label><input type="text" id="w_title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., AC Not Cooling"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="w_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                        <select id="w_customerId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Select Customer</option>${custOpts}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Building</label>
-                        <select id="w_buildingId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Select Building</option>${bldgOpts}
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Asset / AC Unit</label>
-                    <select id="w_assetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">Select Asset</option>${assetOpts}
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date</label>
-                        <input type="date" id="w_scheduledDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                        <select id="w_priority" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="LOW">Low</option>
-                            <option value="MEDIUM" selected>Medium</option>
-                            <option value="HIGH">High</option>
-                            <option value="URGENT">Urgent</option>
-                        </select>
-                    </div>
-                </div>
-            `;
-            openModal('Add New Work Order', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/work-orders', {
-                    title: getInput('w_title'),
-                    description: getInput('w_description'),
-                    customerId: getInput('w_customerId') || null,
-                    buildingId: getInput('w_buildingId') || null,
-                    assetId: getInput('w_assetId') || null,
-                    scheduledDate: getInput('w_scheduledDate') || null,
-                    priority: getInput('w_priority')
-                }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
             };
         }
 
