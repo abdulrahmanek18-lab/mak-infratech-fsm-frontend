@@ -511,7 +511,7 @@
     </div>
 
     <script>
-               const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
         const userRole = localStorage.getItem('fsm_role') || 'GUEST';
 
@@ -535,10 +535,11 @@
 
         function logout() {
             localStorage.removeItem('fsm_token');
-            localStorage.removeItem('fsm_role'); // Clear role on logout
+            localStorage.removeItem('fsm_role');
             window.location.href = 'login.html';
         }
 
+        // API Helper
         async function apiFetch(endpoint, method = 'GET', body = null) {
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method,
@@ -555,6 +556,7 @@
             return res.json();
         }
 
+        // Fetch and Render Table Data (Supports nested data like customer.name)
         async function fetchAndRender(endpoint, tableId, columns) {
             const tbody = document.getElementById(tableId);
             if (!tbody) return;
@@ -666,32 +668,94 @@
             }
         }
 
+        // View A4 Invoice Document
         async function viewInvoice(id) {
             try {
                 const inv = await apiFetch(`/invoices/${id}`);
+                const company = await apiFetch('/company'); 
+                
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md');
+                modalBox.classList.add('max-w-5xl', 'p-0');
+
                 const fields = `
-                    <div class="space-y-4 text-gray-800">
-                        <div class="flex justify-between border-b pb-3">
-                            <span class="font-bold text-lg text-blue-600">Invoice ${inv.invoiceNumber}</span>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">${inv.status}</span>
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
+                        <button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+
+                    <div id="print-area" class="a4-page">
+                        <div class="a4-header">
+                            <div>
+                                ${company.invoiceHeader ? `<img src="${company.invoiceHeader}" alt="Header" class="h-20 mb-2 object-contain">` : `<h1 class="text-2xl font-bold text-blue-800">${company.name || 'MAK INFRATECH'}</h1>`}
+                                <p class="text-sm text-gray-600">${company.address || ''}</p>
+                                <p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-xl font-bold uppercase tracking-wide">Tax Invoice</h2>
+                                <p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p>
+                            </div>
                         </div>
-                        <div><strong>Customer:</strong> ${inv.customer ? inv.customer.name : 'N/A'}</div>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div><strong>Issue Date:</strong> ${new Date(inv.issueDate).toLocaleDateString()}</div>
-                            <div><strong>Due Date:</strong> ${new Date(inv.dueDate).toLocaleDateString()}</div>
+
+                        <div class="grid grid-cols-2 gap-8 mb-8">
+                            <div>
+                                <div class="a4-detail-label">Bill To</div>
+                                <div class="a4-detail-value font-bold">${inv.customer ? inv.customer.name : 'N/A'}</div>
+                                <div class="text-sm text-gray-600">${inv.customer ? inv.customer.address || '' : ''}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="a4-detail-row"><span class="a4-detail-label">Invoice No:</span> <span class="font-medium">${inv.invoiceNumber}</span></div>
+                                <div class="a4-detail-row"><span class="a4-detail-label">Issue Date:</span> <span class="font-medium">${new Date(inv.issueDate).toLocaleDateString()}</span></div>
+                                <div class="a4-detail-row"><span class="a4-detail-label">Due Date:</span> <span class="font-medium">${new Date(inv.dueDate).toLocaleDateString()}</span></div>
+                                <div class="a4-detail-row"><span class="a4-detail-label">Status:</span> <span class="px-2 py-1 text-xs rounded-full ${inv.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${inv.status}</span></div>
+                            </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 mt-4 border-t pt-4">
-                            <div>Subtotal:</div><div class="text-right">AED ${inv.subtotal}</div>
-                            <div>VAT (5%):</div><div class="text-right">AED ${inv.vatAmount}</div>
-                            <div class="font-bold text-lg border-t pt-2">Total:</div><div class="text-right font-bold text-lg border-t pt-2">AED ${inv.total}</div>
+
+                        <table class="w-full border-collapse mb-8 text-sm">
+                            <thead>
+                                <tr class="bg-gray-100 border-b-2 border-gray-300">
+                                    <th class="py-2 px-3 text-left">Description</th>
+                                    <th class="py-2 px-3 text-right">Amount (AED)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td>
+                                    <td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="flex justify-end mb-12">
+                            <div class="w-1/2 space-y-2">
+                                <div class="flex justify-between"><span>Subtotal:</span><span>AED ${parseFloat(inv.subtotal).toFixed(2)}</span></div>
+                                <div class="flex justify-between"><span>VAT (5%):</span><span>AED ${parseFloat(inv.vatAmount).toFixed(2)}</span></div>
+                                <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total:</span><span>AED ${parseFloat(inv.total).toFixed(2)}</span></div>
+                            </div>
                         </div>
-                        ${inv.notes ? `<div class="mt-4 bg-gray-50 p-3 rounded text-sm"><strong>Notes:</strong><br>${inv.notes}</div>` : ''}
+
+                        <div class="a4-footer">
+                             ${company.invoiceFooter ? `<img src="${company.invoiceFooter}" class="w-full max-h-24 object-contain">` : `<div class="text-center text-xs text-gray-400">Thank you for your business!</div>`}
+                        </div>
                     </div>
                 `;
-                openModal('Invoice Details', fields, true); 
+                openModal('Invoice Document', fields, true); 
             } catch (e) {
                 alert('Failed to load invoice details');
             }
+        }
+
+        function downloadInvoicePDF(invoiceNumber) {
+            const element = document.getElementById('print-area');
+            const opt = {
+                margin: 0,
+                filename: `Invoice_${invoiceNumber}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
 
         // --- ASSET & QR FUNCTIONS ---
@@ -1222,8 +1286,12 @@
                     tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr>`;
                     return;
                 }
-                tbody.innerHTML = data.map(item => `
-                    <tr>
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
+                    tr.addEventListener('click', () => viewStaffDocument(item.id));
+                    tr.innerHTML = `
                         <td class="px-3 py-2 text-sm text-gray-700">
                             ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}
                         </td>
@@ -1233,11 +1301,156 @@
                         <td class="px-3 py-2 text-sm text-gray-700">${item.phone || '-'}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>
-                    </tr>
-                `).join('');
+                    `;
+                    tbody.appendChild(tr);
+                });
             } catch (e) {
                 tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
             }
+        }
+
+        // View A4 Staff Document
+        async function viewStaffDocument(staffId) {
+            try {
+                const staff = await apiFetch(`/staff/${staffId}`);
+                const company = await apiFetch('/company'); 
+                
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md');
+                modalBox.classList.add('max-w-5xl', 'p-0');
+
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
+                        <button onclick="downloadStaffPDF('${staff.id}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+
+                    <div id="print-area" class="a4-page">
+                        <div class="a4-header">
+                            <div>
+                                ${company.logoUrl ? `<img src="${company.logoUrl}" alt="Logo" class="h-16 mb-2">` : '<h1 class="text-2xl font-bold text-blue-800">MAK INFRATECH</h1>'}
+                                <p class="text-sm text-gray-600">${company.address || ''}</p>
+                                <p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-xl font-bold uppercase tracking-wide">Staff Record Form</h2>
+                                <p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p>
+                            </div>
+                        </div>
+
+                        <div class="a4-grid">
+                            <div class="text-center">
+                                ${staff.photoUrl ? `<img src="${staff.photoUrl}" class="w-40 h-48 object-cover mx-auto border border-gray-300">` : `<div class="w-40 h-48 bg-gray-100 mx-auto flex items-center justify-center text-gray-400 border border-gray-300">No Photo</div>`}
+                            </div>
+                            <div>
+                                <div class="a4-detail-row">
+                                    <div class="a4-detail-label">Employee ID</div>
+                                    <div class="a4-detail-value">${staff.id.substring(0, 8).toUpperCase()}</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="a4-detail-row">
+                                        <div class="a4-detail-label">First Name</div>
+                                        <div class="a4-detail-value">${staff.firstName}</div>
+                                    </div>
+                                    <div class="a4-detail-row">
+                                        <div class="a4-detail-label">Last Name</div>
+                                        <div class="a4-detail-value">${staff.lastName}</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="a4-detail-row">
+                                        <div class="a4-detail-label">Designation / Job Title</div>
+                                        <div class="a4-detail-value">${staff.jobTitle || 'N/A'}</div>
+                                    </div>
+                                    <div class="a4-detail-row">
+                                        <div class="a4-detail-label">Nationality</div>
+                                        <div class="a4-detail-value">${staff.nationality || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="a4-detail-row">
+                                        <div class="a4-detail-label">Mobile Number</div>
+                                        <div class="a4-detail-value">${staff.phone || 'N/A'}</div>
+                                    </div>
+                                    <div class="a4-detail-row">
+                                        <div class="a4-detail-label">Joining Date</div>
+                                        <div class="a4-detail-value">${new Date(staff.createdAt).toLocaleDateString()}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Document & Visa Details</h3>
+                        <div class="grid grid-cols-3 gap-4 mb-8">
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Passport Number</div>
+                                <div class="a4-detail-value">${staff.passportNumber || 'N/A'}</div>
+                            </div>
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Passport Expiry</div>
+                                <div class="a4-detail-value">${staff.passportExpiry ? new Date(staff.passportExpiry).toLocaleDateString() : 'N/A'}</div>
+                            </div>
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Visa Number</div>
+                                <div class="a4-detail-value">${staff.visaNumber || 'N/A'}</div>
+                            </div>
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Visa Expiry</div>
+                                <div class="a4-detail-value">${staff.visaExpiry ? new Date(staff.visaExpiry).toLocaleDateString() : 'N/A'}</div>
+                            </div>
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Emirates ID</div>
+                                <div class="a4-detail-value">${staff.emiratesId || 'N/A'}</div>
+                            </div>
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Emirates ID Expiry</div>
+                                <div class="a4-detail-value">${staff.emiratesIdExpiry ? new Date(staff.emiratesIdExpiry).toLocaleDateString() : 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Insurance Details</h3>
+                        <div class="grid grid-cols-3 gap-4 mb-8">
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Provider</div>
+                                <div class="a4-detail-value">${staff.insuranceProvider || 'N/A'}</div>
+                            </div>
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Policy Number</div>
+                                <div class="a4-detail-value">${staff.insurancePolicyNumber || 'N/A'}</div>
+                            </div>
+                            <div class="a4-detail-row">
+                                <div class="a4-detail-label">Expiry Date</div>
+                                <div class="a4-detail-value">${staff.insuranceExpiry ? new Date(staff.insuranceExpiry).toLocaleDateString() : 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        <div class="a4-footer">
+                            <div class="text-center">
+                                <div class="w-24 h-24 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xs text-gray-400">Company Seal</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="border-t border-gray-800 w-48 mt-12 pt-1 text-sm font-medium">Authorized Signatory</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                openModal('Staff Document', fields, true);
+            } catch (e) {
+                alert('Failed to load staff document');
+            }
+        }
+
+        function downloadStaffPDF(staffId) {
+            const element = document.getElementById('print-area');
+            const opt = {
+                margin: 0,
+                filename: `Staff_Record_${staffId.substring(0, 8)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
 
         async function openStaffModal() {
@@ -1337,6 +1550,11 @@
             modal.classList.remove('active');
             modalForm.reset();
             modalError.classList.add('hidden');
+            
+            // Revert modal width for normal forms
+            const modalBox = document.querySelector('#modal > div');
+            modalBox.classList.add('max-w-md');
+            modalBox.classList.remove('max-w-5xl', 'p-0');
         }
 
         async function handleSubmit(endpoint, data, successMsg, refreshPage) {
