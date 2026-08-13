@@ -486,10 +486,21 @@
     <script>
                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
+        const userRole = localStorage.getItem('fsm_role') || 'GUEST';
 
         if (!token) {
             window.location.href = 'login.html';
         }
+
+        // HIDE SIDEBAR LINKS BASED ON ROLE
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const allowedRoles = link.getAttribute('data-roles');
+                if (allowedRoles && !allowedRoles.split(',').includes(userRole)) {
+                    link.style.display = 'none';
+                }
+            });
+        });
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('-translate-x-full');
@@ -497,10 +508,10 @@
 
         function logout() {
             localStorage.removeItem('fsm_token');
+            localStorage.removeItem('fsm_role'); // Clear role on logout
             window.location.href = 'login.html';
         }
 
-        // API Helper
         async function apiFetch(endpoint, method = 'GET', body = null) {
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method,
@@ -517,7 +528,6 @@
             return res.json();
         }
 
-        // Fetch and Render Table Data (Supports nested data like customer.name)
         async function fetchAndRender(endpoint, tableId, columns) {
             const tbody = document.getElementById(tableId);
             if (!tbody) return;
@@ -902,7 +912,6 @@
         let allWoFlats = [];
 
         async function openWorkOrderModal() {
-            // Fetch all Customers, Buildings, and Flats upfront for instant filtering
             const customers = await apiFetch('/customers');
             allWoBuildings = await apiFetch('/buildings');
             allWoFlats = await apiFetch('/flats');
@@ -956,13 +965,11 @@
             
             openModal('Create New Work Order', fields);
             
-            // Set default date to today
             document.getElementById('wo_scheduledDate').valueAsDate = new Date();
 
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
                 
-                // Combine Date and Time into one ISO string for the backend
                 const dateVal = getInput('wo_scheduledDate');
                 const timeVal = getInput('wo_scheduledTime');
                 const scheduledDateTime = new Date(`${dateVal}T${timeVal}`);
@@ -979,14 +986,12 @@
             };
         }
 
-        // Helper: Filter Buildings when Client changes
         function filterWoBuildings() {
             const custId = document.getElementById('wo_customerId').value;
             const bldgSelect = document.getElementById('wo_buildingId');
             const addrInput = document.getElementById('wo_address');
             const flatSelect = document.getElementById('wo_flatId');
             
-            // Reset downstream fields
             addrInput.value = '';
             flatSelect.innerHTML = '<option value="">Select Building First</option>';
             flatSelect.disabled = true;
@@ -1012,7 +1017,6 @@
             }
         }
 
-        // Helper: Filter Flats and Auto-fill Address when Building changes
         function filterWoFlats() {
             const bldgSelect = document.getElementById('wo_buildingId');
             const bldgId = bldgSelect.value;
@@ -1021,10 +1025,8 @@
             const addrInput = document.getElementById('wo_address');
             const flatSelect = document.getElementById('wo_flatId');
 
-            // Auto-fill Address
             addrInput.value = selectedOption.getAttribute('data-address') || 'N/A';
 
-            // Reset Flat dropdown
             flatSelect.innerHTML = '<option value="">Select Flat</option>';
             
             if (bldgId) {
