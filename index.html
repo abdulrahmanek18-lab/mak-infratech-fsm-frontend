@@ -5,12 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAK INFRATECH FMS | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- NEW: Libraries for PDF and Digital Signature -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.umd.min.js"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -27,16 +24,11 @@
         .excel-table th { background-color: #f1f5f9; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }
         .excel-table tbody tr:nth-child(even) { background-color: #f8fafc; }
         .excel-table tbody tr:hover { background-color: #eff6ff; transition: background-color 0.2s; }
-                /* A4 Document Styling */
+
+        /* A4 Document Styling */
         .a4-page {
-            width: 794px; /* 210mm at 96dpi */
-            min-height: 1123px; /* 297mm at 96dpi */
-            background: white;
-            margin: 0 auto;
-            padding: 40px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            position: relative;
-            color: #333;
+            width: 794px; min-height: 1123px; background: white; margin: 0 auto; padding: 40px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; color: #333;
         }
         .a4-header { display: flex; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 20px; margin-bottom: 30px; }
         .a4-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 40px; }
@@ -53,17 +45,16 @@
             .no-print { display: none !important; }
             @page { size: A4; margin: 0; }
         }
-    
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex overflow-hidden">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 text-white h-screen flex flex-col shrink-0 z-50 fixed lg:static top-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out" id="sidebar">
-        <div class="h-16 flex items-center justify-center border-b border-slate-800 shadow-md">
+    <aside class="w-64 bg-slate-900 text-white h-screen flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out fixed lg:static top-0 left-0 shrink-0" id="sidebar">
+        <div class="h-16 flex items-center justify-center border-b border-slate-800 shadow-md shrink-0">
             <h1 class="text-xl font-bold text-blue-400 tracking-wide">MAK INFRATECH</h1>
         </div>
-                        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             <a href="#" onclick="showPage('dashboard', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,COORDINATOR,TECHNICIAN,ACCOUNTANT" class="sidebar-link active flex items-center space-x-3 px-4 py-3 rounded-md text-sm font-medium transition">
                 <span>📊</span> <span>Dashboard</span>
             </a>
@@ -115,7 +106,7 @@
                 <span>⚙️</span> <span>System Settings</span>
             </a>
         </nav>
-        <div class="p-4 border-t border-slate-800">
+        <div class="p-4 border-t border-slate-800 shrink-0">
             <button onclick="logout()" class="w-full text-left flex items-center space-x-3 text-gray-300 hover:text-white transition">
                 <span>🚪</span> <span>Logout</span>
             </button>
@@ -142,32 +133,20 @@
             <!-- DASHBOARD PAGE -->
             <section id="page-dashboard" class="page-content active">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-gray-500 text-sm font-medium">Open Work Orders</h3>
-                            <span class="text-2xl">🛠️</span>
-                        </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Open Work Orders</h3>
                         <p class="text-3xl font-bold text-gray-800">0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-gray-500 text-sm font-medium">Active AMCs</h3>
-                            <span class="text-2xl">📅</span>
-                        </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Active AMCs</h3>
                         <p class="text-3xl font-bold text-gray-800">0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-gray-500 text-sm font-medium">Pending Invoices</h3>
-                            <span class="text-2xl">🧾</span>
-                        </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Pending Invoices</h3>
                         <p class="text-3xl font-bold text-gray-800">AED 0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-gray-500 text-sm font-medium">Low Stock Items</h3>
-                            <span class="text-2xl">📦</span>
-                        </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-sm font-medium mb-2">Low Stock Items</h3>
                         <p class="text-3xl font-bold text-gray-800">0</p>
                     </div>
                 </div>
@@ -178,12 +157,12 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">All Work Orders</h3>
-                        <button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Work Order</button>
+                        <button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Work Order</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
-                            <thead><tr><th>WO Number</th><th>Title</th><th>Status</th><th>Priority</th></tr></thead>
-                            <tbody id="tbody-work-orders"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody>
+                            <thead><tr><th>WO Number</th><th>Title</th><th>Status</th><th>Priority</th><th>Action</th></tr></thead>
+                            <tbody id="tbody-work-orders"><tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -194,7 +173,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">All Customers</h3>
-                        <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Customer</button>
+                        <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Customer</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
@@ -210,7 +189,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">Buildings & Flats</h3>
-                        <button onclick="openBuildingModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Building</button>
+                        <button onclick="openBuildingModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Building</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
@@ -226,7 +205,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">Annual Maintenance Contracts (AMC)</h3>
-                        <button onclick="openAmcModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New AMC</button>
+                        <button onclick="openAmcModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New AMC</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
@@ -242,12 +221,12 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">All Invoices</h3>
-                        <button onclick="openInvoiceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Invoice</button>
+                        <button onclick="openInvoiceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Invoice</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
                             <thead><tr><th>Invoice No.</th><th>Customer</th><th>Total (AED)</th><th>Status</th></tr></thead>
-                            <tbody id="tbody-invoices"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Invoices found.</td></tr></tbody>
+                            <tbody id="tbody-invoices"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Invoices found.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -258,7 +237,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">All Expenses</h3>
-                        <button onclick="openExpenseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Expense</button>
+                        <button onclick="openExpenseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Expense</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
@@ -274,7 +253,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">Purchase Orders (PO)</h3>
-                        <button onclick="openPoModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New PO</button>
+                        <button onclick="openPoModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New PO</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
@@ -285,7 +264,23 @@
                 </div>
             </section>
 
-                        <!-- STAFF PAGE -->
+            <!-- INVENTORY PAGE -->
+            <section id="page-inventory" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Inventory & Assets</h3>
+                        <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Item</button>
+                    </div>
+                    <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
+                        <table class="excel-table">
+                            <thead><tr><th>Asset No.</th><th>Instrument</th><th>Location</th><th>Action</th></tr></thead>
+                            <tbody id="tbody-inventory"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Inventory items found.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STAFF PAGE -->
             <section id="page-staff" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
@@ -300,158 +295,15 @@
                     </div>
                 </div>
             </section>
-            
-            <!-- INVENTORY PAGE -->
-            <section id="page-inventory" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Inventory & Assets</h3>
-                        <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New Item</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="excel-table">
-                            <thead><tr><th>SKU</th><th>Name</th><th>Qty</th></tr></thead>
-                            <tbody id="tbody-inventory"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Inventory items found.</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-            <!-- COMPANY SETTINGS PAGE -->
-            <section id="page-company" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Company Profile & Settings</h3>
-                        <button onclick="saveCompanySettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Changes</button>
-                    </div>
-                    <div class="p-6 space-y-6">
-                        
-                        <!-- Branding Images -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
-                                <img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logoUrl', 'img-preview-logo')" class="block w-full text-sm text-gray-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Header Image</label>
-                                <img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceHeader', 'img-preview-header')" class="block w-full text-sm text-gray-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Footer Image</label>
-                                <img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceFooter', 'img-preview-footer')" class="block w-full text-sm text-gray-500">
-                            </div>
-                        </div>
 
-                        <hr class="border-gray-200">
-
-                        <!-- Basic Info -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                                <input type="text" id="set_name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">TRN (Tax Reg. Number)</label>
-                                <input type="text" id="set_trn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="100123456700003">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                <input type="text" id="set_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" id="set_email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <textarea id="set_address" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                        </div>
-
-                        <hr class="border-gray-200">
-
-                        <!-- Document & Financial Settings -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">VAT (%)</label>
-                                <input type="number" step="0.01" id="set_vat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="5">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Prefix</label>
-                                <input type="text" id="set_invPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="INV-">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">PO Prefix</label>
-                                <input type="text" id="set_poPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="PO-">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">WO Prefix</label>
-                                <input type="text" id="set_woPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="WO-">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-                        <!-- SYSTEM SETTINGS PAGE -->
-            <section id="page-settings" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">System Settings</h3>
-                        <button onclick="saveSystemSettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Settings</button>
-                    </div>
-                    <div class="p-6 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">System Name</label>
-                                <input type="text" id="set_sysName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Default Currency</label>
-                                <select id="set_currency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="AED">AED (United Arab Emirates Dirham)</option>
-                                    <option value="USD">USD (US Dollar)</option>
-                                    <option value="SAR">SAR (Saudi Riyal)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
-                                <select id="set_timezone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="Asia/Dubai">Asia/Dubai (GMT+4)</option>
-                                    <option value="Asia/Riyadh">Asia/Riyadh (GMT+3)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Low Stock Alert Threshold</label>
-                                <input type="number" id="set_lowStock" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-                        
-                        <hr class="border-gray-200">
-
-                        <div class="space-y-4">
-                            <h4 class="font-medium text-gray-800">Notification Preferences</h4>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="set_emailNotif" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                <label for="set_emailNotif" class="ml-2 text-sm text-gray-700">Enable Email Notifications</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="set_smsNotif" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                <label for="set_smsNotif" class="ml-2 text-sm text-gray-700">Enable SMS Notifications</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
             <!-- USERS PAGE -->
             <section id="page-users" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">System Users</h3>
-                        <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">+ New User</button>
+                        <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New User</button>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
                             <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
                             <tbody id="tbody-users"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Users found.</td></tr></tbody>
@@ -461,7 +313,6 @@
             </section>
 
             <!-- REPORTS PAGE -->
-                        <!-- REPORTS PAGE -->
             <section id="page-reports" class="page-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -481,7 +332,6 @@
                         <p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p>
                     </div>
                 </div>
-
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <h3 class="font-semibold text-gray-800 text-lg mb-4">Work Order Status Breakdown</h3>
                     <div id="rep-wo-stats" class="flex flex-wrap gap-3">
@@ -489,6 +339,75 @@
                     </div>
                 </div>
             </section>
+
+            <!-- COMPANY SETTINGS PAGE -->
+            <section id="page-company" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Company Profile & Settings</h3>
+                        <button onclick="saveCompanySettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Changes</button>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
+                                <img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logoUrl', 'img-preview-logo')" class="block w-full text-sm text-gray-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Header Image</label>
+                                <img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceHeader', 'img-preview-header')" class="block w-full text-sm text-gray-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Footer Image</label>
+                                <img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceFooter', 'img-preview-footer')" class="block w-full text-sm text-gray-500">
+                            </div>
+                        </div>
+                        <hr class="border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label><input type="text" id="set_name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">TRN (Tax Reg. Number)</label><input type="text" id="set_trn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="100123456700003"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="set_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="set_email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><textarea id="set_address" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
+                        <hr class="border-gray-200">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">VAT (%)</label><input type="number" step="0.01" id="set_vat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="5"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Prefix</label><input type="text" id="set_invPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="INV-"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">PO Prefix</label><input type="text" id="set_poPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="PO-"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">WO Prefix</label><input type="text" id="set_woPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="WO-"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SYSTEM SETTINGS PAGE -->
+            <section id="page-settings" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">System Settings</h3>
+                        <button onclick="saveSystemSettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Settings</button>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">System Name</label><input type="text" id="set_sysName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Default Currency</label><select id="set_currency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="AED">AED (United Arab Emirates Dirham)</option><option value="USD">USD (US Dollar)</option><option value="SAR">SAR (Saudi Riyal)</option></select></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Timezone</label><select id="set_timezone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="Asia/Dubai">Asia/Dubai (GMT+4)</option><option value="Asia/Riyadh">Asia/Riyadh (GMT+3)</option></select></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Low Stock Alert Threshold</label><input type="number" id="set_lowStock" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        </div>
+                        <hr class="border-gray-200">
+                        <div class="space-y-4">
+                            <h4 class="font-medium text-gray-800">Notification Preferences</h4>
+                            <div class="flex items-center"><input type="checkbox" id="set_emailNotif" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"><label for="set_emailNotif" class="ml-2 text-sm text-gray-700">Enable Email Notifications</label></div>
+                            <div class="flex items-center"><input type="checkbox" id="set_smsNotif" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"><label for="set_smsNotif" class="ml-2 text-sm text-gray-700">Enable SMS Notifications</label></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </main>
 
@@ -511,7 +430,7 @@
     </div>
 
     <script>
-                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+        const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
         const userRole = localStorage.getItem('fsm_role') || 'GUEST';
 
@@ -668,7 +587,6 @@
             }
         }
 
-        // View A4 Invoice Document
         async function viewInvoice(id) {
             try {
                 const inv = await apiFetch(`/invoices/${id}`);
