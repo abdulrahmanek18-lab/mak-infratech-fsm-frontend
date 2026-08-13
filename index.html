@@ -27,6 +27,33 @@
         .excel-table th { background-color: #f1f5f9; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }
         .excel-table tbody tr:nth-child(even) { background-color: #f8fafc; }
         .excel-table tbody tr:hover { background-color: #eff6ff; transition: background-color 0.2s; }
+                /* A4 Document Styling */
+        .a4-page {
+            width: 794px; /* 210mm at 96dpi */
+            min-height: 1123px; /* 297mm at 96dpi */
+            background: white;
+            margin: 0 auto;
+            padding: 40px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            color: #333;
+        }
+        .a4-header { display: flex; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 20px; margin-bottom: 30px; }
+        .a4-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 40px; }
+        .a4-detail-row { margin-bottom: 15px; }
+        .a4-detail-label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
+        .a4-detail-value { font-size: 16px; font-weight: 500; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+        .a4-footer { position: absolute; bottom: 40px; left: 40px; right: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+        
+        /* Print Rules */
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            @page { size: A4; margin: 0; }
+        }
+    
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex overflow-hidden">
