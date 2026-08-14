@@ -94,6 +94,9 @@
             <a href="#" onclick="showPage('expenses', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>💳</span> <span>Expenses</span>
             </a>
+            <a href="#" onclick="showPage('purchases', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>🛍️</span> <span>Purchases</span>
+            </a>
             <a href="#" onclick="showPage('po', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>📦</span> <span>Purchase Orders</span>
             </a>
@@ -243,6 +246,22 @@
                         <table class="excel-table">
                             <thead><tr><th>Category</th><th>Amount (AED)</th><th>Status</th></tr></thead>
                             <tbody id="tbody-expenses"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Expenses found.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PURCHASES PAGE (NEW) -->
+            <section id="page-purchases" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Purchases / Supplier Bills</h3>
+                        <button onclick="openPurchaseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ Add Purchase</button>
+                    </div>
+                    <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
+                        <table class="excel-table">
+                            <thead><tr><th>Bill No.</th><th>Supplier</th><th>Date</th><th>Total (AED)</th><th>Payment Status</th></tr></thead>
+                            <tbody id="tbody-purchases"><tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -535,6 +554,7 @@
                 'users': 'System Users',
                 'invoices': 'Invoices',
                 'expenses': 'Expenses',
+                'purchases': 'Purchases (Bills)',
                 'po': 'Purchase Orders',
                 'reports': 'Reports & Analytics',
                 'settings': 'System Settings'
@@ -548,6 +568,7 @@
             if (pageId === 'amc') fetchAndRender('/amc', 'tbody-amc', ['contractNumber', 'value', 'status']);
             if (pageId === 'invoices') fetchAndRenderInvoices();
             if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
+            if (pageId === 'purchases') fetchAndRenderPurchases();
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
             if (pageId === 'inventory') fetchAndRenderAssets();
             if (pageId === 'staff') fetchAndRenderStaff();
@@ -674,6 +695,176 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
+        }
+
+        // --- PURCHASES FUNCTIONS (NEW) ---
+        async function fetchAndRenderPurchases() {
+            const tbody = document.getElementById('tbody-purchases');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/purchases');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.billNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.supplierName || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            <span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        let purchaseReceiptData = null;
+        function handleReceiptUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                purchaseReceiptData = e.target.result;
+                document.getElementById('receipt_preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function openPurchaseModal() {
+            purchaseReceiptData = null;
+            const woOpts = await fetchDropdown('/work-orders');
+            const assetOpts = await fetchDropdown('/assets');
+
+            const fields = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name *</label><input type="text" id="pur_supplier" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Bill / Reference No.</label><input type="text" id="pur_bill" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label><input type="date" id="pur_pdate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label><input type="date" id="pur_ddate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Work Order</label><select id="pur_woId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${woOpts}</select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Asset</label><select id="pur_assetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${assetOpts}</select></div>
+                </div>
+                
+                <div class="border-t pt-4 mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-medium text-gray-800">Itemized Purchases</h4>
+                        <button type="button" onclick="addPurchaseItemRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">+ Add Item</button>
+                    </div>
+                    <div id="pur_items_container" class="space-y-2">
+                        <!-- Dynamic rows will go here -->
+                    </div>
+                    <div class="flex justify-end mt-4 space-y-1 text-sm w-full max-w-xs ml-auto">
+                        <div class="flex justify-between w-full"><span>Subtotal:</span> <span id="pur_subtotal">0.00</span></div>
+                        <div class="flex justify-between w-full"><span>VAT:</span> <span id="pur_vat">0.00</span></div>
+                        <div class="flex justify-between w-full font-bold text-base border-t pt-1"><span>Total:</span> <span id="pur_total">0.00</span></div>
+                    </div>
+                </div>
+
+                <div class="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Status</label><select id="pur_pstatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="UNPAID">Unpaid</option><option value="PAID">Paid</option><option value="PARTIAL">Partially Paid</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label><select id="pur_pmethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="CARD">Card</option><option value="BANK_TRANSFER">Bank Transfer</option></select></div>
+                </div>
+
+                <div class="border-t pt-4 mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Attach Receipt / Bill Photo</label>
+                    <img id="receipt_preview" src="https://via.placeholder.com/150x100?text=No+Receipt" class="w-full max-h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                    <input type="file" accept="image/png, image/jpeg" onchange="handleReceiptUpload(event)" class="block w-full text-sm text-gray-500">
+                </div>
+            `;
+
+            openModal('Add New Purchase', fields);
+            
+            // Expand modal slightly for the big form
+            const modalBox = document.querySelector('#modal > div');
+            modalBox.classList.remove('max-w-md');
+            modalBox.classList.add('max-w-2xl');
+
+            // Add the first row
+            addPurchaseItemRow();
+            document.getElementById('pur_pdate').valueAsDate = new Date();
+
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                const items = [];
+                document.querySelectorAll('.po-item-row').forEach(row => {
+                    const name = row.querySelector('.item-name').value;
+                    const cat = row.querySelector('.item-cat').value;
+                    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                    const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                    const vat = parseFloat(row.querySelector('.item-vat').value) || 0;
+                    const total = (qty * price) + ((qty * price) * (vat / 100));
+                    if (name) items.push({ name, cat, qty, price, vat, total });
+                });
+
+                if (items.length === 0) {
+                    alert('Please add at least one item.');
+                    return;
+                }
+
+                const subtotal = items.reduce((sum, item) => sum + (item.qty * item.price), 0);
+                const vatAmount = items.reduce((sum, item) => sum + ((item.qty * item.price) * (item.vat / 100)), 0);
+                const totalAmount = subtotal + vatAmount;
+
+                handleSubmit('/purchases', {
+                    supplierName: getInput('pur_supplier'),
+                    billNumber: getInput('pur_bill'),
+                    purchaseDate: getInput('pur_pdate'),
+                    dueDate: getInput('pur_ddate'),
+                    workOrderId: getInput('pur_woId') || null,
+                    assetId: getInput('pur_assetId') || null,
+                    items: items,
+                    subtotal: subtotal,
+                    vatAmount: vatAmount,
+                    totalAmount: totalAmount,
+                    paymentStatus: getInput('pur_pstatus'),
+                    paymentMethod: getInput('pur_pmethod'),
+                    receiptUrl: purchaseReceiptData
+                }, 'Purchase recorded successfully!', { endpoint: '/purchases', tableId: 'tbody-purchases', columns: ['billNumber', 'supplierName', 'purchaseDate', 'totalAmount', 'paymentStatus'] });
+            };
+        }
+
+        function addPurchaseItemRow() {
+            const container = document.getElementById('pur_items_container');
+            const rowHtml = `
+                <div class="po-item-row grid grid-cols-12 gap-2 items-center">
+                    <input type="text" placeholder="Item Name" class="item-name col-span-4 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="text" placeholder="Category" class="item-cat col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="number" placeholder="Qty" step="0.01" class="item-qty col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
+                    <input type="number" placeholder="Price" step="0.01" class="item-price col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
+                    <input type="number" placeholder="VAT%" step="0.01" value="5" class="item-vat col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
+                    <span class="col-span-2 text-right text-sm text-gray-600 item-total">0.00</span>
+                    <button type="button" onclick="this.parentElement.remove(); updatePurchaseTotals();" class="col-span-1 text-red-500 hover:text-red-700 text-sm">X</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', rowHtml);
+            updatePurchaseTotals();
+        }
+
+        function updatePurchaseTotals() {
+            let subtotal = 0;
+            let vatAmount = 0;
+            document.querySelectorAll('.po-item-row').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const vat = parseFloat(row.querySelector('.item-vat').value) || 0;
+                const rowTotal = (qty * price) + ((qty * price) * (vat / 100));
+                row.querySelector('.item-total').innerText = rowTotal.toFixed(2);
+                subtotal += (qty * price);
+                vatAmount += ((qty * price) * (vat / 100));
+            });
+            document.getElementById('pur_subtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('pur_vat').innerText = vatAmount.toFixed(2);
+            document.getElementById('pur_total').innerText = (subtotal + vatAmount).toFixed(2);
         }
 
         // --- ASSET & QR FUNCTIONS ---
@@ -1227,14 +1418,13 @@
             }
         }
 
-        // View A4 Staff Document
         async function viewStaffDocument(staffId) {
             try {
                 const staff = await apiFetch(`/staff/${staffId}`);
                 const company = await apiFetch('/company'); 
                 
                 const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md');
+                modalBox.classList.remove('max-w-md', 'max-w-2xl');
                 modalBox.classList.add('max-w-5xl', 'p-0');
 
                 const fields = `
@@ -1472,7 +1662,7 @@
             // Revert modal width for normal forms
             const modalBox = document.querySelector('#modal > div');
             modalBox.classList.add('max-w-md');
-            modalBox.classList.remove('max-w-5xl', 'p-0');
+            modalBox.classList.remove('max-w-5xl', 'max-w-2xl', 'p-0');
         }
 
         async function handleSubmit(endpoint, data, successMsg, refreshPage) {
@@ -1491,6 +1681,8 @@
                         fetchAndRenderAssets();
                     } else if (refreshPage.tableId === 'tbody-staff') {
                         fetchAndRenderStaff();
+                    } else if (refreshPage.tableId === 'tbody-purchases') {
+                        fetchAndRenderPurchases();
                     } else {
                         fetchAndRender(refreshPage.endpoint, refreshPage.tableId, refreshPage.columns);
                     }
