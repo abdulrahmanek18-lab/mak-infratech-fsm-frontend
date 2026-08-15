@@ -562,7 +562,7 @@
             };
             document.getElementById('page-title').innerText = titles[pageId];
 
-            if (pageId === 'users') fetchAndRender('/users', 'tbody-users', ['name', 'email', 'role']);
+            if (pageId === 'users') fetchAndRenderUsers();
             if (pageId === 'customers') fetchAndRender('/customers', 'tbody-customers', ['name', 'phone', 'email', 'address']);
             if (pageId === 'work-orders') fetchAndRenderWorkOrders();
             if (pageId === 'buildings') fetchAndRender('/buildings', 'tbody-buildings', ['name', 'city', 'emirate']);
