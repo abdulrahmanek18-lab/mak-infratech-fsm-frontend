@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.umd.min.js"></script>
-    <!-- QR Code Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -20,26 +19,19 @@
         .modal { display: none; }
         .modal.active { display: flex; }
         
-        /* Excel-like Table Styling */
         .excel-table { border-collapse: collapse; width: 100%; }
         .excel-table th, .excel-table td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; font-size: 13px; white-space: nowrap; }
         .excel-table th { background-color: #f1f5f9; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }
         .excel-table tbody tr:nth-child(even) { background-color: #f8fafc; }
         .excel-table tbody tr:hover { background-color: #eff6ff; transition: background-color 0.2s; }
 
-        /* A4 Document Styling */
         .a4-page { width: 794px; min-height: 1123px; background: white; margin: 0 auto; padding: 40px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; color: #333; }
         .a4-header { display: flex; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 20px; margin-bottom: 30px; }
         .a4-detail-label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
         .a4-detail-value { font-size: 16px; font-weight: 500; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
         .a4-footer { position: absolute; bottom: 40px; left: 40px; right: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
 
-        /* Sticker Label Styling (4x2 inch) */
-        .sticker-label {
-            width: 4in; height: 2in; background: white; margin: 0 auto; padding: 10px;
-            border: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .sticker-label { width: 4in; height: 2in; background: white; margin: 0 auto; padding: 10px; border: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .sticker-header { text-align: center; font-weight: bold; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 2px; }
         .sticker-body { display: flex; align-items: center; justify-content: space-between; height: 100%; }
         .sticker-info { font-size: 10px; line-height: 1.2; }
@@ -50,7 +42,7 @@
             #print-area, #print-area * { visibility: visible; }
             #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; margin: 0; padding: 0; border: none; }
             .no-print { display: none !important; }
-            @page { size: 4in 2in; margin: 0; } /* Sticker size for QR label */
+            @page { size: 4in 2in; margin: 0; }
         }
     </style>
 </head>
@@ -146,26 +138,14 @@
             <!-- DASHBOARD PAGE -->
             <section id="page-dashboard" class="page-content active">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Open Work Orders</h3>
-                        <p class="text-3xl font-bold text-gray-800">0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Active AMCs</h3>
-                        <p class="text-3xl font-bold text-gray-800">0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Pending Invoices</h3>
-                        <p class="text-3xl font-bold text-gray-800">AED 0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Low Stock Items</h3>
-                        <p class="text-3xl font-bold text-gray-800">0</p>
-                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Open Work Orders</h3><p class="text-3xl font-bold text-gray-800">0</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Active AMCs</h3><p class="text-3xl font-bold text-gray-800">0</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Pending Invoices</h3><p class="text-3xl font-bold text-gray-800">AED 0</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Low Stock Items</h3><p class="text-3xl font-bold text-gray-800">0</p></div>
                 </div>
             </section>
 
-            <!-- WORK ORDERS PAGE -->
+            <!-- WORK ORDERS PAGE (UPDATED) -->
             <section id="page-work-orders" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
@@ -174,8 +154,8 @@
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
-                            <thead><tr><th>WO Number</th><th>Title</th><th>Status</th><th>Priority</th><th>Action</th></tr></thead>
-                            <tbody id="tbody-work-orders"><tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody>
+                            <thead><tr><th>WO Number</th><th>Client</th><th>Location</th><th>Complaint</th><th>Schedule</th><th>Technician</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="tbody-work-orders"><tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -344,28 +324,14 @@
             <!-- REPORTS PAGE -->
             <section id="page-reports" class="page-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Total Revenue (Invoiced)</h3>
-                        <p id="rep-revenue" class="text-2xl font-bold text-gray-800">AED 0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Collected (Paid)</h3>
-                        <p id="rep-collected" class="text-2xl font-bold text-green-600">AED 0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Total Expenses</h3>
-                        <p id="rep-expenses" class="text-2xl font-bold text-red-600">AED 0</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Net Profit</h3>
-                        <p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p>
-                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Total Revenue (Invoiced)</h3><p id="rep-revenue" class="text-2xl font-bold text-gray-800">AED 0</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Collected (Paid)</h3><p id="rep-collected" class="text-2xl font-bold text-green-600">AED 0</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Total Expenses</h3><p id="rep-expenses" class="text-2xl font-bold text-red-600">AED 0</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Net Profit</h3><p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p></div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <h3 class="font-semibold text-gray-800 text-lg mb-4">Work Order Status Breakdown</h3>
-                    <div id="rep-wo-stats" class="flex flex-wrap gap-3">
-                        <span class="text-gray-500">Loading stats...</span>
-                    </div>
+                    <div id="rep-wo-stats" class="flex flex-wrap gap-3"><span class="text-gray-500">Loading stats...</span></div>
                 </div>
             </section>
 
@@ -378,21 +344,9 @@
                     </div>
                     <div class="p-6 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
-                                <img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logoUrl', 'img-preview-logo')" class="block w-full text-sm text-gray-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Header Image</label>
-                                <img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceHeader', 'img-preview-header')" class="block w-full text-sm text-gray-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Footer Image</label>
-                                <img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceFooter', 'img-preview-footer')" class="block w-full text-sm text-gray-500">
-                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label><img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logoUrl', 'img-preview-logo')" class="block w-full text-sm text-gray-500"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Header Image</label><img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceHeader', 'img-preview-header')" class="block w-full text-sm text-gray-500"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Footer Image</label><img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceFooter', 'img-preview-footer')" class="block w-full text-sm text-gray-500"></div>
                         </div>
                         <hr class="border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -584,524 +538,137 @@
             if (pageId === 'settings') loadSystemSettings();
         }
 
-        // --- ASSET FUNCTIONS (CASCADING FORM, DETAIL MODAL, QR STICKER) ---
-        let allInvBuildings = [];
-        let allInvFlats = [];
-
-        async function fetchAndRenderAssets() {
-            const tbody = document.getElementById('tbody-inventory');
+        // --- WORK ORDERS FUNCTIONS (UPDATED) ---
+        let allWoBuildings = [], allWoFlats = [];
+        
+        async function fetchAndRenderWorkOrders() {
+            const tbody = document.getElementById('tbody-work-orders');
             if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
             try {
-                const data = await apiFetch('/assets');
+                const data = await apiFetch('/work-orders');
                 if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`;
                     return;
                 }
-                tbody.innerHTML = '';
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
-                    tr.addEventListener('click', () => viewAssetDetails(item.id));
-                    const statusColor = item.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.assetNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.manufacturer || '-'} ${item.model || ''}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.customer?.name || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.name || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.flat?.unitNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.location || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${statusColor}">${item.status || 'ACTIVE'}</span></td>
-                        <td class="px-3 py-2 text-sm text-gray-700 no-print">
-                            <button onclick="event.stopPropagation(); printAssetSticker('${item.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700">Sticker</button>
-                        </td>
+                
+                tbody.innerHTML = data.map(item => {
+                    const statusColors = {
+                        'PENDING': 'bg-yellow-100 text-yellow-700',
+                        'ASSIGNED': 'bg-blue-100 text-blue-700',
+                        'IN_PROGRESS': 'bg-purple-100 text-purple-700',
+                        'PENDING_PARTS': 'bg-orange-100 text-orange-700',
+                        'COMPLETED': 'bg-green-100 text-green-700',
+                        'CANCELLED': 'bg-red-100 text-red-700'
+                    };
+                    const status = item.status || 'PENDING';
+                    const scheduleDate = item.scheduledDate ? new Date(item.scheduledDate).toLocaleString() : 'N/A';
+                    const techName = item.technician ? item.technician.name : '<span class="text-gray-400 italic">Unassigned</span>';
+                    const location = `${item.building?.name || '-'} ${item.flat?.unitNumber ? '('+item.flat.unitNumber+')' : ''}`;
+                    
+                    const canManage = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'COORDINATOR'].includes(userRole);
+                    const whatsappBtn = canManage && item.customer?.phone ? `
+                        <button onclick="sendWhatsAppMsg('${item.customer.phone}', 'Update regarding WO ${item.woNumber}: ${item.title}')" class="text-green-600 hover:text-green-800 text-sm px-1">💬</button>
+                    ` : '';
+
+                    return `
+                        <tr>
+                            <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.woNumber}</td>
+                            <td class="px-3 py-2 text-sm text-gray-700">${item.customer?.name || '-'}</td>
+                            <td class="px-3 py-2 text-sm text-gray-700">${location}</td>
+                            <td class="px-3 py-2 text-sm text-gray-700 max-w-xs truncate">${item.description || item.title}</td>
+                            <td class="px-3 py-2 text-sm text-gray-700">${scheduleDate}</td>
+                            <td class="px-3 py-2 text-sm text-gray-700">${techName}</td>
+                            <td class="px-3 py-2 text-sm text-gray-700">
+                                <select onchange="updateWoStatus('${item.id}', this.value)" class="px-2 py-1 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none ${statusColors[status]}">
+                                    <option value="PENDING" ${status === 'PENDING' ? 'selected' : ''}>Pending</option>
+                                    <option value="ASSIGNED" ${status === 'ASSIGNED' ? 'selected' : ''}>Scheduled</option>
+                                    <option value="IN_PROGRESS" ${status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
+                                    <option value="PENDING_PARTS" ${status === 'PENDING_PARTS' ? 'selected' : ''}>Pending Parts</option>
+                                    <option value="COMPLETED" ${status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
+                                    <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                                </select>
+                            </td>
+                            <td class="px-3 py-2 text-sm text-gray-700 flex gap-1">
+                                <button onclick="viewWorkOrderDetails('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️</button>
+                                ${whatsappBtn}
+                                ${canManage ? `
+                                    <button onclick="openServiceReportModal('${item.id}')" class="text-purple-600 hover:text-purple-800 text-sm px-1">📝</button>
+                                    <button onclick="deleteWo('${item.id}')" class="text-red-600 hover:text-red-800 text-sm px-1">🗑️</button>
+                                ` : ''}
+                            </td>
+                        </tr>
                     `;
-                    tbody.appendChild(tr);
-                });
+                }).join('');
             } catch (e) {
                 tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
             }
         }
 
-        async function openInventoryModal() {
-            const customers = await apiFetch('/customers');
-            allInvBuildings = await apiFetch('/buildings');
-            allInvFlats = await apiFetch('/flats');
-
-            const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-
-            const fields = `
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
-                    <select id="inv_customerId" required onchange="filterInvBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">Select Client</option>
-                        ${custOpts}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label>
-                    <select id="inv_buildingId" required onchange="filterInvFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
-                        <option value="">Select Client First</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number *</label>
-                    <select id="inv_flatId" required disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
-                        <option value="">Select Building First</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Specific AC Location / Area *</label>
-                    <input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Asset Type *</label>
-                        <select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="Split AC">Split AC</option>
-                            <option value="FCU">FCU (Fan Coil Unit)</option>
-                            <option value="AHU">AHU (Air Handling Unit)</option>
-                            <option value="Package Unit">Package Unit</option>
-                            <option value="Chiller">Chiller</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
-                        <input type="text" id="inv_manufacturer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Daikin">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label><input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label><input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654"></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Technical Specs (Gas, Capacity, Power Panel)</label>
-                    <textarea id="inv_specs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., R410A, 1.5 Ton, Breaker DB-2"></textarea>
-                </div>
-            `;
-            openModal('Register New Asset', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/assets', {
-                    customerId: getInput('inv_customerId'),
-                    buildingId: getInput('inv_buildingId'),
-                    flatId: getInput('inv_flatId'),
-                    location: getInput('inv_location'),
-                    name: getInput('inv_name'),
-                    manufacturer: getInput('inv_manufacturer'),
-                    model: getInput('inv_model'),
-                    serialNumber: getInput('inv_serial'),
-                    description: getInput('inv_specs')
-                }, 'Asset registered successfully!', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
-            };
-        }
-
-        function filterInvBuildings() {
-            const custId = document.getElementById('inv_customerId').value;
-            const bldgSelect = document.getElementById('inv_buildingId');
-            const flatSelect = document.getElementById('inv_flatId');
-            flatSelect.innerHTML = '<option value="">Select Building First</option>';
-            flatSelect.disabled = true;
-            bldgSelect.innerHTML = '<option value="">Select Building</option>';
-            if (custId) {
-                bldgSelect.disabled = false;
-                allInvBuildings.filter(b => b.customerId === custId).forEach(b => {
-                    bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`;
-                });
-            } else {
-                bldgSelect.disabled = true;
-            }
-        }
-
-        function filterInvFlats() {
-            const bldgId = document.getElementById('inv_buildingId').value;
-            const flatSelect = document.getElementById('inv_flatId');
-            flatSelect.innerHTML = '<option value="">Select Flat</option>';
-            if (bldgId) {
-                flatSelect.disabled = false;
-                allInvFlats.filter(f => f.buildingId === bldgId).forEach(f => {
-                    flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`;
-                });
-            } else {
-                flatSelect.disabled = true;
-            }
-        }
-
-        async function viewAssetDetails(assetId) {
+        async function updateWoStatus(id, status) {
             try {
-                const asset = await apiFetch(`/assets/${assetId}`);
-                const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md');
-                modalBox.classList.add('max-w-3xl', 'p-0');
-
-                const fields = `
-                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
-                        <button onclick="printAssetSticker('${asset.id}')" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700">Print Sticker</button>
-                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
-                    </div>
-                    <div class="p-8">
-                        <h2 class="text-2xl font-bold text-blue-800 mb-4 border-b pb-2">${asset.name} (${asset.assetNumber})</h2>
-                        <div class="grid grid-cols-2 gap-6 mb-6">
-                            <div><strong>Client:</strong> ${asset.building?.customer?.name || 'N/A'}</div>
-                            <div><strong>Building:</strong> ${asset.building?.name || 'N/A'}</div>
-                            <div><strong>Flat:</strong> ${asset.flat?.unitNumber || 'N/A'}</div>
-                            <div><strong>Location:</strong> ${asset.location || 'N/A'}</div>
-                            <div><strong>Brand/Model:</strong> ${asset.manufacturer || ''} ${asset.model || ''}</div>
-                            <div><strong>Serial No:</strong> ${asset.serialNumber || 'N/A'}</div>
-                            <div class="col-span-2"><strong>Technical Specs:</strong> ${asset.description || 'N/A'}</div>
-                        </div>
-                        <h3 class="font-bold text-lg mb-2 border-t pt-4">Service History</h3>
-                        <div class="space-y-2">
-                            ${asset.workOrders && asset.workOrders.length > 0 ? asset.workOrders.map(wo => `
-                                <div class="bg-gray-50 p-3 rounded border border-gray-200">
-                                    <div class="flex justify-between"><span class="font-medium">${wo.woNumber}</span><span class="text-xs text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span></div>
-                                    <div class="text-sm text-gray-700 mt-1">${wo.description || wo.title}</div>
-                                </div>
-                            `).join('') : '<p class="text-gray-500 text-sm">No service history found.</p>'}
-                        </div>
-                    </div>
-                `;
-                openModal('Asset Details', fields, true);
+                await apiFetch(`/work-orders/${id}/status`, 'PATCH', { status });
+                fetchAndRenderWorkOrders(); // Re-render to update colors
             } catch (e) {
-                alert('Failed to load asset details');
+                alert('Failed to update status: ' + e.message);
             }
         }
 
-        async function printAssetSticker(assetId) {
-            try {
-                const asset = await apiFetch(`/assets/${assetId}`);
-                const qrData = encodeURIComponent(asset.assetNumber);
-                const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
-
-                const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md', 'max-w-3xl');
-                modalBox.classList.add('max-w-sm', 'p-0');
-
-                const fields = `
-                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
-                        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Print Sticker</button>
-                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
-                    </div>
-                    <div id="print-area" class="p-4 bg-white">
-                        <div class="sticker-label">
-                            <div class="sticker-header">MAK INFRATECH FMS</div>
-                            <div class="sticker-body">
-                                <div class="sticker-info">
-                                    <div class="sticker-location">${asset.flat?.unitNumber || 'N/A'} - ${asset.location || 'N/A'}</div>
-                                    <div>${asset.manufacturer || ''} ${asset.model || ''}</div>
-                                    <div>Gas: ${asset.description?.split(',')[0] || 'N/A'}</div>
-                                    <div>SN: ${asset.serialNumber || 'N/A'}</div>
-                                </div>
-                                <img src="${imgSrc}" alt="QR" class="w-24 h-24">
-                            </div>
-                        </div>
-                    </div>
-                `;
-                openModal('Print Sticker', fields, true);
-            } catch (e) {
-                alert('Failed to generate sticker');
-            }
+        function sendWhatsAppMsg(phone, msg) {
+            const cleanPhone = phone.replace(/[^0-9]/g, '');
+            const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
         }
 
-        // --- QR SCANNER FUNCTION ---
-        function openScannerModal() {
-            const modalBox = document.querySelector('#modal > div');
-            modalBox.classList.remove('max-w-md', 'max-w-3xl');
-            modalBox.classList.add('max-w-md');
-
-            const fields = `
-                <div id="qr-reader" style="width: 100%"></div>
-                <div id="qr-reader-result" class="mt-4 text-center"></div>
-            `;
-            openModal('Scan Asset QR', fields, true);
-
-            const html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText) => {
-                    html5QrCode.stop().then(() => {
-                        document.getElementById('qr-reader-result').innerText = `Found: ${decodedText}`;
-                        // Attempt to fetch asset by number
-                        apiFetch(`/assets/scan/${decodedText}`).then(asset => {
-                            if(asset) {
-                                closeModal();
-                                viewAssetDetails(asset.id);
-                            } else {
-                                alert('Asset not found in system.');
-                            }
-                        }).catch(() => alert('Asset not found.'));
-                    }).catch(err => console.log(err));
-                },
-                (errorMessage) => { /* Ignore scan errors */ }
-            ).catch(err => {
-                console.log(`Error starting scanner: ${err}`);
-                document.getElementById('qr-reader-result').innerText = "Camera access denied or not available.";
-            });
-        }
-
-        // --- INVOICE FUNCTIONS ---
-        async function fetchAndRenderInvoices() {
-            const tbody = document.getElementById('tbody-invoices');
-            if (!tbody) return;
-            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-            try {
-                const data = await apiFetch('/invoices');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Invoices found.</td></tr>`;
-                    return;
+        async function deleteWo(id) {
+            if (confirm('Are you sure you want to delete this Work Order?')) {
+                try {
+                    await apiFetch(`/work-orders/${id}`, 'DELETE');
+                    fetchAndRenderWorkOrders();
+                } catch (e) {
+                    alert('Failed to delete: ' + e.message);
                 }
-                tbody.innerHTML = '';
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
-                    tr.addEventListener('click', () => viewInvoice(item.id));
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.invoiceNumber}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">AED ${item.total}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">
-                            <span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
             }
         }
 
-        async function viewInvoice(id) {
+        async function viewWorkOrderDetails(id) {
             try {
-                const inv = await apiFetch(`/invoices/${id}`);
-                const company = await apiFetch('/company'); 
-                const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md', 'max-w-3xl', 'max-w-sm');
-                modalBox.classList.add('max-w-5xl', 'p-0');
-
+                const wo = await apiFetch(`/work-orders/${id}`);
+                const isTech = userRole === 'TECHNICIAN';
+                
                 const fields = `
-                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
-                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
-                        <button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
-                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
-                    </div>
-                    <div id="print-area" class="a4-page">
-                        <div class="a4-header">
-                            <div>
-                                ${company.invoiceHeader ? `<img src="${company.invoiceHeader}" alt="Header" class="h-20 mb-2 object-contain">` : `<h1 class="text-2xl font-bold text-blue-800">${company.name || 'MAK INFRATECH'}</h1>`}
-                                <p class="text-sm text-gray-600">${company.address || ''}</p>
-                                <p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p>
-                            </div>
-                            <div class="text-right">
-                                <h2 class="text-xl font-bold uppercase tracking-wide">Tax Invoice</h2>
-                                <p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p>
-                            </div>
+                    <div class="space-y-4 text-gray-800">
+                        <div class="flex justify-between border-b pb-3">
+                            <span class="font-bold text-lg text-blue-600">WO: ${wo.woNumber}</span>
+                            <span class="text-sm text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-8 mb-8">
-                            <div>
-                                <div class="a4-detail-label">Bill To</div>
-                                <div class="a4-detail-value font-bold">${inv.customer ? inv.customer.name : 'N/A'}</div>
-                                <div class="text-sm text-gray-600">${inv.customer ? inv.customer.address || '' : ''}</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="a4-detail-row"><span class="a4-detail-label">Invoice No:</span> <span class="font-medium">${inv.invoiceNumber}</span></div>
-                                <div class="a4-detail-row"><span class="a4-detail-label">Issue Date:</span> <span class="font-medium">${new Date(inv.issueDate).toLocaleDateString()}</span></div>
-                                <div class="a4-detail-row"><span class="a4-detail-label">Due Date:</span> <span class="font-medium">${new Date(inv.dueDate).toLocaleDateString()}</span></div>
-                            </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div><strong>Client:</strong> ${wo.customer?.name || 'N/A'}</div>
+                            <div><strong>Building:</strong> ${wo.building?.name || 'N/A'} ${wo.flat?.unitNumber ? '('+wo.flat.unitNumber+')' : ''}</div>
+                            <div><strong>Technician:</strong> ${wo.technician?.name || 'Unassigned'}</div>
+                            <div><strong>Schedule:</strong> ${wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleString() : 'N/A'}</div>
                         </div>
-                        <table class="w-full border-collapse mb-8 text-sm">
-                            <thead><tr class="bg-gray-100 border-b-2 border-gray-300"><th class="py-2 px-3 text-left">Description</th><th class="py-2 px-3 text-right">Amount (AED)</th></tr></thead>
-                            <tbody><tr class="border-b border-gray-200"><td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td><td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td></tr></tbody>
-                        </table>
-                        <div class="flex justify-end mb-12">
-                            <div class="w-1/2 space-y-2">
-                                <div class="flex justify-between"><span>Subtotal:</span><span>AED ${parseFloat(inv.subtotal).toFixed(2)}</span></div>
-                                <div class="flex justify-between"><span>VAT (5%):</span><span>AED ${parseFloat(inv.vatAmount).toFixed(2)}</span></div>
-                                <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total:</span><span>AED ${parseFloat(inv.total).toFixed(2)}</span></div>
+                        <div class="text-sm"><strong>Nature of Complaint:</strong><br>${wo.description || wo.title}</div>
+                        
+                        ${isTech ? `
+                            <div class="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm text-yellow-800">
+                                <strong>Privacy Notice:</strong> Customer phone numbers are hidden. Please contact dispatch for assistance.
                             </div>
-                        </div>
-                        <div class="a4-footer">
-                             ${company.invoiceFooter ? `<img src="${company.invoiceFooter}" class="w-full max-h-24 object-contain">` : `<div class="text-center text-xs text-gray-400">Thank you for your business!</div>`}
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(wo.building?.address || wo.building?.name || '')}" target="_blank" class="block w-full text-center bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700">📍 Navigate to Location</a>
+                        ` : `
+                            <div class="text-sm"><strong>Client Phone:</strong> ${wo.customer?.phone || 'N/A'}</div>
+                        `}
+                        
+                        <div class="flex gap-3 pt-4">
+                            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200">Close</button>
+                            <button type="button" onclick="openServiceReportModal('${wo.id}')" class="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700">Service Report</button>
                         </div>
                     </div>
                 `;
-                openModal('Invoice Document', fields, true); 
+                openModal('Work Order Details', fields, true);
             } catch (e) {
-                alert('Failed to load invoice details');
+                alert('Failed to load Work Order details');
             }
-        }
-
-        function downloadInvoicePDF(invoiceNumber) {
-            const element = document.getElementById('print-area');
-            const opt = { margin: 0, filename: `Invoice_${invoiceNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-            html2pdf().set(opt).from(element).save();
-        }
-
-        // --- PURCHASES FUNCTIONS ---
-        async function fetchAndRenderPurchases() {
-            const tbody = document.getElementById('tbody-purchases');
-            if (!tbody) return;
-            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-            try {
-                const data = await apiFetch('/purchases');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr>`;
-                    return;
-                }
-                tbody.innerHTML = data.map(item => `
-                    <tr>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.billNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.supplierName || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span></td>
-                    </tr>
-                `).join('');
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
-            }
-        }
-
-        let purchaseReceiptData = null;
-        function handleReceiptUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                purchaseReceiptData = e.target.result;
-                document.getElementById('receipt_preview').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function openPurchaseModal() {
-            purchaseReceiptData = null;
-            const woOpts = await fetchDropdown('/work-orders');
-            const assetOpts = await fetchDropdown('/assets');
-            const fields = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name *</label><input type="text" id="pur_supplier" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Bill / Reference No.</label><input type="text" id="pur_bill" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label><input type="date" id="pur_pdate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label><input type="date" id="pur_ddate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Work Order</label><select id="pur_woId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${woOpts}</select></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Asset</label><select id="pur_assetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${assetOpts}</select></div>
-                </div>
-                <div class="border-t pt-4 mt-4">
-                    <div class="flex justify-between items-center mb-2"><h4 class="text-sm font-medium text-gray-800">Itemized Purchases</h4><button type="button" onclick="addPurchaseItemRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">+ Add Item</button></div>
-                    <div id="pur_items_container" class="space-y-2"></div>
-                    <div class="flex justify-end mt-4 space-y-1 text-sm w-full max-w-xs ml-auto">
-                        <div class="flex justify-between w-full"><span>Subtotal:</span> <span id="pur_subtotal">0.00</span></div>
-                        <div class="flex justify-between w-full"><span>VAT:</span> <span id="pur_vat">0.00</span></div>
-                        <div class="flex justify-between w-full font-bold text-base border-t pt-1"><span>Total:</span> <span id="pur_total">0.00</span></div>
-                    </div>
-                </div>
-                <div class="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Status</label><select id="pur_pstatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="UNPAID">Unpaid</option><option value="PAID">Paid</option><option value="PARTIAL">Partially Paid</option></select></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label><select id="pur_pmethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="CARD">Card</option><option value="BANK_TRANSFER">Bank Transfer</option></select></div>
-                </div>
-                <div class="border-t pt-4 mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Attach Receipt / Bill Photo</label>
-                    <img id="receipt_preview" src="https://via.placeholder.com/150x100?text=No+Receipt" class="w-full max-h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                    <input type="file" accept="image/png, image/jpeg" onchange="handleReceiptUpload(event)" class="block w-full text-sm text-gray-500">
-                </div>
-            `;
-            openModal('Add New Purchase', fields);
-            const modalBox = document.querySelector('#modal > div');
-            modalBox.classList.remove('max-w-md');
-            modalBox.classList.add('max-w-2xl');
-            addPurchaseItemRow();
-            document.getElementById('pur_pdate').valueAsDate = new Date();
-
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                const items = [];
-                document.querySelectorAll('.po-item-row').forEach(row => {
-                    const name = row.querySelector('.item-name').value;
-                    const cat = row.querySelector('.item-cat').value;
-                    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                    const price = parseFloat(row.querySelector('.item-price').value) || 0;
-                    const vat = parseFloat(row.querySelector('.item-vat').value) || 0;
-                    const total = (qty * price) + ((qty * price) * (vat / 100));
-                    if (name) items.push({ name, cat, qty, price, vat, total });
-                });
-                if (items.length === 0) { alert('Please add at least one item.'); return; }
-                const subtotal = items.reduce((sum, item) => sum + (item.qty * item.price), 0);
-                const vatAmount = items.reduce((sum, item) => sum + ((item.qty * item.price) * (item.vat / 100)), 0);
-                const totalAmount = subtotal + vatAmount;
-                handleSubmit('/purchases', {
-                    supplierName: getInput('pur_supplier'),
-                    billNumber: getInput('pur_bill'),
-                    purchaseDate: getInput('pur_pdate'),
-                    dueDate: getInput('pur_ddate'),
-                    workOrderId: getInput('pur_woId') || null,
-                    assetId: getInput('pur_assetId') || null,
-                    items: items,
-                    subtotal: subtotal,
-                    vatAmount: vatAmount,
-                    totalAmount: totalAmount,
-                    paymentStatus: getInput('pur_pstatus'),
-                    paymentMethod: getInput('pur_pmethod'),
-                    receiptUrl: purchaseReceiptData
-                }, 'Purchase recorded successfully!', { endpoint: '/purchases', tableId: 'tbody-purchases', columns: ['billNumber', 'supplierName', 'purchaseDate', 'totalAmount', 'paymentStatus'] });
-            };
-        }
-
-        function addPurchaseItemRow() {
-            const container = document.getElementById('pur_items_container');
-            const rowHtml = `
-                <div class="po-item-row grid grid-cols-12 gap-2 items-center">
-                    <input type="text" placeholder="Item Name" class="item-name col-span-4 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
-                    <input type="text" placeholder="Category" class="item-cat col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
-                    <input type="number" placeholder="Qty" step="0.01" class="item-qty col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
-                    <input type="number" placeholder="Price" step="0.01" class="item-price col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
-                    <input type="number" placeholder="VAT%" step="0.01" value="5" class="item-vat col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
-                    <span class="col-span-2 text-right text-sm text-gray-600 item-total">0.00</span>
-                    <button type="button" onclick="this.parentElement.remove(); updatePurchaseTotals();" class="col-span-1 text-red-500 hover:text-red-700 text-sm">X</button>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', rowHtml);
-            updatePurchaseTotals();
-        }
-
-        function updatePurchaseTotals() {
-            let subtotal = 0, vatAmount = 0;
-            document.querySelectorAll('.po-item-row').forEach(row => {
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                const price = parseFloat(row.querySelector('.item-price').value) || 0;
-                const vat = parseFloat(row.querySelector('.item-vat').value) || 0;
-                const rowTotal = (qty * price) + ((qty * price) * (vat / 100));
-                row.querySelector('.item-total').innerText = rowTotal.toFixed(2);
-                subtotal += (qty * price);
-                vatAmount += ((qty * price) * (vat / 100));
-            });
-            document.getElementById('pur_subtotal').innerText = subtotal.toFixed(2);
-            document.getElementById('pur_vat').innerText = vatAmount.toFixed(2);
-            document.getElementById('pur_total').innerText = (subtotal + vatAmount).toFixed(2);
-        }
-
-        // --- WORK ORDERS & SERVICE REPORTS ---
-        async function fetchAndRenderWorkOrders() {
-            const tbody = document.getElementById('tbody-work-orders');
-            if (!tbody) return;
-            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-            try {
-                const data = await apiFetch('/work-orders');
-                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`; return; }
-                tbody.innerHTML = data.map(item => `
-                    <tr>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.woNumber}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.title}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.priority}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><button onclick="openServiceReportModal('${item.id}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">Service Report</button></td>
-                    </tr>
-                `).join('');
-            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
         let signaturePad = null;
@@ -1115,8 +682,6 @@
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div><strong>Client:</strong> ${wo.customer ? wo.customer.name : 'N/A'}</div>
                             <div><strong>Building:</strong> ${wo.building ? wo.building.name : 'N/A'}</div>
-                            <div><strong>Asset Brand:</strong> ${wo.asset ? wo.asset.manufacturer : 'N/A'}</div>
-                            <div><strong>Asset Model:</strong> ${wo.asset ? wo.asset.model : 'N/A'}</div>
                         </div>
                         <div class="text-sm"><strong>Nature of Complaint:</strong><br>${wo.description || wo.title}</div>
                         <div class="grid grid-cols-2 gap-4">
@@ -1159,6 +724,9 @@
             if (!workPerformed || !startedAt || !completedAt) { alert('Please fill in the Start Time, End Time, and Work Performed.'); return; }
             try {
                 await apiFetch(`/work-orders/${workOrderId}`, 'PATCH', { startedAt, completedAt, workPerformed, materialsUsed: { items: materials }, observations, clientSignature: signatureData, technicianName: 'Admin User' });
+                // Also set status to completed
+                await apiFetch(`/work-orders/${workOrderId}/status`, 'PATCH', { status: 'COMPLETED' });
+                
                 generatePDF({ woId: workOrderId, startedAt, completedAt, workPerformed, materials, observations, signature: signatureData });
                 closeModal();
                 fetchAndRenderWorkOrders();
@@ -1195,18 +763,20 @@
             html2pdf().set(opt).from(pdfContent).save().then(() => { document.body.removeChild(pdfContent); });
         }
 
-        // --- WORK ORDER CASCADING FORM ---
-        let allWoBuildings = [], allWoFlats = [];
         async function openWorkOrderModal() {
             const customers = await apiFetch('/customers');
             allWoBuildings = await apiFetch('/buildings');
             allWoFlats = await apiFetch('/flats');
+            const techs = await apiFetch('/users');
+            
             const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const techOpts = techs.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+
             const fields = `
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label><select id="wo_customerId" required onchange="filterWoBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Client</option>${custOpts}</select></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label><select id="wo_buildingId" required onchange="filterWoFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Client First</option></select></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Service Address</label><input type="text" id="wo_address" readonly placeholder="Auto-filled on building selection" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none bg-gray-100 text-gray-500"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number</label><select id="wo_flatId" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Building First</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Assign Technician</label><select id="wo_technicianId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Unassigned</option>${techOpts}</select></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date *</label><input type="date" id="wo_scheduledDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Time *</label><input type="time" id="wo_scheduledTime" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
@@ -1219,32 +789,373 @@
                 e.preventDefault();
                 const dateVal = getInput('wo_scheduledDate'), timeVal = getInput('wo_scheduledTime');
                 const scheduledDateTime = new Date(`${dateVal}T${timeVal}`);
-                handleSubmit('/work-orders', { title: 'Service Request', description: getInput('wo_complaint'), customerId: getInput('wo_customerId'), buildingId: getInput('wo_buildingId'), flatId: getInput('wo_flatId') || null, scheduledDate: scheduledDateTime, priority: 'MEDIUM' }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
+                handleSubmit('/work-orders', { title: 'Service Request', description: getInput('wo_complaint'), customerId: getInput('wo_customerId'), buildingId: getInput('wo_buildingId'), flatId: getInput('wo_flatId') || null, technicianId: getInput('wo_technicianId') || null, scheduledDate: scheduledDateTime, priority: 'MEDIUM' }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
             };
         }
 
         function filterWoBuildings() {
             const custId = document.getElementById('wo_customerId').value;
             const bldgSelect = document.getElementById('wo_buildingId');
-            const addrInput = document.getElementById('wo_address');
             const flatSelect = document.getElementById('wo_flatId');
-            addrInput.value = ''; flatSelect.innerHTML = '<option value="">Select Building First</option>'; flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Building</option>';
+            flatSelect.innerHTML = '<option value="">Select Building First</option>'; flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Building</option>';
             if (custId) {
                 bldgSelect.disabled = false; bldgSelect.classList.remove('bg-gray-100');
                 const filtered = allWoBuildings.filter(b => b.customerId === custId);
-                if (filtered.length > 0) { filtered.forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}" data-address="${b.address || ''}">${b.name}</option>`; }); } else { bldgSelect.innerHTML = '<option value="">No Buildings for this Client</option>'; }
+                if (filtered.length > 0) { filtered.forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`; }); } else { bldgSelect.innerHTML = '<option value="">No Buildings for this Client</option>'; }
             } else { bldgSelect.disabled = true; bldgSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Client First</option>'; }
         }
 
         function filterWoFlats() {
-            const bldgSelect = document.getElementById('wo_buildingId'); const bldgId = bldgSelect.value; const selectedOption = bldgSelect.options[bldgSelect.selectedIndex];
-            const addrInput = document.getElementById('wo_address'); const flatSelect = document.getElementById('wo_flatId');
-            addrInput.value = selectedOption.getAttribute('data-address') || 'N/A'; flatSelect.innerHTML = '<option value="">Select Flat</option>';
+            const bldgSelect = document.getElementById('wo_buildingId'); const bldgId = bldgSelect.value;
+            const flatSelect = document.getElementById('wo_flatId');
+            flatSelect.innerHTML = '<option value="">Select Flat</option>';
             if (bldgId) {
                 flatSelect.disabled = false; flatSelect.classList.remove('bg-gray-100');
                 const filtered = allWoFlats.filter(f => f.buildingId === bldgId);
                 if (filtered.length > 0) { filtered.forEach(f => { flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`; }); } else { flatSelect.innerHTML = '<option value="">No Flats for this Building</option>'; }
             } else { flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); flatSelect.innerHTML = '<option value="">Select Building First</option>'; }
+        }
+
+        // --- ASSET FUNCTIONS ---
+        let allInvBuildings = [], allInvFlats = [];
+        async function fetchAndRenderAssets() {
+            const tbody = document.getElementById('tbody-inventory'); if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/assets');
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`; return; }
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
+                    tr.addEventListener('click', () => viewAssetDetails(item.id));
+                    const statusColor = item.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                    tr.innerHTML = `
+                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.assetNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.manufacturer || '-'} ${item.model || ''}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.customer?.name || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.name || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.flat?.unitNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.location || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${statusColor}">${item.status || 'ACTIVE'}</span></td>
+                        <td class="px-3 py-2 text-sm text-gray-700 no-print"><button onclick="event.stopPropagation(); printAssetSticker('${item.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700">Sticker</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
+        }
+
+        async function openInventoryModal() {
+            const customers = await apiFetch('/customers');
+            allInvBuildings = await apiFetch('/buildings');
+            allInvFlats = await apiFetch('/flats');
+            const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const fields = `
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label><select id="inv_customerId" required onchange="filterInvBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Client</option>${custOpts}</select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label><select id="inv_buildingId" required onchange="filterInvFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Client First</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number *</label><select id="inv_flatId" required disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Building First</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Specific AC Location / Area *</label><input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Asset Type *</label><select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="Split AC">Split AC</option><option value="FCU">FCU (Fan Coil Unit)</option><option value="AHU">AHU (Air Handling Unit)</option><option value="Package Unit">Package Unit</option><option value="Chiller">Chiller</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label><input type="text" id="inv_manufacturer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Daikin"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label><input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label><input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654"></div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Technical Specs (Gas, Capacity, Power Panel)</label><textarea id="inv_specs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., R410A, 1.5 Ton, Breaker DB-2"></textarea></div>
+            `;
+            openModal('Register New Asset', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/assets', {
+                    customerId: getInput('inv_customerId'), buildingId: getInput('inv_buildingId'), flatId: getInput('inv_flatId'), location: getInput('inv_location'), name: getInput('inv_name'), manufacturer: getInput('inv_manufacturer'), model: getInput('inv_model'), serialNumber: getInput('inv_serial'), description: getInput('inv_specs')
+                }, 'Asset registered successfully!', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
+            };
+        }
+
+        function filterInvBuildings() {
+            const custId = document.getElementById('inv_customerId').value;
+            const bldgSelect = document.getElementById('inv_buildingId');
+            const flatSelect = document.getElementById('inv_flatId');
+            flatSelect.innerHTML = '<option value="">Select Building First</option>'; flatSelect.disabled = true;
+            bldgSelect.innerHTML = '<option value="">Select Building</option>';
+            if (custId) {
+                bldgSelect.disabled = false;
+                allInvBuildings.filter(b => b.customerId === custId).forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`; });
+            } else { bldgSelect.disabled = true; }
+        }
+
+        function filterInvFlats() {
+            const bldgId = document.getElementById('inv_buildingId').value;
+            const flatSelect = document.getElementById('inv_flatId');
+            flatSelect.innerHTML = '<option value="">Select Flat</option>';
+            if (bldgId) {
+                flatSelect.disabled = false;
+                allInvFlats.filter(f => f.buildingId === bldgId).forEach(f => { flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`; });
+            } else { flatSelect.disabled = true; }
+        }
+
+        async function viewAssetDetails(assetId) {
+            try {
+                const asset = await apiFetch(`/assets/${assetId}`);
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md'); modalBox.classList.add('max-w-3xl', 'p-0');
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="printAssetSticker('${asset.id}')" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700">Print Sticker</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-blue-800 mb-4 border-b pb-2">${asset.name} (${asset.assetNumber})</h2>
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div><strong>Client:</strong> ${asset.building?.customer?.name || 'N/A'}</div>
+                            <div><strong>Building:</strong> ${asset.building?.name || 'N/A'}</div>
+                            <div><strong>Flat:</strong> ${asset.flat?.unitNumber || 'N/A'}</div>
+                            <div><strong>Location:</strong> ${asset.location || 'N/A'}</div>
+                            <div><strong>Brand/Model:</strong> ${asset.manufacturer || ''} ${asset.model || ''}</div>
+                            <div><strong>Serial No:</strong> ${asset.serialNumber || 'N/A'}</div>
+                            <div class="col-span-2"><strong>Technical Specs:</strong> ${asset.description || 'N/A'}</div>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 border-t pt-4">Service History</h3>
+                        <div class="space-y-2">
+                            ${asset.workOrders && asset.workOrders.length > 0 ? asset.workOrders.map(wo => `
+                                <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                                    <div class="flex justify-between"><span class="font-medium">${wo.woNumber}</span><span class="text-xs text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span></div>
+                                    <div class="text-sm text-gray-700 mt-1">${wo.description || wo.title}</div>
+                                </div>
+                            `).join('') : '<p class="text-gray-500 text-sm">No service history found.</p>'}
+                        </div>
+                    </div>
+                `;
+                openModal('Asset Details', fields, true);
+            } catch (e) { alert('Failed to load asset details'); }
+        }
+
+        async function printAssetSticker(assetId) {
+            try {
+                const asset = await apiFetch(`/assets/${assetId}`);
+                const qrData = encodeURIComponent(asset.assetNumber);
+                const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md', 'max-w-3xl'); modalBox.classList.add('max-w-sm', 'p-0');
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Print Sticker</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+                    <div id="print-area" class="p-4 bg-white">
+                        <div class="sticker-label">
+                            <div class="sticker-header">MAK INFRATECH FMS</div>
+                            <div class="sticker-body">
+                                <div class="sticker-info">
+                                    <div class="sticker-location">${asset.flat?.unitNumber || 'N/A'} - ${asset.location || 'N/A'}</div>
+                                    <div>${asset.manufacturer || ''} ${asset.model || ''}</div>
+                                    <div>Gas: ${asset.description?.split(',')[0] || 'N/A'}</div>
+                                    <div>SN: ${asset.serialNumber || 'N/A'}</div>
+                                </div>
+                                <img src="${imgSrc}" alt="QR" class="w-24 h-24">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                openModal('Print Sticker', fields, true);
+            } catch (e) { alert('Failed to generate sticker'); }
+        }
+
+        function openScannerModal() {
+            const modalBox = document.querySelector('#modal > div');
+            modalBox.classList.remove('max-w-md', 'max-w-3xl'); modalBox.classList.add('max-w-md');
+            const fields = `<div id="qr-reader" style="width: 100%"></div><div id="qr-reader-result" class="mt-4 text-center"></div>`;
+            openModal('Scan Asset QR', fields, true);
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    html5QrCode.stop().then(() => {
+                        apiFetch(`/assets/scan/${decodedText}`).then(asset => {
+                            if(asset) { closeModal(); viewAssetDetails(asset.id); } else { alert('Asset not found in system.'); }
+                        }).catch(() => alert('Asset not found.'));
+                    }).catch(err => console.log(err));
+                },
+                (errorMessage) => { /* Ignore */ }
+            ).catch(err => {
+                document.getElementById('qr-reader-result').innerText = "Camera access denied or not available.";
+            });
+        }
+
+        // --- INVOICE FUNCTIONS ---
+        async function fetchAndRenderInvoices() {
+            const tbody = document.getElementById('tbody-invoices'); if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/invoices');
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Invoices found.</td></tr>`; return; }
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
+                    tr.addEventListener('click', () => viewInvoice(item.id));
+                    tr.innerHTML = `
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.invoiceNumber}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">AED ${item.total}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
+        }
+
+        async function viewInvoice(id) {
+            try {
+                const inv = await apiFetch(`/invoices/${id}`);
+                const company = await apiFetch('/company'); 
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md', 'max-w-3xl', 'max-w-sm'); modalBox.classList.add('max-w-5xl', 'p-0');
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
+                        <button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+                    <div id="print-area" class="a4-page">
+                        <div class="a4-header">
+                            <div>
+                                ${company.invoiceHeader ? `<img src="${company.invoiceHeader}" alt="Header" class="h-20 mb-2 object-contain">` : `<h1 class="text-2xl font-bold text-blue-800">${company.name || 'MAK INFRATECH'}</h1>`}
+                                <p class="text-sm text-gray-600">${company.address || ''}</p>
+                                <p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p>
+                            </div>
+                            <div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">Tax Invoice</h2><p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-8 mb-8">
+                            <div><div class="a4-detail-label">Bill To</div><div class="a4-detail-value font-bold">${inv.customer ? inv.customer.name : 'N/A'}</div><div class="text-sm text-gray-600">${inv.customer ? inv.customer.address || '' : ''}</div></div>
+                            <div class="text-right"><div><span class="a4-detail-label">Invoice No:</span> <span class="font-medium">${inv.invoiceNumber}</span></div><div><span class="a4-detail-label">Issue Date:</span> <span class="font-medium">${new Date(inv.issueDate).toLocaleDateString()}</span></div><div><span class="a4-detail-label">Due Date:</span> <span class="font-medium">${new Date(inv.dueDate).toLocaleDateString()}</span></div></div>
+                        </div>
+                        <table class="w-full border-collapse mb-8 text-sm"><thead><tr class="bg-gray-100 border-b-2 border-gray-300"><th class="py-2 px-3 text-left">Description</th><th class="py-2 px-3 text-right">Amount (AED)</th></tr></thead><tbody><tr class="border-b border-gray-200"><td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td><td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td></tr></tbody></table>
+                        <div class="flex justify-end mb-12">
+                            <div class="w-1/2 space-y-2">
+                                <div class="flex justify-between"><span>Subtotal:</span><span>AED ${parseFloat(inv.subtotal).toFixed(2)}</span></div>
+                                <div class="flex justify-between"><span>VAT (5%):</span><span>AED ${parseFloat(inv.vatAmount).toFixed(2)}</span></div>
+                                <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total:</span><span>AED ${parseFloat(inv.total).toFixed(2)}</span></div>
+                            </div>
+                        </div>
+                        <div class="a4-footer">${company.invoiceFooter ? `<img src="${company.invoiceFooter}" class="w-full max-h-24 object-contain">` : `<div class="text-center text-xs text-gray-400">Thank you for your business!</div>`}</div>
+                    </div>
+                `;
+                openModal('Invoice Document', fields, true); 
+            } catch (e) { alert('Failed to load invoice details'); }
+        }
+
+        function downloadInvoicePDF(invoiceNumber) {
+            const element = document.getElementById('print-area');
+            const opt = { margin: 0, filename: `Invoice_${invoiceNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // --- PURCHASES FUNCTIONS ---
+        async function fetchAndRenderPurchases() {
+            const tbody = document.getElementById('tbody-purchases'); if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/purchases');
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr>`; return; }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.billNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.supplierName || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span></td>
+                    </tr>
+                `).join('');
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
+        }
+
+        let purchaseReceiptData = null;
+        function handleReceiptUpload(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { purchaseReceiptData = e.target.result; document.getElementById('receipt_preview').src = e.target.result; };
+            reader.readAsDataURL(file);
+        }
+
+        async function openPurchaseModal() {
+            purchaseReceiptData = null;
+            const woOpts = await fetchDropdown('/work-orders');
+            const assetOpts = await fetchDropdown('/assets');
+            const fields = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name *</label><input type="text" id="pur_supplier" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Bill / Reference No.</label><input type="text" id="pur_bill" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label><input type="date" id="pur_pdate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label><input type="date" id="pur_ddate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Work Order</label><select id="pur_woId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${woOpts}</select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Asset</label><select id="pur_assetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${assetOpts}</select></div>
+                </div>
+                <div class="border-t pt-4 mt-4">
+                    <div class="flex justify-between items-center mb-2"><h4 class="text-sm font-medium text-gray-800">Itemized Purchases</h4><button type="button" onclick="addPurchaseItemRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">+ Add Item</button></div>
+                    <div id="pur_items_container" class="space-y-2"></div>
+                    <div class="flex justify-end mt-4 space-y-1 text-sm w-full max-w-xs ml-auto">
+                        <div class="flex justify-between w-full"><span>Subtotal:</span> <span id="pur_subtotal">0.00</span></div>
+                        <div class="flex justify-between w-full"><span>VAT:</span> <span id="pur_vat">0.00</span></div>
+                        <div class="flex justify-between w-full font-bold text-base border-t pt-1"><span>Total:</span> <span id="pur_total">0.00</span></div>
+                    </div>
+                </div>
+                <div class="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Status</label><select id="pur_pstatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="UNPAID">Unpaid</option><option value="PAID">Paid</option><option value="PARTIAL">Partially Paid</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label><select id="pur_pmethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="CARD">Card</option><option value="BANK_TRANSFER">Bank Transfer</option></select></div>
+                </div>
+                <div class="border-t pt-4 mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Attach Receipt / Bill Photo</label>
+                    <img id="receipt_preview" src="https://via.placeholder.com/150x100?text=No+Receipt" class="w-full max-h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                    <input type="file" accept="image/png, image/jpeg" onchange="handleReceiptUpload(event)" class="block w-full text-sm text-gray-500">
+                </div>
+            `;
+            openModal('Add New Purchase', fields);
+            const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md'); modalBox.classList.add('max-w-2xl');
+            addPurchaseItemRow();
+            document.getElementById('pur_pdate').valueAsDate = new Date();
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                const items = [];
+                document.querySelectorAll('.po-item-row').forEach(row => {
+                    const name = row.querySelector('.item-name').value; const cat = row.querySelector('.item-cat').value; const qty = parseFloat(row.querySelector('.item-qty').value) || 0; const price = parseFloat(row.querySelector('.item-price').value) || 0; const vat = parseFloat(row.querySelector('.item-vat').value) || 0; const total = (qty * price) + ((qty * price) * (vat / 100));
+                    if (name) items.push({ name, cat, qty, price, vat, total });
+                });
+                if (items.length === 0) { alert('Please add at least one item.'); return; }
+                const subtotal = items.reduce((sum, item) => sum + (item.qty * item.price), 0); const vatAmount = items.reduce((sum, item) => sum + ((item.qty * item.price) * (item.vat / 100)), 0); const totalAmount = subtotal + vatAmount;
+                handleSubmit('/purchases', { supplierName: getInput('pur_supplier'), billNumber: getInput('pur_bill'), purchaseDate: getInput('pur_pdate'), dueDate: getInput('pur_ddate'), workOrderId: getInput('pur_woId') || null, assetId: getInput('pur_assetId') || null, items: items, subtotal: subtotal, vatAmount: vatAmount, totalAmount: totalAmount, paymentStatus: getInput('pur_pstatus'), paymentMethod: getInput('pur_pmethod'), receiptUrl: purchaseReceiptData }, 'Purchase recorded successfully!', { endpoint: '/purchases', tableId: 'tbody-purchases', columns: ['billNumber', 'supplierName', 'purchaseDate', 'totalAmount', 'paymentStatus'] });
+            };
+        }
+
+        function addPurchaseItemRow() {
+            const container = document.getElementById('pur_items_container');
+            const rowHtml = `
+                <div class="po-item-row grid grid-cols-12 gap-2 items-center">
+                    <input type="text" placeholder="Item Name" class="item-name col-span-4 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="text" placeholder="Category" class="item-cat col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="number" placeholder="Qty" step="0.01" class="item-qty col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
+                    <input type="number" placeholder="Price" step="0.01" class="item-price col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
+                    <input type="number" placeholder="VAT%" step="0.01" value="5" class="item-vat col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
+                    <span class="col-span-2 text-right text-sm text-gray-600 item-total">0.00</span>
+                    <button type="button" onclick="this.parentElement.remove(); updatePurchaseTotals();" class="col-span-1 text-red-500 hover:text-red-700 text-sm">X</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', rowHtml);
+            updatePurchaseTotals();
+        }
+
+        function updatePurchaseTotals() {
+            let subtotal = 0, vatAmount = 0;
+            document.querySelectorAll('.po-item-row').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0; const price = parseFloat(row.querySelector('.item-price').value) || 0; const vat = parseFloat(row.querySelector('.item-vat').value) || 0; const rowTotal = (qty * price) + ((qty * price) * (vat / 100));
+                row.querySelector('.item-total').innerText = rowTotal.toFixed(2); subtotal += (qty * price); vatAmount += ((qty * price) * (vat / 100));
+            });
+            document.getElementById('pur_subtotal').innerText = subtotal.toFixed(2); document.getElementById('pur_vat').innerText = vatAmount.toFixed(2); document.getElementById('pur_total').innerText = (subtotal + vatAmount).toFixed(2);
         }
 
         // --- REPORTS FUNCTION ---
@@ -1340,8 +1251,7 @@
                 const staff = await apiFetch(`/staff/${staffId}`);
                 const company = await apiFetch('/company'); 
                 const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md', 'max-w-2xl', 'max-w-sm');
-                modalBox.classList.add('max-w-5xl', 'p-0');
+                modalBox.classList.remove('max-w-md', 'max-w-2xl', 'max-w-sm'); modalBox.classList.add('max-w-5xl', 'p-0');
                 const fields = `
                     <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
                         <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
