@@ -42,7 +42,7 @@
             #print-area, #print-area * { visibility: visible; }
             #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; margin: 0; padding: 0; border: none; }
             .no-print { display: none !important; }
-            @page { size: 4in 2in; margin: 0; }
+            @page { size: A4; margin: 0; }
         }
     </style>
 </head>
@@ -89,6 +89,12 @@
             <div class="pt-4 pb-2 px-4 text-xs text-gray-500 uppercase tracking-wider font-semibold">Finance & Reports</div>
             <a href="#" onclick="showPage('invoices', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>🧾</span> <span>Invoices</span>
+            </a>
+            <a href="#" onclick="showPage('receipts', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>💰</span> <span>Receipt Vouchers</span>
+            </a>
+            <a href="#" onclick="showPage('payments', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
+                <span>🽅</span> <span>Payment Vouchers</span>
             </a>
             <a href="#" onclick="showPage('expenses', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-md text-sm text-gray-300 hover:bg-slate-800 transition">
                 <span>💳</span> <span>Expenses</span>
@@ -145,7 +151,7 @@
                 </div>
             </section>
 
-            <!-- WORK ORDERS PAGE (UPDATED) -->
+            <!-- WORK ORDERS PAGE -->
             <section id="page-work-orders" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
@@ -220,6 +226,38 @@
                         <table class="excel-table">
                             <thead><tr><th>Invoice No.</th><th>Customer</th><th>Total (AED)</th><th>Status</th></tr></thead>
                             <tbody id="tbody-invoices"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Invoices found.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RECEIPT VOUCHERS PAGE (NEW) -->
+            <section id="page-receipts" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Receipt Vouchers (Money Received)</h3>
+                        <button onclick="openReceiptModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Receipt</button>
+                    </div>
+                    <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
+                        <table class="excel-table">
+                            <thead><tr><th>Voucher No.</th><th>Date</th><th>Client</th><th>Mode</th><th>Amount</th><th>Actions</th></tr></thead>
+                            <tbody id="tbody-receipts"><tr><td colspan="6" class="p-6 text-center text-gray-500">No Receipts found.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAYMENT VOUCHERS PAGE (NEW) -->
+            <section id="page-payments" class="page-content">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-semibold text-gray-800 text-lg">Payment Vouchers (Money Paid)</h3>
+                        <button onclick="openPaymentModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Payment</button>
+                    </div>
+                    <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
+                        <table class="excel-table">
+                            <thead><tr><th>Voucher No.</th><th>Date</th><th>Payee</th><th>Mode</th><th>Amount</th><th>Actions</th></tr></thead>
+                            <tbody id="tbody-payments"><tr><td colspan="6" class="p-6 text-center text-gray-500">No Payments found.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -514,6 +552,8 @@
                 'inventory': 'Inventory & Assets',
                 'users': 'System Users',
                 'invoices': 'Invoices',
+                'receipts': 'Receipt Vouchers',
+                'payments': 'Payment Vouchers',
                 'expenses': 'Expenses',
                 'purchases': 'Purchases (Bills)',
                 'po': 'Purchase Orders',
@@ -528,6 +568,8 @@
             if (pageId === 'buildings') fetchAndRender('/buildings', 'tbody-buildings', ['name', 'city', 'emirate']);
             if (pageId === 'amc') fetchAndRender('/amc', 'tbody-amc', ['contractNumber', 'value', 'status']);
             if (pageId === 'invoices') fetchAndRenderInvoices();
+            if (pageId === 'receipts') fetchAndRenderReceipts();
+            if (pageId === 'payments') fetchAndRenderPayments();
             if (pageId === 'expenses') fetchAndRender('/expenses', 'tbody-expenses', ['category', 'amount', 'status']);
             if (pageId === 'purchases') fetchAndRenderPurchases();
             if (pageId === 'po') fetchAndRender('/po', 'tbody-po', ['poNumber', 'supplierName', 'total']);
@@ -538,39 +580,237 @@
             if (pageId === 'settings') loadSystemSettings();
         }
 
-        // --- WORK ORDERS FUNCTIONS (UPDATED) ---
+        // --- VOUCHER FUNCTIONS (NEW) ---
+        function numberToWords(num) {
+            const a = ['','One ','Two ','Three ','Four ','Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+            const b = ['', '', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+            if ((num = num.toString()).length > 9) return 'Overflow';
+            const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+            if (!n) return; var str = '';
+            str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+            str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+            str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+            str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+            str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Only ' : '';
+            return str;
+        }
+
+        async function fetchAndRenderReceipts() {
+            const tbody = document.getElementById('tbody-receipts'); if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/receipts');
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No Receipts found.</td></tr>`; return; }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.customer?.name || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.paymentMode || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'receipt')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️ View</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
+        }
+
+        async function openReceiptModal() {
+            const custOpts = await fetchDropdown('/customers');
+            const fields = `
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label><input type="date" id="rv_date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Client *</label><select id="rv_customerId" required onchange="loadUnpaidInvoices()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Client</option>${custOpts}</select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Invoice (Auto-fills Balance)</label><select id="rv_invoiceId" onchange="autoFillReceiptAmount()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Client First</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount Received (AED) *</label><input type="number" step="0.01" id="rv_amount" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label><select id="rv_mode" onchange="toggleChequeFields('rv')" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CHEQUE">Cheque</option><option value="CARD">Credit Card</option><option value="ONLINE">Online</option></select></div>
+                <div id="rv_cheque_fields" style="display:none;">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque Number</label><input type="text" id="rv_chequeNo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label><input type="text" id="rv_bankName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-2">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque Date</label><input type="date" id="rv_chequeDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label><select id="rv_chequeStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="RECEIVED">Received</option><option value="DEPOSITED">Deposited</option><option value="CLEARED">Cleared</option><option value="BOUNCED">Bounced</option></select></div>
+                    </div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label><textarea id="rv_desc" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Advance payment for AMC"></textarea></div>
+            `;
+            openModal('New Receipt Voucher', fields);
+            document.getElementById('rv_date').valueAsDate = new Date();
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/receipts', {
+                    date: getInput('rv_date'),
+                    customerId: getInput('rv_customerId'),
+                    invoiceId: getInput('rv_invoiceId') || null,
+                    amount: parseFloat(getInput('rv_amount')),
+                    paymentMode: getInput('rv_mode'),
+                    chequeNumber: getInput('rv_chequeNo'),
+                    bankName: getInput('rv_bankName'),
+                    chequeDate: getInput('rv_chequeDate'),
+                    chequeStatus: getInput('rv_chequeStatus'),
+                    description: getInput('rv_desc')
+                }, 'Receipt Voucher saved & Invoice updated!', { endpoint: '/receipts', tableId: 'tbody-receipts', columns: ['voucherNumber', 'date', 'customer.name', 'paymentMode', 'amount'] });
+            };
+        }
+
+        async function loadUnpaidInvoices() {
+            const custId = document.getElementById('rv_customerId').value;
+            const invSelect = document.getElementById('rv_invoiceId');
+            invSelect.innerHTML = '<option value="">Loading...</option>';
+            if (custId) {
+                const invoices = await apiFetch('/invoices');
+                const unpaid = invoices.filter(inv => inv.customerId === custId && inv.status !== 'PAID' && inv.status !== 'VOID');
+                invSelect.innerHTML = '<option value="">None / Unlinked</option>' + unpaid.map(inv => `<option value="${inv.id}" data-balance="${inv.balanceDue}">${inv.invoiceNumber} (Bal: AED ${inv.balanceDue})</option>`).join('');
+            } else {
+                invSelect.innerHTML = '<option value="">Select Client First</option>';
+            }
+        }
+
+        function autoFillReceiptAmount() {
+            const invSelect = document.getElementById('rv_invoiceId');
+            const balance = invSelect.options[invSelect.selectedIndex].getAttribute('data-balance');
+            if (balance) document.getElementById('rv_amount').value = balance;
+        }
+
+        async function fetchAndRenderPayments() {
+            const tbody = document.getElementById('tbody-payments'); if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/payments');
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No Payments found.</td></tr>`; return; }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.payeeName || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.paymentMode || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'payment')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️ View</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
+        }
+
+        async function openPaymentModal() {
+            const fields = `
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label><input type="date" id="pv_date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Payee / Vendor Name *</label><input type="text" id="pv_payee" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Cooling Parts LLC"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount Paid (AED) *</label><input type="number" step="0.01" id="pv_amount" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label><select id="pv_mode" onchange="toggleChequeFields('pv')" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CHEQUE">Cheque</option><option value="CARD">Credit Card</option><option value="ONLINE">Online</option></select></div>
+                <div id="pv_cheque_fields" style="display:none;">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque Number</label><input type="text" id="pv_chequeNo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label><input type="text" id="pv_bankName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-2">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque Date</label><input type="date" id="pv_chequeDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label><select id="pv_chequeStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="ISSUED">Issued</option><option value="CLEARED">Cleared</option><option value="BOUNCED">Bounced</option></select></div>
+                    </div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label><textarea id="pv_desc" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Payment for PO-001"></textarea></div>
+            `;
+            openModal('New Payment Voucher', fields);
+            document.getElementById('pv_date').valueAsDate = new Date();
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/payments', {
+                    date: getInput('pv_date'),
+                    payeeName: getInput('pv_payee'),
+                    amount: parseFloat(getInput('pv_amount')),
+                    paymentMode: getInput('pv_mode'),
+                    chequeNumber: getInput('pv_chequeNo'),
+                    bankName: getInput('pv_bankName'),
+                    chequeDate: getInput('pv_chequeDate'),
+                    chequeStatus: getInput('pv_chequeStatus'),
+                    description: getInput('pv_desc')
+                }, 'Payment Voucher saved!', { endpoint: '/payments', tableId: 'tbody-payments', columns: ['voucherNumber', 'date', 'payeeName', 'paymentMode', 'amount'] });
+            };
+        }
+
+        function toggleChequeFields(prefix) {
+            const mode = document.getElementById(`${prefix}_mode`).value;
+            const chequeDiv = document.getElementById(`${prefix}_cheque_fields`);
+            if (mode === 'CHEQUE') { chequeDiv.style.display = 'block'; } else { chequeDiv.style.display = 'none'; }
+        }
+
+        async function viewVoucher(id, type) {
+            try {
+                const endpoint = type === 'receipt' ? `/receipts/${id}` : `/payments/${id}`;
+                const v = await apiFetch(endpoint);
+                const company = await apiFetch('/company');
+                const isReceipt = type === 'receipt';
+                
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md'); modalBox.classList.add('max-w-3xl', 'p-0');
+
+                const amountWords = numberToWords(parseFloat(v.amount || 0));
+                const title = isReceipt ? "RECEIPT VOUCHER" : "PAYMENT VOUCHER";
+                const partyLabel = isReceipt ? "Received From" : "Paid To";
+                const partyName = isReceipt ? v.customer?.name : v.payeeName;
+
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print</button>
+                        <button onclick="downloadVoucherPDF('${v.voucherNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+                    <div id="print-area" class="a4-page" style="min-height: 500px; padding: 40px;">
+                        <div class="a4-header">
+                            <div>
+                                ${company.logoUrl ? `<img src="${company.logoUrl}" alt="Logo" class="h-12 mb-2">` : '<h1 class="text-xl font-bold text-blue-800">MAK INFRATECH</h1>'}
+                                <p class="text-xs text-gray-600">${company.address || ''}</p>
+                                <p class="text-xs text-gray-600">TRN: ${company.trn || 'N/A'}</p>
+                            </div>
+                            <div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">${title}</h2></div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+                            <div><strong>Voucher No:</strong> ${v.voucherNumber}</div>
+                            <div><strong>Date:</strong> ${v.date ? new Date(v.date).toLocaleDateString() : 'N/A'}</div>
+                            <div><strong>Payment Mode:</strong> ${v.paymentMode}</div>
+                            ${v.chequeNumber ? `<div><strong>Cheque No:</strong> ${v.chequeNumber} (${v.bankName})</div>` : ''}
+                        </div>
+
+                        <div class="border p-4 rounded mb-6">
+                            <div class="text-sm mb-2"><strong>${partyLabel}:</strong> ${partyName || 'N/A'}</div>
+                            <div class="text-sm mb-2"><strong>Amount:</strong> AED ${parseFloat(v.amount).toFixed(2)}</div>
+                            <div class="text-sm mb-2"><strong>Amount in Words:</strong> <span class="italic">${amountWords}</span></div>
+                            <div class="text-sm"><strong>Description:</strong> ${v.description || 'N/A'}</div>
+                        </div>
+
+                        <div class="flex justify-between mt-12 text-sm">
+                            <div class="text-center"><div class="border-t border-gray-800 w-40 pt-1">Prepared By</div></div>
+                            <div class="text-center"><div class="border-t border-gray-800 w-40 pt-1">Approved By</div></div>
+                            <div class="text-center"><div class="border-t border-gray-800 w-40 pt-1">Receiver Signature</div></div>
+                        </div>
+                    </div>
+                `;
+                openModal('Voucher Document', fields, true);
+            } catch (e) { alert('Failed to load voucher details'); }
+        }
+
+        function downloadVoucherPDF(voucherNumber) {
+            const element = document.getElementById('print-area');
+            const opt = { margin: 0, filename: `${voucherNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // --- WORK ORDERS FUNCTIONS ---
         let allWoBuildings = [], allWoFlats = [];
-        
         async function fetchAndRenderWorkOrders() {
-            const tbody = document.getElementById('tbody-work-orders');
-            if (!tbody) return;
+            const tbody = document.getElementById('tbody-work-orders'); if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
             try {
                 const data = await apiFetch('/work-orders');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`;
-                    return;
-                }
-                
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`; return; }
                 tbody.innerHTML = data.map(item => {
-                    const statusColors = {
-                        'PENDING': 'bg-yellow-100 text-yellow-700',
-                        'ASSIGNED': 'bg-blue-100 text-blue-700',
-                        'IN_PROGRESS': 'bg-purple-100 text-purple-700',
-                        'PENDING_PARTS': 'bg-orange-100 text-orange-700',
-                        'COMPLETED': 'bg-green-100 text-green-700',
-                        'CANCELLED': 'bg-red-100 text-red-700'
-                    };
+                    const statusColors = { 'PENDING': 'bg-yellow-100 text-yellow-700', 'ASSIGNED': 'bg-blue-100 text-blue-700', 'IN_PROGRESS': 'bg-purple-100 text-purple-700', 'PENDING_PARTS': 'bg-orange-100 text-orange-700', 'COMPLETED': 'bg-green-100 text-green-700', 'CANCELLED': 'bg-red-100 text-red-700' };
                     const status = item.status || 'PENDING';
                     const scheduleDate = item.scheduledDate ? new Date(item.scheduledDate).toLocaleString() : 'N/A';
                     const techName = item.technician ? item.technician.name : '<span class="text-gray-400 italic">Unassigned</span>';
                     const location = `${item.building?.name || '-'} ${item.flat?.unitNumber ? '('+item.flat.unitNumber+')' : ''}`;
-                    
                     const canManage = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'COORDINATOR'].includes(userRole);
-                    const whatsappBtn = canManage && item.customer?.phone ? `
-                        <button onclick="sendWhatsAppMsg('${item.customer.phone}', 'Update regarding WO ${item.woNumber}: ${item.title}')" class="text-green-600 hover:text-green-800 text-sm px-1">💬</button>
-                    ` : '';
-
+                    const whatsappBtn = canManage && item.customer?.phone ? `<button onclick="sendWhatsAppMsg('${item.customer.phone}', 'Update regarding WO ${item.woNumber}: ${item.title}')" class="text-green-600 hover:text-green-800 text-sm px-1">💬</button>` : '';
                     return `
                         <tr>
                             <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.woNumber}</td>
@@ -581,53 +821,29 @@
                             <td class="px-3 py-2 text-sm text-gray-700">${techName}</td>
                             <td class="px-3 py-2 text-sm text-gray-700">
                                 <select onchange="updateWoStatus('${item.id}', this.value)" class="px-2 py-1 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none ${statusColors[status]}">
-                                    <option value="PENDING" ${status === 'PENDING' ? 'selected' : ''}>Pending</option>
-                                    <option value="ASSIGNED" ${status === 'ASSIGNED' ? 'selected' : ''}>Scheduled</option>
-                                    <option value="IN_PROGRESS" ${status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
-                                    <option value="PENDING_PARTS" ${status === 'PENDING_PARTS' ? 'selected' : ''}>Pending Parts</option>
-                                    <option value="COMPLETED" ${status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
-                                    <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                                    <option value="PENDING" ${status === 'PENDING' ? 'selected' : ''}>Pending</option><option value="ASSIGNED" ${status === 'ASSIGNED' ? 'selected' : ''}>Scheduled</option><option value="IN_PROGRESS" ${status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option><option value="PENDING_PARTS" ${status === 'PENDING_PARTS' ? 'selected' : ''}>Pending Parts</option><option value="COMPLETED" ${status === 'COMPLETED' ? 'selected' : ''}>Completed</option><option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
                                 </select>
                             </td>
                             <td class="px-3 py-2 text-sm text-gray-700 flex gap-1">
-                                <button onclick="viewWorkOrderDetails('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️</button>
-                                ${whatsappBtn}
-                                ${canManage ? `
-                                    <button onclick="openServiceReportModal('${item.id}')" class="text-purple-600 hover:text-purple-800 text-sm px-1">📝</button>
-                                    <button onclick="deleteWo('${item.id}')" class="text-red-600 hover:text-red-800 text-sm px-1">🗑️</button>
-                                ` : ''}
+                                <button onclick="viewWorkOrderDetails('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️</button>${whatsappBtn}${canManage ? `<button onclick="openServiceReportModal('${item.id}')" class="text-purple-600 hover:text-purple-800 text-sm px-1">📝</button><button onclick="deleteWo('${item.id}')" class="text-red-600 hover:text-red-800 text-sm px-1">🗑️</button>` : ''}
                             </td>
-                        </tr>
-                    `;
+                        </tr>`;
                 }).join('');
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
-            }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
         async function updateWoStatus(id, status) {
-            try {
-                await apiFetch(`/work-orders/${id}/status`, 'PATCH', { status });
-                fetchAndRenderWorkOrders(); // Re-render to update colors
-            } catch (e) {
-                alert('Failed to update status: ' + e.message);
-            }
+            try { await apiFetch(`/work-orders/${id}/status`, 'PATCH', { status }); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed to update status: ' + e.message); }
         }
 
         function sendWhatsAppMsg(phone, msg) {
             const cleanPhone = phone.replace(/[^0-9]/g, '');
-            const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
-            window.open(url, '_blank');
+            window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         async function deleteWo(id) {
             if (confirm('Are you sure you want to delete this Work Order?')) {
-                try {
-                    await apiFetch(`/work-orders/${id}`, 'DELETE');
-                    fetchAndRenderWorkOrders();
-                } catch (e) {
-                    alert('Failed to delete: ' + e.message);
-                }
+                try { await apiFetch(`/work-orders/${id}`, 'DELETE'); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed to delete: ' + e.message); }
             }
         }
 
@@ -635,40 +851,22 @@
             try {
                 const wo = await apiFetch(`/work-orders/${id}`);
                 const isTech = userRole === 'TECHNICIAN';
-                
                 const fields = `
                     <div class="space-y-4 text-gray-800">
-                        <div class="flex justify-between border-b pb-3">
-                            <span class="font-bold text-lg text-blue-600">WO: ${wo.woNumber}</span>
-                            <span class="text-sm text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span>
-                        </div>
+                        <div class="flex justify-between border-b pb-3"><span class="font-bold text-lg text-blue-600">WO: ${wo.woNumber}</span><span class="text-sm text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span></div>
                         <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div><strong>Client:</strong> ${wo.customer?.name || 'N/A'}</div>
-                            <div><strong>Building:</strong> ${wo.building?.name || 'N/A'} ${wo.flat?.unitNumber ? '('+wo.flat.unitNumber+')' : ''}</div>
-                            <div><strong>Technician:</strong> ${wo.technician?.name || 'Unassigned'}</div>
-                            <div><strong>Schedule:</strong> ${wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleString() : 'N/A'}</div>
+                            <div><strong>Client:</strong> ${wo.customer?.name || 'N/A'}</div><div><strong>Building:</strong> ${wo.building?.name || 'N/A'} ${wo.flat?.unitNumber ? '('+wo.flat.unitNumber+')' : ''}</div>
+                            <div><strong>Technician:</strong> ${wo.technician?.name || 'Unassigned'}</div><div><strong>Schedule:</strong> ${wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleString() : 'N/A'}</div>
                         </div>
                         <div class="text-sm"><strong>Nature of Complaint:</strong><br>${wo.description || wo.title}</div>
-                        
-                        ${isTech ? `
-                            <div class="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm text-yellow-800">
-                                <strong>Privacy Notice:</strong> Customer phone numbers are hidden. Please contact dispatch for assistance.
-                            </div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(wo.building?.address || wo.building?.name || '')}" target="_blank" class="block w-full text-center bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700">📍 Navigate to Location</a>
-                        ` : `
-                            <div class="text-sm"><strong>Client Phone:</strong> ${wo.customer?.phone || 'N/A'}</div>
-                        `}
-                        
+                        ${isTech ? `<div class="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm text-yellow-800"><strong>Privacy Notice:</strong> Customer phone numbers are hidden. Please contact dispatch for assistance.</div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(wo.building?.address || wo.building?.name || '')}" target="_blank" class="block w-full text-center bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700">📍 Navigate to Location</a>` : `<div class="text-sm"><strong>Client Phone:</strong> ${wo.customer?.phone || 'N/A'}</div>`}
                         <div class="flex gap-3 pt-4">
                             <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200">Close</button>
                             <button type="button" onclick="openServiceReportModal('${wo.id}')" class="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700">Service Report</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 openModal('Work Order Details', fields, true);
-            } catch (e) {
-                alert('Failed to load Work Order details');
-            }
+            } catch (e) { alert('Failed to load Work Order details'); }
         }
 
         let signaturePad = null;
@@ -679,10 +877,7 @@
                 const fields = `
                     <div class="space-y-4 text-gray-800">
                         <div class="flex justify-between border-b pb-3"><span class="font-bold text-lg text-blue-600">Service Report</span><span class="text-sm text-gray-500">WO: ${wo.woNumber}</span></div>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div><strong>Client:</strong> ${wo.customer ? wo.customer.name : 'N/A'}</div>
-                            <div><strong>Building:</strong> ${wo.building ? wo.building.name : 'N/A'}</div>
-                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm"><div><strong>Client:</strong> ${wo.customer ? wo.customer.name : 'N/A'}</div><div><strong>Building:</strong> ${wo.building ? wo.building.name : 'N/A'}</div></div>
                         <div class="text-sm"><strong>Nature of Complaint:</strong><br>${wo.description || wo.title}</div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Work Started At</label><input type="datetime-local" id="sr_startedAt" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
@@ -700,78 +895,42 @@
                             <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200">Cancel</button>
                             <button type="button" onclick="saveAndDownloadPDF('${wo.id}')" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Save & Download PDF</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 openModal('Complete Service Report', fields, true);
                 const canvas = document.getElementById('signature-canvas');
                 signaturePad = new SignaturePad(canvas);
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
+                canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio; canvas.getContext("2d").scale(ratio, ratio);
             } catch (e) { alert('Failed to load Work Order details'); }
         }
 
         function clearSignature() { if (signaturePad) signaturePad.clear(); }
 
         async function saveAndDownloadPDF(workOrderId) {
-            const startedAt = document.getElementById('sr_startedAt').value;
-            const completedAt = document.getElementById('sr_completedAt').value;
-            const workPerformed = document.getElementById('sr_workPerformed').value;
-            const materials = document.getElementById('sr_materials').value;
-            const observations = document.getElementById('sr_observations').value;
-            const signatureData = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
+            const startedAt = document.getElementById('sr_startedAt').value, completedAt = document.getElementById('sr_completedAt').value, workPerformed = document.getElementById('sr_workPerformed').value, materials = document.getElementById('sr_materials').value, observations = document.getElementById('sr_observations').value, signatureData = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
             if (!workPerformed || !startedAt || !completedAt) { alert('Please fill in the Start Time, End Time, and Work Performed.'); return; }
             try {
                 await apiFetch(`/work-orders/${workOrderId}`, 'PATCH', { startedAt, completedAt, workPerformed, materialsUsed: { items: materials }, observations, clientSignature: signatureData, technicianName: 'Admin User' });
-                // Also set status to completed
                 await apiFetch(`/work-orders/${workOrderId}/status`, 'PATCH', { status: 'COMPLETED' });
-                
                 generatePDF({ woId: workOrderId, startedAt, completedAt, workPerformed, materials, observations, signature: signatureData });
-                closeModal();
-                fetchAndRenderWorkOrders();
+                closeModal(); fetchAndRenderWorkOrders();
             } catch (e) { alert('Failed to save Service Report: ' + e.message); }
         }
 
         function generatePDF(data) {
             const formatTime = (t) => new Date(t).toLocaleString();
             const pdfContent = document.createElement('div');
-            pdfContent.style.padding = '20px';
-            pdfContent.style.fontFamily = 'Arial, sans-serif';
-            pdfContent.innerHTML = `
-                <h2 style="text-align:center; color:#1e3a8a; border-bottom: 2px solid #333; padding-bottom: 10px;">MAK INFRATECH FMS - Service Report</h2>
-                <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-                <hr style="margin: 10px 0;">
-                <div style="display: flex; justify-content: space-between;">
-                    <p><strong>Start Time:</strong> ${formatTime(data.startedAt)}</p>
-                    <p><strong>End Time:</strong> ${formatTime(data.completedAt)}</p>
-                </div>
-                <h4>Work Performed:</h4><p>${data.workPerformed}</p>
-                <h4>Materials Used:</h4><p>${data.materials}</p>
-                <h4>Observations:</h4><p>${data.observations}</p>
-                <hr style="margin: 20px 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div><p><strong>Technician:</strong> Admin User</p></div>
-                    <div style="text-align: center;">
-                        ${data.signature ? `<img src="${data.signature}" height="80" width="200" /><br>` : ''}
-                        <span style="border-top: 1px solid #000; padding-top: 5px; display: inline-block; width: 200px;">Client Signature</span>
-                    </div>
-                </div>
-            `;
+            pdfContent.style.padding = '20px'; pdfContent.style.fontFamily = 'Arial, sans-serif';
+            pdfContent.innerHTML = `<h2 style="text-align:center; color:#1e3a8a; border-bottom: 2px solid #333; padding-bottom: 10px;">MAK INFRATECH FMS - Service Report</h2><p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p><hr style="margin: 10px 0;"><div style="display: flex; justify-content: space-between;"><p><strong>Start Time:</strong> ${formatTime(data.startedAt)}</p><p><strong>End Time:</strong> ${formatTime(data.completedAt)}</p></div><h4>Work Performed:</h4><p>${data.workPerformed}</p><h4>Materials Used:</h4><p>${data.materials}</p><h4>Observations:</h4><p>${data.observations}</p><hr style="margin: 20px 0;"><div style="display: flex; justify-content: space-between; align-items: flex-end;"><div><p><strong>Technician:</strong> Admin User</p></div><div style="text-align: center;">${data.signature ? `<img src="${data.signature}" height="80" width="200" /><br>` : ''}<span style="border-top: 1px solid #000; padding-top: 5px; display: inline-block; width: 200px;">Client Signature</span></div></div>`;
             document.body.appendChild(pdfContent);
             const opt = { margin: 10, filename: `Service_Report_${data.woId.substring(0, 8)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
             html2pdf().set(opt).from(pdfContent).save().then(() => { document.body.removeChild(pdfContent); });
         }
 
         async function openWorkOrderModal() {
-            const customers = await apiFetch('/customers');
-            allWoBuildings = await apiFetch('/buildings');
-            allWoFlats = await apiFetch('/flats');
-            const techs = await apiFetch('/users');
-            
+            const customers = await apiFetch('/customers'); allWoBuildings = await apiFetch('/buildings'); allWoFlats = await apiFetch('/flats'); const techs = await apiFetch('/users');
             const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
             const techOpts = techs.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-
             const fields = `
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label><select id="wo_customerId" required onchange="filterWoBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Client</option>${custOpts}</select></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label><select id="wo_buildingId" required onchange="filterWoFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Client First</option></select></div>
@@ -781,39 +940,25 @@
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date *</label><input type="date" id="wo_scheduledDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Time *</label><input type="time" id="wo_scheduledTime" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
                 </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Nature of Complaint *</label><textarea id="wo_complaint" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Describe the client's issue or job scope..."></textarea></div>
-            `;
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Nature of Complaint *</label><textarea id="wo_complaint" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Describe the client's issue or job scope..."></textarea></div>`;
             openModal('Create New Work Order', fields);
             document.getElementById('wo_scheduledDate').valueAsDate = new Date();
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                const dateVal = getInput('wo_scheduledDate'), timeVal = getInput('wo_scheduledTime');
-                const scheduledDateTime = new Date(`${dateVal}T${timeVal}`);
+                const dateVal = getInput('wo_scheduledDate'), timeVal = getInput('wo_scheduledTime'), scheduledDateTime = new Date(`${dateVal}T${timeVal}`);
                 handleSubmit('/work-orders', { title: 'Service Request', description: getInput('wo_complaint'), customerId: getInput('wo_customerId'), buildingId: getInput('wo_buildingId'), flatId: getInput('wo_flatId') || null, technicianId: getInput('wo_technicianId') || null, scheduledDate: scheduledDateTime, priority: 'MEDIUM' }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
             };
         }
 
         function filterWoBuildings() {
-            const custId = document.getElementById('wo_customerId').value;
-            const bldgSelect = document.getElementById('wo_buildingId');
-            const flatSelect = document.getElementById('wo_flatId');
+            const custId = document.getElementById('wo_customerId').value; const bldgSelect = document.getElementById('wo_buildingId'); const flatSelect = document.getElementById('wo_flatId');
             flatSelect.innerHTML = '<option value="">Select Building First</option>'; flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Building</option>';
-            if (custId) {
-                bldgSelect.disabled = false; bldgSelect.classList.remove('bg-gray-100');
-                const filtered = allWoBuildings.filter(b => b.customerId === custId);
-                if (filtered.length > 0) { filtered.forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`; }); } else { bldgSelect.innerHTML = '<option value="">No Buildings for this Client</option>'; }
-            } else { bldgSelect.disabled = true; bldgSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Client First</option>'; }
+            if (custId) { bldgSelect.disabled = false; bldgSelect.classList.remove('bg-gray-100'); const filtered = allWoBuildings.filter(b => b.customerId === custId); if (filtered.length > 0) { filtered.forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`; }); } else { bldgSelect.innerHTML = '<option value="">No Buildings for this Client</option>'; } } else { bldgSelect.disabled = true; bldgSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Client First</option>'; }
         }
 
         function filterWoFlats() {
-            const bldgSelect = document.getElementById('wo_buildingId'); const bldgId = bldgSelect.value;
-            const flatSelect = document.getElementById('wo_flatId');
-            flatSelect.innerHTML = '<option value="">Select Flat</option>';
-            if (bldgId) {
-                flatSelect.disabled = false; flatSelect.classList.remove('bg-gray-100');
-                const filtered = allWoFlats.filter(f => f.buildingId === bldgId);
-                if (filtered.length > 0) { filtered.forEach(f => { flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`; }); } else { flatSelect.innerHTML = '<option value="">No Flats for this Building</option>'; }
-            } else { flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); flatSelect.innerHTML = '<option value="">Select Building First</option>'; }
+            const bldgSelect = document.getElementById('wo_buildingId'); const bldgId = bldgSelect.value; const flatSelect = document.getElementById('wo_flatId'); flatSelect.innerHTML = '<option value="">Select Flat</option>';
+            if (bldgId) { flatSelect.disabled = false; flatSelect.classList.remove('bg-gray-100'); const filtered = allWoFlats.filter(f => f.buildingId === bldgId); if (filtered.length > 0) { filtered.forEach(f => { flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`; }); } else { flatSelect.innerHTML = '<option value="">No Flats for this Building</option>'; } } else { flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); flatSelect.innerHTML = '<option value="">Select Building First</option>'; }
         }
 
         // --- ASSET FUNCTIONS ---
@@ -830,104 +975,43 @@
                     tr.className = "cursor-pointer hover:bg-blue-50 transition";
                     tr.addEventListener('click', () => viewAssetDetails(item.id));
                     const statusColor = item.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.assetNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.manufacturer || '-'} ${item.model || ''}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.customer?.name || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.name || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.flat?.unitNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.location || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${statusColor}">${item.status || 'ACTIVE'}</span></td>
-                        <td class="px-3 py-2 text-sm text-gray-700 no-print"><button onclick="event.stopPropagation(); printAssetSticker('${item.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700">Sticker</button></td>
-                    `;
+                    tr.innerHTML = `<td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.assetNumber || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.manufacturer || '-'} ${item.model || ''}</td><td class="px-3 py-2 text-sm text-gray-700">${item.building?.customer?.name || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.building?.name || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.flat?.unitNumber || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.location || '-'}</td><td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${statusColor}">${item.status || 'ACTIVE'}</span></td><td class="px-3 py-2 text-sm text-gray-700 no-print"><button onclick="event.stopPropagation(); printAssetSticker('${item.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700">Sticker</button></td>`;
                     tbody.appendChild(tr);
                 });
             } catch (e) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
         async function openInventoryModal() {
-            const customers = await apiFetch('/customers');
-            allInvBuildings = await apiFetch('/buildings');
-            allInvFlats = await apiFetch('/flats');
+            const customers = await apiFetch('/customers'); allInvBuildings = await apiFetch('/buildings'); allInvFlats = await apiFetch('/flats');
             const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
             const fields = `
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label><select id="inv_customerId" required onchange="filterInvBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Client</option>${custOpts}</select></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label><select id="inv_buildingId" required onchange="filterInvFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Client First</option></select></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number *</label><select id="inv_flatId" required disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Building First</option></select></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Specific AC Location / Area *</label><input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Asset Type *</label><select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="Split AC">Split AC</option><option value="FCU">FCU (Fan Coil Unit)</option><option value="AHU">AHU (Air Handling Unit)</option><option value="Package Unit">Package Unit</option><option value="Chiller">Chiller</option></select></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label><input type="text" id="inv_manufacturer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Daikin"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label><input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label><input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654"></div>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Technical Specs (Gas, Capacity, Power Panel)</label><textarea id="inv_specs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., R410A, 1.5 Ton, Breaker DB-2"></textarea></div>
-            `;
+                <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Asset Type *</label><select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="Split AC">Split AC</option><option value="FCU">FCU (Fan Coil Unit)</option><option value="AHU">AHU (Air Handling Unit)</option><option value="Package Unit">Package Unit</option><option value="Chiller">Chiller</option></select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label><input type="text" id="inv_manufacturer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Daikin"></div></div>
+                <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label><input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label><input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654"></div></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Technical Specs (Gas, Capacity, Power Panel)</label><textarea id="inv_specs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., R410A, 1.5 Ton, Breaker DB-2"></textarea></div>`;
             openModal('Register New Asset', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/assets', {
-                    customerId: getInput('inv_customerId'), buildingId: getInput('inv_buildingId'), flatId: getInput('inv_flatId'), location: getInput('inv_location'), name: getInput('inv_name'), manufacturer: getInput('inv_manufacturer'), model: getInput('inv_model'), serialNumber: getInput('inv_serial'), description: getInput('inv_specs')
-                }, 'Asset registered successfully!', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
-            };
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/assets', { customerId: getInput('inv_customerId'), buildingId: getInput('inv_buildingId'), flatId: getInput('inv_flatId'), location: getInput('inv_location'), name: getInput('inv_name'), manufacturer: getInput('inv_manufacturer'), model: getInput('inv_model'), serialNumber: getInput('inv_serial'), description: getInput('inv_specs') }, 'Asset registered successfully!', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] }); };
         }
 
         function filterInvBuildings() {
-            const custId = document.getElementById('inv_customerId').value;
-            const bldgSelect = document.getElementById('inv_buildingId');
-            const flatSelect = document.getElementById('inv_flatId');
-            flatSelect.innerHTML = '<option value="">Select Building First</option>'; flatSelect.disabled = true;
-            bldgSelect.innerHTML = '<option value="">Select Building</option>';
-            if (custId) {
-                bldgSelect.disabled = false;
-                allInvBuildings.filter(b => b.customerId === custId).forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`; });
-            } else { bldgSelect.disabled = true; }
+            const custId = document.getElementById('inv_customerId').value; const bldgSelect = document.getElementById('inv_buildingId'); const flatSelect = document.getElementById('inv_flatId');
+            flatSelect.innerHTML = '<option value="">Select Building First</option>'; flatSelect.disabled = true; bldgSelect.innerHTML = '<option value="">Select Building</option>';
+            if (custId) { bldgSelect.disabled = false; allInvBuildings.filter(b => b.customerId === custId).forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`; }); } else { bldgSelect.disabled = true; }
         }
 
         function filterInvFlats() {
-            const bldgId = document.getElementById('inv_buildingId').value;
-            const flatSelect = document.getElementById('inv_flatId');
-            flatSelect.innerHTML = '<option value="">Select Flat</option>';
-            if (bldgId) {
-                flatSelect.disabled = false;
-                allInvFlats.filter(f => f.buildingId === bldgId).forEach(f => { flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`; });
-            } else { flatSelect.disabled = true; }
+            const bldgId = document.getElementById('inv_buildingId').value; const flatSelect = document.getElementById('inv_flatId'); flatSelect.innerHTML = '<option value="">Select Flat</option>';
+            if (bldgId) { flatSelect.disabled = false; allInvFlats.filter(f => f.buildingId === bldgId).forEach(f => { flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`; }); } else { flatSelect.disabled = true; }
         }
 
         async function viewAssetDetails(assetId) {
             try {
                 const asset = await apiFetch(`/assets/${assetId}`);
-                const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md'); modalBox.classList.add('max-w-3xl', 'p-0');
-                const fields = `
-                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
-                        <button onclick="printAssetSticker('${asset.id}')" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700">Print Sticker</button>
-                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
-                    </div>
-                    <div class="p-8">
-                        <h2 class="text-2xl font-bold text-blue-800 mb-4 border-b pb-2">${asset.name} (${asset.assetNumber})</h2>
-                        <div class="grid grid-cols-2 gap-6 mb-6">
-                            <div><strong>Client:</strong> ${asset.building?.customer?.name || 'N/A'}</div>
-                            <div><strong>Building:</strong> ${asset.building?.name || 'N/A'}</div>
-                            <div><strong>Flat:</strong> ${asset.flat?.unitNumber || 'N/A'}</div>
-                            <div><strong>Location:</strong> ${asset.location || 'N/A'}</div>
-                            <div><strong>Brand/Model:</strong> ${asset.manufacturer || ''} ${asset.model || ''}</div>
-                            <div><strong>Serial No:</strong> ${asset.serialNumber || 'N/A'}</div>
-                            <div class="col-span-2"><strong>Technical Specs:</strong> ${asset.description || 'N/A'}</div>
-                        </div>
-                        <h3 class="font-bold text-lg mb-2 border-t pt-4">Service History</h3>
-                        <div class="space-y-2">
-                            ${asset.workOrders && asset.workOrders.length > 0 ? asset.workOrders.map(wo => `
-                                <div class="bg-gray-50 p-3 rounded border border-gray-200">
-                                    <div class="flex justify-between"><span class="font-medium">${wo.woNumber}</span><span class="text-xs text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span></div>
-                                    <div class="text-sm text-gray-700 mt-1">${wo.description || wo.title}</div>
-                                </div>
-                            `).join('') : '<p class="text-gray-500 text-sm">No service history found.</p>'}
-                        </div>
-                    </div>
-                `;
+                const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md'); modalBox.classList.add('max-w-3xl', 'p-0');
+                const fields = `<div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b"><button onclick="printAssetSticker('${asset.id}')" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700">Print Sticker</button><button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button></div><div class="p-8"><h2 class="text-2xl font-bold text-blue-800 mb-4 border-b pb-2">${asset.name} (${asset.assetNumber})</h2><div class="grid grid-cols-2 gap-6 mb-6"><div><strong>Client:</strong> ${asset.building?.customer?.name || 'N/A'}</div><div><strong>Building:</strong> ${asset.building?.name || 'N/A'}</div><div><strong>Flat:</strong> ${asset.flat?.unitNumber || 'N/A'}</div><div><strong>Location:</strong> ${asset.location || 'N/A'}</div><div><strong>Brand/Model:</strong> ${asset.manufacturer || ''} ${asset.model || ''}</div><div><strong>Serial No:</strong> ${asset.serialNumber || 'N/A'}</div><div class="col-span-2"><strong>Technical Specs:</strong> ${asset.description || 'N/A'}</div></div><h3 class="font-bold text-lg mb-2 border-t pt-4">Service History</h3><div class="space-y-2">${asset.workOrders && asset.workOrders.length > 0 ? asset.workOrders.map(wo => `<div class="bg-gray-50 p-3 rounded border border-gray-200"><div class="flex justify-between"><span class="font-medium">${wo.woNumber}</span><span class="text-xs text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span></div><div class="text-sm text-gray-700 mt-1">${wo.description || wo.title}</div></div>`).join('') : '<p class="text-gray-500 text-sm">No service history found.</p>'}</div></div>`;
                 openModal('Asset Details', fields, true);
             } catch (e) { alert('Failed to load asset details'); }
         }
@@ -935,52 +1019,19 @@
         async function printAssetSticker(assetId) {
             try {
                 const asset = await apiFetch(`/assets/${assetId}`);
-                const qrData = encodeURIComponent(asset.assetNumber);
-                const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
-                const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md', 'max-w-3xl'); modalBox.classList.add('max-w-sm', 'p-0');
-                const fields = `
-                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
-                        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Print Sticker</button>
-                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
-                    </div>
-                    <div id="print-area" class="p-4 bg-white">
-                        <div class="sticker-label">
-                            <div class="sticker-header">MAK INFRATECH FMS</div>
-                            <div class="sticker-body">
-                                <div class="sticker-info">
-                                    <div class="sticker-location">${asset.flat?.unitNumber || 'N/A'} - ${asset.location || 'N/A'}</div>
-                                    <div>${asset.manufacturer || ''} ${asset.model || ''}</div>
-                                    <div>Gas: ${asset.description?.split(',')[0] || 'N/A'}</div>
-                                    <div>SN: ${asset.serialNumber || 'N/A'}</div>
-                                </div>
-                                <img src="${imgSrc}" alt="QR" class="w-24 h-24">
-                            </div>
-                        </div>
-                    </div>
-                `;
+                const qrData = encodeURIComponent(asset.assetNumber); const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
+                const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md', 'max-w-3xl'); modalBox.classList.add('max-w-sm', 'p-0');
+                const fields = `<div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b"><button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Print Sticker</button><button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button></div><div id="print-area" class="p-4 bg-white"><div class="sticker-label"><div class="sticker-header">MAK INFRATECH FMS</div><div class="sticker-body"><div class="sticker-info"><div class="sticker-location">${asset.flat?.unitNumber || 'N/A'} - ${asset.location || 'N/A'}</div><div>${asset.manufacturer || ''} ${asset.model || ''}</div><div>Gas: ${asset.description?.split(',')[0] || 'N/A'}</div><div>SN: ${asset.serialNumber || 'N/A'}</div></div><img src="${imgSrc}" alt="QR" class="w-24 h-24"></div></div></div>`;
                 openModal('Print Sticker', fields, true);
             } catch (e) { alert('Failed to generate sticker'); }
         }
 
         function openScannerModal() {
-            const modalBox = document.querySelector('#modal > div');
-            modalBox.classList.remove('max-w-md', 'max-w-3xl'); modalBox.classList.add('max-w-md');
+            const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md', 'max-w-3xl'); modalBox.classList.add('max-w-md');
             const fields = `<div id="qr-reader" style="width: 100%"></div><div id="qr-reader-result" class="mt-4 text-center"></div>`;
             openModal('Scan Asset QR', fields, true);
             const html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText) => {
-                    html5QrCode.stop().then(() => {
-                        apiFetch(`/assets/scan/${decodedText}`).then(asset => {
-                            if(asset) { closeModal(); viewAssetDetails(asset.id); } else { alert('Asset not found in system.'); }
-                        }).catch(() => alert('Asset not found.'));
-                    }).catch(err => console.log(err));
-                },
-                (errorMessage) => { /* Ignore */ }
-            ).catch(err => {
-                document.getElementById('qr-reader-result').innerText = "Camera access denied or not available.";
-            });
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (decodedText) => { html5QrCode.stop().then(() => { apiFetch(`/assets/scan/${decodedText}`).then(asset => { if(asset) { closeModal(); viewAssetDetails(asset.id); } else { alert('Asset not found in system.'); } }).catch(() => alert('Asset not found.')); }).catch(err => console.log(err)); }, (errorMessage) => { /* Ignore */ }).catch(err => { document.getElementById('qr-reader-result').innerText = "Camera access denied or not available."; });
         }
 
         // --- INVOICE FUNCTIONS ---
@@ -992,15 +1043,8 @@
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Invoices found.</td></tr>`; return; }
                 tbody.innerHTML = '';
                 data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
-                    tr.addEventListener('click', () => viewInvoice(item.id));
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.invoiceNumber}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">AED ${item.total}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>
-                    `;
+                    const tr = document.createElement('tr'); tr.className = "cursor-pointer hover:bg-blue-50 transition"; tr.addEventListener('click', () => viewInvoice(item.id));
+                    tr.innerHTML = `<td class="px-3 py-2 text-sm text-gray-700">${item.invoiceNumber}</td><td class="px-3 py-2 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td><td class="px-3 py-2 text-sm text-gray-700">AED ${item.total}</td><td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>`;
                     tbody.appendChild(tr);
                 });
             } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
@@ -1008,40 +1052,9 @@
 
         async function viewInvoice(id) {
             try {
-                const inv = await apiFetch(`/invoices/${id}`);
-                const company = await apiFetch('/company'); 
-                const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md', 'max-w-3xl', 'max-w-sm'); modalBox.classList.add('max-w-5xl', 'p-0');
-                const fields = `
-                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
-                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
-                        <button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
-                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
-                    </div>
-                    <div id="print-area" class="a4-page">
-                        <div class="a4-header">
-                            <div>
-                                ${company.invoiceHeader ? `<img src="${company.invoiceHeader}" alt="Header" class="h-20 mb-2 object-contain">` : `<h1 class="text-2xl font-bold text-blue-800">${company.name || 'MAK INFRATECH'}</h1>`}
-                                <p class="text-sm text-gray-600">${company.address || ''}</p>
-                                <p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p>
-                            </div>
-                            <div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">Tax Invoice</h2><p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-8 mb-8">
-                            <div><div class="a4-detail-label">Bill To</div><div class="a4-detail-value font-bold">${inv.customer ? inv.customer.name : 'N/A'}</div><div class="text-sm text-gray-600">${inv.customer ? inv.customer.address || '' : ''}</div></div>
-                            <div class="text-right"><div><span class="a4-detail-label">Invoice No:</span> <span class="font-medium">${inv.invoiceNumber}</span></div><div><span class="a4-detail-label">Issue Date:</span> <span class="font-medium">${new Date(inv.issueDate).toLocaleDateString()}</span></div><div><span class="a4-detail-label">Due Date:</span> <span class="font-medium">${new Date(inv.dueDate).toLocaleDateString()}</span></div></div>
-                        </div>
-                        <table class="w-full border-collapse mb-8 text-sm"><thead><tr class="bg-gray-100 border-b-2 border-gray-300"><th class="py-2 px-3 text-left">Description</th><th class="py-2 px-3 text-right">Amount (AED)</th></tr></thead><tbody><tr class="border-b border-gray-200"><td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td><td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td></tr></tbody></table>
-                        <div class="flex justify-end mb-12">
-                            <div class="w-1/2 space-y-2">
-                                <div class="flex justify-between"><span>Subtotal:</span><span>AED ${parseFloat(inv.subtotal).toFixed(2)}</span></div>
-                                <div class="flex justify-between"><span>VAT (5%):</span><span>AED ${parseFloat(inv.vatAmount).toFixed(2)}</span></div>
-                                <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total:</span><span>AED ${parseFloat(inv.total).toFixed(2)}</span></div>
-                            </div>
-                        </div>
-                        <div class="a4-footer">${company.invoiceFooter ? `<img src="${company.invoiceFooter}" class="w-full max-h-24 object-contain">` : `<div class="text-center text-xs text-gray-400">Thank you for your business!</div>`}</div>
-                    </div>
-                `;
+                const inv = await apiFetch(`/invoices/${id}`); const company = await apiFetch('/company'); 
+                const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md', 'max-w-3xl', 'max-w-sm'); modalBox.classList.add('max-w-5xl', 'p-0');
+                const fields = `<div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b"><button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button><button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button><button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button></div><div id="print-area" class="a4-page"><div class="a4-header"><div>${company.invoiceHeader ? `<img src="${company.invoiceHeader}" alt="Header" class="h-20 mb-2 object-contain">` : `<h1 class="text-2xl font-bold text-blue-800">${company.name || 'MAK INFRATECH'}</h1>`}<p class="text-sm text-gray-600">${company.address || ''}</p><p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p></div><div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">Tax Invoice</h2><p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p></div></div><div class="grid grid-cols-2 gap-8 mb-8"><div><div class="a4-detail-label">Bill To</div><div class="a4-detail-value font-bold">${inv.customer ? inv.customer.name : 'N/A'}</div><div class="text-sm text-gray-600">${inv.customer ? inv.customer.address || '' : ''}</div></div><div class="text-right"><div><span class="a4-detail-label">Invoice No:</span> <span class="font-medium">${inv.invoiceNumber}</span></div><div><span class="a4-detail-label">Issue Date:</span> <span class="font-medium">${new Date(inv.issueDate).toLocaleDateString()}</span></div><div><span class="a4-detail-label">Due Date:</span> <span class="font-medium">${new Date(inv.dueDate).toLocaleDateString()}</span></div></div></div><table class="w-full border-collapse mb-8 text-sm"><thead><tr class="bg-gray-100 border-b-2 border-gray-300"><th class="py-2 px-3 text-left">Description</th><th class="py-2 px-3 text-right">Amount (AED)</th></tr></thead><tbody><tr class="border-b border-gray-200"><td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td><td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td></tr></tbody></table><div class="flex justify-end mb-12"><div class="w-1/2 space-y-2"><div class="flex justify-between"><span>Subtotal:</span><span>AED ${parseFloat(inv.subtotal).toFixed(2)}</span></div><div class="flex justify-between"><span>VAT (5%):</span><span>AED ${parseFloat(inv.vatAmount).toFixed(2)}</span></div><div class="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total:</span><span>AED ${parseFloat(inv.total).toFixed(2)}</span></div></div></div><div class="a4-footer">${company.invoiceFooter ? `<img src="${company.invoiceFooter}" class="w-full max-h-24 object-contain">` : `<div class="text-center text-xs text-gray-400">Thank you for your business!</div>`}</div></div>`;
                 openModal('Invoice Document', fields, true); 
             } catch (e) { alert('Failed to load invoice details'); }
         }
@@ -1059,15 +1072,7 @@
             try {
                 const data = await apiFetch('/purchases');
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr>`; return; }
-                tbody.innerHTML = data.map(item => `
-                    <tr>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.billNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.supplierName || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span></td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = data.map(item => `<tr><td class="px-3 py-2 text-sm text-gray-700">${item.billNumber || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.supplierName || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td><td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td><td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span></td></tr>`).join('');
             } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
@@ -1081,51 +1086,14 @@
 
         async function openPurchaseModal() {
             purchaseReceiptData = null;
-            const woOpts = await fetchDropdown('/work-orders');
-            const assetOpts = await fetchDropdown('/assets');
-            const fields = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name *</label><input type="text" id="pur_supplier" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Bill / Reference No.</label><input type="text" id="pur_bill" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label><input type="date" id="pur_pdate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label><input type="date" id="pur_ddate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Work Order</label><select id="pur_woId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${woOpts}</select></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Asset</label><select id="pur_assetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${assetOpts}</select></div>
-                </div>
-                <div class="border-t pt-4 mt-4">
-                    <div class="flex justify-between items-center mb-2"><h4 class="text-sm font-medium text-gray-800">Itemized Purchases</h4><button type="button" onclick="addPurchaseItemRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">+ Add Item</button></div>
-                    <div id="pur_items_container" class="space-y-2"></div>
-                    <div class="flex justify-end mt-4 space-y-1 text-sm w-full max-w-xs ml-auto">
-                        <div class="flex justify-between w-full"><span>Subtotal:</span> <span id="pur_subtotal">0.00</span></div>
-                        <div class="flex justify-between w-full"><span>VAT:</span> <span id="pur_vat">0.00</span></div>
-                        <div class="flex justify-between w-full font-bold text-base border-t pt-1"><span>Total:</span> <span id="pur_total">0.00</span></div>
-                    </div>
-                </div>
-                <div class="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Status</label><select id="pur_pstatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="UNPAID">Unpaid</option><option value="PAID">Paid</option><option value="PARTIAL">Partially Paid</option></select></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label><select id="pur_pmethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="CARD">Card</option><option value="BANK_TRANSFER">Bank Transfer</option></select></div>
-                </div>
-                <div class="border-t pt-4 mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Attach Receipt / Bill Photo</label>
-                    <img id="receipt_preview" src="https://via.placeholder.com/150x100?text=No+Receipt" class="w-full max-h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                    <input type="file" accept="image/png, image/jpeg" onchange="handleReceiptUpload(event)" class="block w-full text-sm text-gray-500">
-                </div>
-            `;
+            const woOpts = await fetchDropdown('/work-orders'); const assetOpts = await fetchDropdown('/assets');
+            const fields = `<div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name *</label><input type="text" id="pur_supplier" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Bill / Reference No.</label><input type="text" id="pur_bill" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label><input type="date" id="pur_pdate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label><input type="date" id="pur_ddate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Work Order</label><select id="pur_woId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${woOpts}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Asset</label><select id="pur_assetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${assetOpts}</select></div></div><div class="border-t pt-4 mt-4"><div class="flex justify-between items-center mb-2"><h4 class="text-sm font-medium text-gray-800">Itemized Purchases</h4><button type="button" onclick="addPurchaseItemRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">+ Add Item</button></div><div id="pur_items_container" class="space-y-2"></div><div class="flex justify-end mt-4 space-y-1 text-sm w-full max-w-xs ml-auto"><div class="flex justify-between w-full"><span>Subtotal:</span> <span id="pur_subtotal">0.00</span></div><div class="flex justify-between w-full"><span>VAT:</span> <span id="pur_vat">0.00</span></div><div class="flex justify-between w-full font-bold text-base border-t pt-1"><span>Total:</span> <span id="pur_total">0.00</span></div></div></div><div class="border-t pt-4 mt-4 grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Status</label><select id="pur_pstatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="UNPAID">Unpaid</option><option value="PAID">Paid</option><option value="PARTIAL">Partially Paid</option></select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label><select id="pur_pmethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="CARD">Card</option><option value="BANK_TRANSFER">Bank Transfer</option></select></div></div><div class="border-t pt-4 mt-4"><label class="block text-sm font-medium text-gray-700 mb-1">Attach Receipt / Bill Photo</label><img id="receipt_preview" src="https://via.placeholder.com/150x100?text=No+Receipt" class="w-full max-h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleReceiptUpload(event)" class="block w-full text-sm text-gray-500"></div>`;
             openModal('Add New Purchase', fields);
             const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md'); modalBox.classList.add('max-w-2xl');
-            addPurchaseItemRow();
-            document.getElementById('pur_pdate').valueAsDate = new Date();
+            addPurchaseItemRow(); document.getElementById('pur_pdate').valueAsDate = new Date();
             modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                const items = [];
-                document.querySelectorAll('.po-item-row').forEach(row => {
-                    const name = row.querySelector('.item-name').value; const cat = row.querySelector('.item-cat').value; const qty = parseFloat(row.querySelector('.item-qty').value) || 0; const price = parseFloat(row.querySelector('.item-price').value) || 0; const vat = parseFloat(row.querySelector('.item-vat').value) || 0; const total = (qty * price) + ((qty * price) * (vat / 100));
-                    if (name) items.push({ name, cat, qty, price, vat, total });
-                });
+                e.preventDefault(); const items = [];
+                document.querySelectorAll('.po-item-row').forEach(row => { const name = row.querySelector('.item-name').value; const cat = row.querySelector('.item-cat').value; const qty = parseFloat(row.querySelector('.item-qty').value) || 0; const price = parseFloat(row.querySelector('.item-price').value) || 0; const vat = parseFloat(row.querySelector('.item-vat').value) || 0; const total = (qty * price) + ((qty * price) * (vat / 100)); if (name) items.push({ name, cat, qty, price, vat, total }); });
                 if (items.length === 0) { alert('Please add at least one item.'); return; }
                 const subtotal = items.reduce((sum, item) => sum + (item.qty * item.price), 0); const vatAmount = items.reduce((sum, item) => sum + ((item.qty * item.price) * (item.vat / 100)), 0); const totalAmount = subtotal + vatAmount;
                 handleSubmit('/purchases', { supplierName: getInput('pur_supplier'), billNumber: getInput('pur_bill'), purchaseDate: getInput('pur_pdate'), dueDate: getInput('pur_ddate'), workOrderId: getInput('pur_woId') || null, assetId: getInput('pur_assetId') || null, items: items, subtotal: subtotal, vatAmount: vatAmount, totalAmount: totalAmount, paymentStatus: getInput('pur_pstatus'), paymentMethod: getInput('pur_pmethod'), receiptUrl: purchaseReceiptData }, 'Purchase recorded successfully!', { endpoint: '/purchases', tableId: 'tbody-purchases', columns: ['billNumber', 'supplierName', 'purchaseDate', 'totalAmount', 'paymentStatus'] });
@@ -1134,27 +1102,13 @@
 
         function addPurchaseItemRow() {
             const container = document.getElementById('pur_items_container');
-            const rowHtml = `
-                <div class="po-item-row grid grid-cols-12 gap-2 items-center">
-                    <input type="text" placeholder="Item Name" class="item-name col-span-4 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
-                    <input type="text" placeholder="Category" class="item-cat col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500">
-                    <input type="number" placeholder="Qty" step="0.01" class="item-qty col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
-                    <input type="number" placeholder="Price" step="0.01" class="item-price col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
-                    <input type="number" placeholder="VAT%" step="0.01" value="5" class="item-vat col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()">
-                    <span class="col-span-2 text-right text-sm text-gray-600 item-total">0.00</span>
-                    <button type="button" onclick="this.parentElement.remove(); updatePurchaseTotals();" class="col-span-1 text-red-500 hover:text-red-700 text-sm">X</button>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', rowHtml);
-            updatePurchaseTotals();
+            const rowHtml = `<div class="po-item-row grid grid-cols-12 gap-2 items-center"><input type="text" placeholder="Item Name" class="item-name col-span-4 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"><input type="text" placeholder="Category" class="item-cat col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500"><input type="number" placeholder="Qty" step="0.01" class="item-qty col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()"><input type="number" placeholder="Price" step="0.01" class="item-price col-span-3 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()"><input type="number" placeholder="VAT%" step="0.01" value="5" class="item-vat col-span-2 px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="updatePurchaseTotals()"><span class="col-span-2 text-right text-sm text-gray-600 item-total">0.00</span><button type="button" onclick="this.parentElement.remove(); updatePurchaseTotals();" class="col-span-1 text-red-500 hover:text-red-700 text-sm">X</button></div>`;
+            container.insertAdjacentHTML('beforeend', rowHtml); updatePurchaseTotals();
         }
 
         function updatePurchaseTotals() {
             let subtotal = 0, vatAmount = 0;
-            document.querySelectorAll('.po-item-row').forEach(row => {
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0; const price = parseFloat(row.querySelector('.item-price').value) || 0; const vat = parseFloat(row.querySelector('.item-vat').value) || 0; const rowTotal = (qty * price) + ((qty * price) * (vat / 100));
-                row.querySelector('.item-total').innerText = rowTotal.toFixed(2); subtotal += (qty * price); vatAmount += ((qty * price) * (vat / 100));
-            });
+            document.querySelectorAll('.po-item-row').forEach(row => { const qty = parseFloat(row.querySelector('.item-qty').value) || 0; const price = parseFloat(row.querySelector('.item-price').value) || 0; const vat = parseFloat(row.querySelector('.item-vat').value) || 0; const rowTotal = (qty * price) + ((qty * price) * (vat / 100)); row.querySelector('.item-total').innerText = rowTotal.toFixed(2); subtotal += (qty * price); vatAmount += ((qty * price) * (vat / 100)); });
             document.getElementById('pur_subtotal').innerText = subtotal.toFixed(2); document.getElementById('pur_vat').innerText = vatAmount.toFixed(2); document.getElementById('pur_total').innerText = (subtotal + vatAmount).toFixed(2);
         }
 
@@ -1230,73 +1184,17 @@
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr>`; return; }
                 tbody.innerHTML = '';
                 data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
-                    tr.addEventListener('click', () => viewStaffDocument(item.id));
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.firstName} ${item.lastName}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.jobTitle || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.nationality || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.phone || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>
-                    `;
+                    const tr = document.createElement('tr'); tr.className = "cursor-pointer hover:bg-blue-50 transition"; tr.addEventListener('click', () => viewStaffDocument(item.id));
+                    tr.innerHTML = `<td class="px-3 py-2 text-sm text-gray-700">${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}</td><td class="px-3 py-2 text-sm text-gray-700">${item.firstName} ${item.lastName}</td><td class="px-3 py-2 text-sm text-gray-700">${item.jobTitle || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.nationality || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.phone || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>`;
                     tbody.appendChild(tr);
                 });
             } catch (e) { tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
         async function viewStaffDocument(staffId) {
             try {
-                const staff = await apiFetch(`/staff/${staffId}`);
-                const company = await apiFetch('/company'); 
-                const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md', 'max-w-2xl', 'max-w-sm'); modalBox.classList.add('max-w-5xl', 'p-0');
-                const fields = `
-                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
-                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
-                        <button onclick="downloadStaffPDF('${staff.id}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
-                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
-                    </div>
-                    <div id="print-area" class="a4-page">
-                        <div class="a4-header">
-                            <div>
-                                ${company.logoUrl ? `<img src="${company.logoUrl}" alt="Logo" class="h-16 mb-2">` : '<h1 class="text-2xl font-bold text-blue-800">MAK INFRATECH</h1>'}
-                                <p class="text-sm text-gray-600">${company.address || ''}</p>
-                                <p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p>
-                            </div>
-                            <div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">Staff Record Form</h2><p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p></div>
-                        </div>
-                        <div class="a4-grid">
-                            <div class="text-center">${staff.photoUrl ? `<img src="${staff.photoUrl}" class="w-40 h-48 object-cover mx-auto border border-gray-300">` : `<div class="w-40 h-48 bg-gray-100 mx-auto flex items-center justify-center text-gray-400 border border-gray-300">No Photo</div>`}</div>
-                            <div>
-                                <div class="a4-detail-row"><div class="a4-detail-label">Employee ID</div><div class="a4-detail-value">${staff.id.substring(0, 8).toUpperCase()}</div></div>
-                                <div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">First Name</div><div class="a4-detail-value">${staff.firstName}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Last Name</div><div class="a4-detail-value">${staff.lastName}</div></div></div>
-                                <div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">Designation / Job Title</div><div class="a4-detail-value">${staff.jobTitle || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Nationality</div><div class="a4-detail-value">${staff.nationality || 'N/A'}</div></div></div>
-                                <div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">Mobile Number</div><div class="a4-detail-value">${staff.phone || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Joining Date</div><div class="a4-detail-value">${new Date(staff.createdAt).toLocaleDateString()}</div></div></div>
-                            </div>
-                        </div>
-                        <h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Document & Visa Details</h3>
-                        <div class="grid grid-cols-3 gap-4 mb-8">
-                            <div class="a4-detail-row"><div class="a4-detail-label">Passport Number</div><div class="a4-detail-value">${staff.passportNumber || 'N/A'}</div></div>
-                            <div class="a4-detail-row"><div class="a4-detail-label">Passport Expiry</div><div class="a4-detail-value">${staff.passportExpiry ? new Date(staff.passportExpiry).toLocaleDateString() : 'N/A'}</div></div>
-                            <div class="a4-detail-row"><div class="a4-detail-label">Visa Number</div><div class="a4-detail-value">${staff.visaNumber || 'N/A'}</div></div>
-                            <div class="a4-detail-row"><div class="a4-detail-label">Visa Expiry</div><div class="a4-detail-value">${staff.visaExpiry ? new Date(staff.visaExpiry).toLocaleDateString() : 'N/A'}</div></div>
-                            <div class="a4-detail-row"><div class="a4-detail-label">Emirates ID</div><div class="a4-detail-value">${staff.emiratesId || 'N/A'}</div></div>
-                            <div class="a4-detail-row"><div class="a4-detail-label">Emirates ID Expiry</div><div class="a4-detail-value">${staff.emiratesIdExpiry ? new Date(staff.emiratesIdExpiry).toLocaleDateString() : 'N/A'}</div></div>
-                        </div>
-                        <h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Insurance Details</h3>
-                        <div class="grid grid-cols-3 gap-4 mb-8">
-                            <div class="a4-detail-row"><div class="a4-detail-label">Provider</div><div class="a4-detail-value">${staff.insuranceProvider || 'N/A'}</div></div>
-                            <div class="a4-detail-row"><div class="a4-detail-label">Policy Number</div><div class="a4-detail-value">${staff.insurancePolicyNumber || 'N/A'}</div></div>
-                            <div class="a4-detail-row"><div class="a4-detail-label">Expiry Date</div><div class="a4-detail-value">${staff.insuranceExpiry ? new Date(staff.insuranceExpiry).toLocaleDateString() : 'N/A'}</div></div>
-                        </div>
-                        <div class="a4-footer">
-                            <div class="text-center"><div class="w-24 h-24 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xs text-gray-400">Company Seal</div></div>
-                            <div class="text-center"><div class="border-t border-gray-800 w-48 mt-12 pt-1 text-sm font-medium">Authorized Signatory</div></div>
-                        </div>
-                    </div>
-                `;
+                const staff = await apiFetch(`/staff/${staffId}`); const company = await apiFetch('/company'); 
+                const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md', 'max-w-2xl', 'max-w-sm'); modalBox.classList.add('max-w-5xl', 'p-0');
+                const fields = `<div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b"><button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button><button onclick="downloadStaffPDF('${staff.id}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button><button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button></div><div id="print-area" class="a4-page"><div class="a4-header"><div>${company.logoUrl ? `<img src="${company.logoUrl}" alt="Logo" class="h-16 mb-2">` : '<h1 class="text-2xl font-bold text-blue-800">MAK INFRATECH</h1>'}<p class="text-sm text-gray-600">${company.address || ''}</p><p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p></div><div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">Staff Record Form</h2><p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p></div></div><div class="a4-grid"><div class="text-center">${staff.photoUrl ? `<img src="${staff.photoUrl}" class="w-40 h-48 object-cover mx-auto border border-gray-300">` : `<div class="w-40 h-48 bg-gray-100 mx-auto flex items-center justify-center text-gray-400 border border-gray-300">No Photo</div>`}</div><div><div class="a4-detail-row"><div class="a4-detail-label">Employee ID</div><div class="a4-detail-value">${staff.id.substring(0, 8).toUpperCase()}</div></div><div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">First Name</div><div class="a4-detail-value">${staff.firstName}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Last Name</div><div class="a4-detail-value">${staff.lastName}</div></div></div><div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">Designation / Job Title</div><div class="a4-detail-value">${staff.jobTitle || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Nationality</div><div class="a4-detail-value">${staff.nationality || 'N/A'}</div></div></div><div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">Mobile Number</div><div class="a4-detail-value">${staff.phone || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Joining Date</div><div class="a4-detail-value">${new Date(staff.createdAt).toLocaleDateString()}</div></div></div></div></div><h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Document & Visa Details</h3><div class="grid grid-cols-3 gap-4 mb-8"><div class="a4-detail-row"><div class="a4-detail-label">Passport Number</div><div class="a4-detail-value">${staff.passportNumber || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Passport Expiry</div><div class="a4-detail-value">${staff.passportExpiry ? new Date(staff.passportExpiry).toLocaleDateString() : 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Visa Number</div><div class="a4-detail-value">${staff.visaNumber || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Visa Expiry</div><div class="a4-detail-value">${staff.visaExpiry ? new Date(staff.visaExpiry).toLocaleDateString() : 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Emirates ID</div><div class="a4-detail-value">${staff.emiratesId || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Emirates ID Expiry</div><div class="a4-detail-value">${staff.emiratesIdExpiry ? new Date(staff.emiratesIdExpiry).toLocaleDateString() : 'N/A'}</div></div></div><h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Insurance Details</h3><div class="grid grid-cols-3 gap-4 mb-8"><div class="a4-detail-row"><div class="a4-detail-label">Provider</div><div class="a4-detail-value">${staff.insuranceProvider || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Policy Number</div><div class="a4-detail-value">${staff.insurancePolicyNumber || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Expiry Date</div><div class="a4-detail-value">${staff.insuranceExpiry ? new Date(staff.insuranceExpiry).toLocaleDateString() : 'N/A'}</div></div></div><div class="a4-footer"><div class="text-center"><div class="w-24 h-24 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xs text-gray-400">Company Seal</div></div><div class="text-center"><div class="border-t border-gray-800 w-48 mt-12 pt-1 text-sm font-medium">Authorized Signatory</div></div></div></div>`;
                 openModal('Staff Document', fields, true);
             } catch (e) { alert('Failed to load staff document'); }
         }
@@ -1307,51 +1205,9 @@
         }
         async function openStaffModal() {
             staffPhotoData = null; 
-            const fields = `
-                <div class="flex flex-col items-center mb-4">
-                    <img id="staff_photo_preview" src="https://via.placeholder.com/100?text=Photo" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 mb-2">
-                    <input type="file" accept="image/png, image/jpeg" onchange="handleStaffPhotoUpload(event)" class="block text-sm text-gray-500">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">First Name</label><input type="text" id="st_fname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label><input type="text" id="st_lname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label><input type="text" id="st_job" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., HVAC Technician"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="st_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
-                    <select id="st_nat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="United Arab Emirates">United Arab Emirates</option><option value="India">India</option><option value="Pakistan">Pakistan</option><option value="Philippines">Philippines</option><option value="Egypt">Egypt</option><option value="Nepal">Nepal</option><option value="Bangladesh">Bangladesh</option><option value="Sri Lanka">Sri Lanka</option><option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Number</label><input type="text" id="st_pp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Expiry</label><input type="date" id="st_ppExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID</label><input type="text" id="st_eid" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID Expiry</label><input type="date" id="st_eidExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Number</label><input type="text" id="st_visa" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <hr class="border-gray-200 my-2"><h4 class="text-sm font-medium text-gray-800">Insurance Details</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Nextcare"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Policy Number</label><input type="text" id="st_insPol" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Expiry</label><input type="date" id="st_insExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-            `;
+            const fields = `<div class="flex flex-col items-center mb-4"><img id="staff_photo_preview" src="https://via.placeholder.com/100?text=Photo" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 mb-2"><input type="file" accept="image/png, image/jpeg" onchange="handleStaffPhotoUpload(event)" class="block text-sm text-gray-500"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">First Name</label><input type="text" id="st_fname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label><input type="text" id="st_lname" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label><input type="text" id="st_job" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., HVAC Technician"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="st_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Nationality</label><select id="st_nat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="United Arab Emirates">United Arab Emirates</option><option value="India">India</option><option value="Pakistan">Pakistan</option><option value="Philippines">Philippines</option><option value="Egypt">Egypt</option><option value="Nepal">Nepal</option><option value="Bangladesh">Bangladesh</option><option value="Sri Lanka">Sri Lanka</option><option value="Other">Other</option></select></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Number</label><input type="text" id="st_pp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Passport Expiry</label><input type="date" id="st_ppExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID</label><input type="text" id="st_eid" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Emirates ID Expiry</label><input type="date" id="st_eidExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Number</label><input type="text" id="st_visa" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><hr class="border-gray-200 my-2"><h4 class="text-sm font-medium text-gray-800">Insurance Details</h4><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Nextcare"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Policy Number</label><input type="text" id="st_insPol" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Expiry</label><input type="date" id="st_insExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>`;
             openModal('Add New Staff', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/staff', {
-                    firstName: getInput('st_fname'), lastName: getInput('st_lname'), photoUrl: staffPhotoData, jobTitle: getInput('st_job'), phone: getInput('st_phone'), nationality: getInput('st_nat'), passportNumber: getInput('st_pp'), passportExpiry: getInput('st_ppExp'), emiratesId: getInput('st_eid'), emiratesIdExpiry: getInput('st_eidExp'), visaNumber: getInput('st_visa'), visaExpiry: getInput('st_visaExp'), insuranceProvider: getInput('st_insProv'), insurancePolicyNumber: getInput('st_insPol'), insuranceExpiry: getInput('st_insExp')
-                }, 'Staff added successfully!', { endpoint: '/staff', tableId: 'tbody-staff', columns: ['firstName', 'lastName', 'jobTitle', 'nationality', 'phone', 'passportExpiry', 'emiratesIdExpiry'] });
-            };
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/staff', { firstName: getInput('st_fname'), lastName: getInput('st_lname'), photoUrl: staffPhotoData, jobTitle: getInput('st_job'), phone: getInput('st_phone'), nationality: getInput('st_nat'), passportNumber: getInput('st_pp'), passportExpiry: getInput('st_ppExp'), emiratesId: getInput('st_eid'), emiratesIdExpiry: getInput('st_eidExp'), visaNumber: getInput('st_visa'), visaExpiry: getInput('st_visaExp'), insuranceProvider: getInput('st_insProv'), insurancePolicyNumber: getInput('st_insPol'), insuranceExpiry: getInput('st_insExp') }, 'Staff added successfully!', { endpoint: '/staff', tableId: 'tbody-staff', columns: ['firstName', 'lastName', 'jobTitle', 'nationality', 'phone', 'passportExpiry', 'emiratesIdExpiry'] }); };
         }
 
         // --- MODAL LOGIC ---
@@ -1363,40 +1219,31 @@
         const modalSubmitBtn = document.getElementById('modal-submit-btn');
 
         function openModal(title, fieldsHtml, isViewOnly = false) {
-            modalTitle.innerText = title;
-            modalFields.innerHTML = fieldsHtml;
-            modal.classList.add('active');
+            modalTitle.innerText = title; modalFields.innerHTML = fieldsHtml; modal.classList.add('active');
             if (isViewOnly) { modalSubmitBtn.style.display = 'none'; } else { modalSubmitBtn.style.display = 'block'; }
         }
 
         function closeModal() {
-            modal.classList.remove('active');
-            modalForm.reset();
-            modalError.classList.add('hidden');
-            const modalBox = document.querySelector('#modal > div');
-            modalBox.classList.add('max-w-md');
-            modalBox.classList.remove('max-w-5xl', 'max-w-2xl', 'max-w-3xl', 'max-w-sm', 'p-0');
+            modal.classList.remove('active'); modalForm.reset(); modalError.classList.add('hidden');
+            const modalBox = document.querySelector('#modal > div'); modalBox.classList.add('max-w-md'); modalBox.classList.remove('max-w-5xl', 'max-w-2xl', 'max-w-3xl', 'max-w-sm', 'p-0');
         }
 
         async function handleSubmit(endpoint, data, successMsg, refreshPage) {
-            modalSubmitBtn.innerText = 'Saving...';
-            modalError.classList.add('hidden');
+            modalSubmitBtn.innerText = 'Saving...'; modalError.classList.add('hidden');
             try {
-                await apiFetch(endpoint, 'POST', data);
-                closeModal();
-                alert(successMsg);
+                await apiFetch(endpoint, 'POST', data); closeModal(); alert(successMsg);
                 if (refreshPage) {
                     if (refreshPage.tableId === 'tbody-work-orders') { fetchAndRenderWorkOrders(); } 
                     else if (refreshPage.tableId === 'tbody-invoices') { fetchAndRenderInvoices(); } 
                     else if (refreshPage.tableId === 'tbody-inventory') { fetchAndRenderAssets(); } 
                     else if (refreshPage.tableId === 'tbody-staff') { fetchAndRenderStaff(); } 
                     else if (refreshPage.tableId === 'tbody-purchases') { fetchAndRenderPurchases(); } 
+                    else if (refreshPage.tableId === 'tbody-receipts') { fetchAndRenderReceipts(); } 
+                    else if (refreshPage.tableId === 'tbody-payments') { fetchAndRenderPayments(); } 
                     else { fetchAndRender(refreshPage.endpoint, refreshPage.tableId, refreshPage.columns); }
                 }
             } catch (error) {
-                modalError.innerText = error.message;
-                modalError.classList.remove('hidden');
-                modalSubmitBtn.innerText = 'Save';
+                modalError.innerText = error.message; modalError.classList.remove('hidden'); modalSubmitBtn.innerText = 'Save';
             }
         }
 
@@ -1407,68 +1254,28 @@
 
         // --- FORM MODALS ---
         async function openCustomerModal() {
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Name</label><input type="text" id="c_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="c_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="c_email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input type="text" id="c_address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-            `;
+            const fields = `<div><label class="block text-sm font-medium text-gray-700 mb-1">Name</label><input type="text" id="c_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input type="text" id="c_phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="c_email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input type="text" id="c_address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>`;
             openModal('Add New Customer', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/customers', { name: getInput('c_name'), phone: getInput('c_phone'), email: getInput('c_email'), address: getInput('c_address') }, 'Customer created successfully!', { endpoint: '/customers', tableId: 'tbody-customers', columns: ['name', 'phone', 'email', 'address'] });
-            };
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/customers', { name: getInput('c_name'), phone: getInput('c_phone'), email: getInput('c_email'), address: getInput('c_address') }, 'Customer created successfully!', { endpoint: '/customers', tableId: 'tbody-customers', columns: ['name', 'phone', 'email', 'address'] }); };
         }
 
         async function openBuildingModal() {
             const custOpts = await fetchDropdown('/customers');
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Customer</label><select id="b_customerId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Building Name</label><input type="text" id="b_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input type="text" id="b_address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">City</label><input type="text" id="b_city" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Emirate</label><input type="text" id="b_emirate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-            `;
+            const fields = `<div><label class="block text-sm font-medium text-gray-700 mb-1">Customer</label><select id="b_customerId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Building Name</label><input type="text" id="b_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input type="text" id="b_address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">City</label><input type="text" id="b_city" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Emirate</label><input type="text" id="b_emirate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>`;
             openModal('Add New Building', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/buildings', { customerId: getInput('b_customerId'), name: getInput('b_name'), address: getInput('b_address'), city: getInput('b_city'), emirate: getInput('b_emirate') }, 'Building created successfully!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] });
-            };
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/buildings', { customerId: getInput('b_customerId'), name: getInput('b_name'), address: getInput('b_address'), city: getInput('b_city'), emirate: getInput('b_emirate') }, 'Building created successfully!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] }); };
         }
 
         async function openAmcModal() {
             const custOpts = await fetchDropdown('/customers');
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Customer</label><select id="a_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Contract Number</label><input type="text" id="a_contractNumber" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label><input type="date" id="a_startDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">End Date</label><input type="date" id="a_endDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Value (AED)</label><input type="number" id="a_value" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">PPM Frequency (Months)</label><input type="number" id="a_ppmFrequency" value="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 3 for quarterly"></div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Payment Type</label>
-                    <select id="a_paymentType" onchange="toggleEmiField()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="LUMPSUM">Lump Sum</option><option value="EMI">EMI</option>
-                    </select>
-                </div>
-                <div id="emiCountDiv" style="display:none;">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Number of EMIs</label>
-                    <input type="number" id="a_emiCount" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 12">
-                </div>
-            `;
+            const fields = `<div><label class="block text-sm font-medium text-gray-700 mb-1">Customer</label><select id="a_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Contract Number</label><input type="text" id="a_contractNumber" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label><input type="date" id="a_startDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">End Date</label><input type="date" id="a_endDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Value (AED)</label><input type="number" id="a_value" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">PPM Frequency (Months)</label><input type="number" id="a_ppmFrequency" value="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 3 for quarterly"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Type</label><select id="a_paymentType" onchange="toggleEmiField()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="LUMPSUM">Lump Sum</option><option value="EMI">EMI</option></select></div><div id="emiCountDiv" style="display:none;"><label class="block text-sm font-medium text-gray-700 mb-1">Number of EMIs</label><input type="number" id="a_emiCount" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 12"></div>`;
             openModal('Add New AMC', fields);
-            document.getElementById('a_startDate').valueAsDate = new Date();
-            let nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear() + 1);
-            document.getElementById('a_endDate').valueAsDate = nextYear;
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/amc', { customerId: getInput('a_customerId'), contractNumber: getInput('a_contractNumber'), startDate: getInput('a_startDate'), endDate: getInput('a_endDate'), value: parseFloat(getInput('a_value')), ppmFrequency: parseInt(getInput('a_ppmFrequency')), paymentType: getInput('a_paymentType'), emiCount: parseInt(getInput('a_emiCount')) || 0 }, 'AMC created successfully! Schedules auto-generated.', { endpoint: '/amc', tableId: 'tbody-amc', columns: ['contractNumber', 'value', 'status'] });
-            };
+            document.getElementById('a_startDate').valueAsDate = new Date(); let nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear() + 1); document.getElementById('a_endDate').valueAsDate = nextYear;
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/amc', { customerId: getInput('a_customerId'), contractNumber: getInput('a_contractNumber'), startDate: getInput('a_startDate'), endDate: getInput('a_endDate'), value: parseFloat(getInput('a_value')), ppmFrequency: parseInt(getInput('a_ppmFrequency')), paymentType: getInput('a_paymentType'), emiCount: parseInt(getInput('a_emiCount')) || 0 }, 'AMC created successfully! Schedules auto-generated.', { endpoint: '/amc', tableId: 'tbody-amc', columns: ['contractNumber', 'value', 'status'] }); };
         }
 
         function toggleEmiField() {
-            const paymentType = document.getElementById('a_paymentType').value;
-            const emiDiv = document.getElementById('emiCountDiv');
+            const paymentType = document.getElementById('a_paymentType').value; const emiDiv = document.getElementById('emiCountDiv');
             if (paymentType === 'EMI') { emiDiv.style.display = 'block'; } else { emiDiv.style.display = 'none'; }
         }
 
@@ -1477,116 +1284,41 @@
             let emiOpts = '<option value="">Select Pending EMI</option>';
             try {
                 const amcs = await apiFetch('/amc');
-                amcs.forEach(amc => {
-                    if(amc.emiSchedules && amc.emiSchedules.length > 0) {
-                        const pendingEmis = amc.emiSchedules.filter(e => e.status === 'PENDING' && !e.invoiceId);
-                        pendingEmis.forEach(emi => {
-                            const dueDate = new Date(emi.dueDate).toLocaleDateString();
-                            emiOpts += `<option value="${emi.id}" data-amount="${emi.amount}" data-customer="${amc.customerId}" data-contract="${amc.contractNumber}">${amc.contractNumber} - ${emi.amount} AED (Due: ${dueDate})</option>`;
-                        });
-                    }
-                });
+                amcs.forEach(amc => { if(amc.emiSchedules && amc.emiSchedules.length > 0) { const pendingEmis = amc.emiSchedules.filter(e => e.status === 'PENDING' && !e.invoiceId); pendingEmis.forEach(emi => { const dueDate = new Date(emi.dueDate).toLocaleDateString(); emiOpts += `<option value="${emi.id}" data-amount="${emi.amount}" data-customer="${amc.customerId}" data-contract="${amc.contractNumber}">${amc.contractNumber} - ${emi.amount} AED (Due: ${dueDate})</option>`; }); } });
             } catch (e) { console.error("Failed to load EMIs", e); }
 
-            const fields = `
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Type</label>
-                    <select id="i_type" onchange="toggleInvoiceFields()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="ADHOC">Ad-hoc Service / Repair</option><option value="EMI">AMC EMI Payment</option>
-                    </select>
-                </div>
-                <div id="emi_select_div" style="display:none;">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Pending EMI</label>
-                    <select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">${emiOpts}</select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-                    <select id="i_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label>
-                    <textarea id="i_notes" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., AC Maintenance for May 2024"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                    <input type="date" id="i_dueDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (AED)</label>
-                    <input type="number" id="i_subtotal" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select id="i_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="DRAFT">Draft</option><option value="SENT">Sent</option><option value="PAID">Paid</option>
-                    </select>
-                </div>
-            `;
+            const fields = `<div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Type</label><select id="i_type" onchange="toggleInvoiceFields()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="ADHOC">Ad-hoc Service / Repair</option><option value="EMI">AMC EMI Payment</option></select></div><div id="emi_select_div" style="display:none;"><label class="block text-sm font-medium text-gray-700 mb-1">Select Pending EMI</label><select id="i_emiId" onchange="autoFillEmiData()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">${emiOpts}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Customer</label><select id="i_customerId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Customer</option>${custOpts}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label><textarea id="i_notes" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., AC Maintenance for May 2024"></textarea></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label><input type="date" id="i_dueDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (AED)</label><input type="number" id="i_subtotal" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label><select id="i_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="DRAFT">Draft</option><option value="SENT">Sent</option><option value="PAID">Paid</option></select></div>`;
             openModal('Add New Invoice', fields);
-            let dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 15);
-            document.getElementById('i_dueDate').valueAsDate = dueDate;
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/invoices', { customerId: getInput('i_customerId'), dueDate: getInput('i_dueDate'), subtotal: parseFloat(getInput('i_subtotal')), status: getInput('i_status'), notes: getInput('i_notes'), emiId: getInput('i_emiId') || null }, 'Invoice created successfully!', { endpoint: '/invoices', tableId: 'tbody-invoices', columns: ['invoiceNumber', 'total', 'status'] });
-            };
+            let dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 15); document.getElementById('i_dueDate').valueAsDate = dueDate;
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/invoices', { customerId: getInput('i_customerId'), dueDate: getInput('i_dueDate'), subtotal: parseFloat(getInput('i_subtotal')), status: getInput('i_status'), notes: getInput('i_notes'), emiId: getInput('i_emiId') || null }, 'Invoice created successfully!', { endpoint: '/invoices', tableId: 'tbody-invoices', columns: ['invoiceNumber', 'total', 'status'] }); };
         }
 
         function toggleInvoiceFields() {
-            const type = document.getElementById('i_type').value;
-            const emiDiv = document.getElementById('emi_select_div');
+            const type = document.getElementById('i_type').value; const emiDiv = document.getElementById('emi_select_div');
             if (type === 'EMI') { emiDiv.style.display = 'block'; } else { emiDiv.style.display = 'none'; document.getElementById('i_emiId').value = ''; document.getElementById('i_notes').value = ''; document.getElementById('i_subtotal').value = ''; document.getElementById('i_customerId').value = ''; }
         }
 
         function autoFillEmiData() {
-            const emiSelect = document.getElementById('i_emiId');
-            const selectedOption = emiSelect.options[emiSelect.selectedIndex];
-            if (selectedOption.value) {
-                document.getElementById('i_subtotal').value = selectedOption.getAttribute('data-amount');
-                document.getElementById('i_customerId').value = selectedOption.getAttribute('data-customer');
-                document.getElementById('i_notes').value = `AMC EMI Payment for Contract: ${selectedOption.getAttribute('data-contract')}`;
-            }
+            const emiSelect = document.getElementById('i_emiId'); const selectedOption = emiSelect.options[emiSelect.selectedIndex];
+            if (selectedOption.value) { document.getElementById('i_subtotal').value = selectedOption.getAttribute('data-amount'); document.getElementById('i_customerId').value = selectedOption.getAttribute('data-customer'); document.getElementById('i_notes').value = `AMC EMI Payment for Contract: ${selectedOption.getAttribute('data-contract')}`; }
         }
 
         async function openExpenseModal() {
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Category</label><input type="text" id="e_category" required placeholder="e.g. Travel, Parts" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount (AED)</label><input type="number" id="e_amount" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="e_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
-            `;
+            const fields = `<div><label class="block text-sm font-medium text-gray-700 mb-1">Category</label><input type="text" id="e_category" required placeholder="e.g. Travel, Parts" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Amount (AED)</label><input type="number" id="e_amount" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="e_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>`;
             openModal('Add New Expense', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/expenses', { category: getInput('e_category'), amount: parseFloat(getInput('e_amount')), description: getInput('e_description') }, 'Expense created successfully!', { endpoint: '/expenses', tableId: 'tbody-expenses', columns: ['category', 'amount', 'status'] });
-            };
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/expenses', { category: getInput('e_category'), amount: parseFloat(getInput('e_amount')), description: getInput('e_description') }, 'Expense created successfully!', { endpoint: '/expenses', tableId: 'tbody-expenses', columns: ['category', 'amount', 'status'] }); };
         }
 
         async function openPoModal() {
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">PO Number</label><input type="text" id="p_poNumber" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label><input type="text" id="p_supplierName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Phone</label><input type="text" id="p_supplierPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Total (AED)</label><input type="number" id="p_total" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-            `;
+            const fields = `<div><label class="block text-sm font-medium text-gray-700 mb-1">PO Number</label><input type="text" id="p_poNumber" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label><input type="text" id="p_supplierName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Phone</label><input type="text" id="p_supplierPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Total (AED)</label><input type="number" id="p_total" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>`;
             openModal('Add New Purchase Order', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                const total = parseFloat(getInput('p_total'));
-                handleSubmit('/po', { poNumber: getInput('p_poNumber'), supplierName: getInput('p_supplierName'), supplierPhone: getInput('p_supplierPhone'), subtotal: total, vatAmount: total * 0.05, total: total + (total * 0.05) }, 'Purchase Order created successfully!', { endpoint: '/po', tableId: 'tbody-po', columns: ['poNumber', 'supplierName', 'total'] });
-            };
+            modalForm.onsubmit = (e) => { e.preventDefault(); const total = parseFloat(getInput('p_total')); handleSubmit('/po', { poNumber: getInput('p_poNumber'), supplierName: getInput('p_supplierName'), supplierPhone: getInput('p_supplierPhone'), subtotal: total, vatAmount: total * 0.05, total: total + (total * 0.05) }, 'Purchase Order created successfully!', { endpoint: '/po', tableId: 'tbody-po', columns: ['poNumber', 'supplierName', 'total'] }); };
         }
 
         async function openUserModal() {
-            const fields = `
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label><input type="text" id="u_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Email (User ID)</label><input type="email" id="u_email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" id="u_password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Role</label><select id="u_role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="SUPER_ADMIN">Super Admin</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="COORDINATOR">Coordinator</option><option value="TECHNICIAN" selected>Technician</option><option value="ACCOUNTANT">Accountant</option><option value="VIEWER">Viewer</option></select></div>
-            `;
+            const fields = `<div><label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label><input type="text" id="u_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Email (User ID)</label><input type="email" id="u_email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" id="u_password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Role</label><select id="u_role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="SUPER_ADMIN">Super Admin</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="COORDINATOR">Coordinator</option><option value="TECHNICIAN" selected>Technician</option><option value="ACCOUNTANT">Accountant</option><option value="VIEWER">Viewer</option></select></div>`;
             openModal('Add New User', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleSubmit('/users', { name: getInput('u_name'), email: getInput('u_email'), password: getInput('u_password'), role: getInput('u_role') }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] });
-            };
+            modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/users', { name: getInput('u_name'), email: getInput('u_email'), password: getInput('u_password'), role: getInput('u_role') }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] }); };
         }
     </script>
 </body>
