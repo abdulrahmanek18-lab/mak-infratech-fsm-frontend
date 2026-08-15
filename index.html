@@ -352,8 +352,8 @@
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
-                            <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
-                            <tbody id="tbody-users"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Users found.</td></tr></tbody>
+                            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                            <tbody id="tbody-users"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Users found.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -400,6 +400,19 @@
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Prefix</label><input type="text" id="set_invPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="INV-"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">PO Prefix</label><input type="text" id="set_poPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="PO-"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">WO Prefix</label><input type="text" id="set_woPrefix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="WO-"></div>
+                        </div>
+                        <hr class="border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Authorized Signature (PNG)</label>
+                                <img id="img-preview-sig" src="https://via.placeholder.com/200x100?text=Signature" class="w-48 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'authorizedSignatureUrl', 'img-preview-sig')" class="block w-full text-sm text-gray-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Seal / Stamp (PNG)</label>
+                                <img id="img-preview-seal" src="https://via.placeholder.com/100x100?text=Seal" class="w-24 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
+                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'companySealUrl', 'img-preview-seal')" class="block w-full text-sm text-gray-500">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -451,15 +464,12 @@
     </div>
 
     <script>
-                const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+        const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
         const userRole = localStorage.getItem('fsm_role') || 'GUEST';
 
-        if (!token) {
-            window.location.href = 'login.html';
-        }
+        if (!token) { window.location.href = 'login.html'; }
 
-        // HIDE SIDEBAR LINKS BASED ON ROLE
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 const allowedRoles = link.getAttribute('data-roles');
@@ -469,24 +479,13 @@
             });
         });
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
+        function logout() { localStorage.removeItem('fsm_token'); localStorage.removeItem('fsm_role'); window.location.href = 'login.html'; }
 
-        function logout() {
-            localStorage.removeItem('fsm_token');
-            localStorage.removeItem('fsm_role');
-            window.location.href = 'login.html';
-        }
-
-        // API Helper
         async function apiFetch(endpoint, method = 'GET', body = null) {
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: body ? JSON.stringify(body) : null
             });
             if (!res.ok) {
@@ -496,73 +495,39 @@
             return res.json();
         }
 
-        // Fetch and Render Table Data (Supports nested data like customer.name)
         async function fetchAndRender(endpoint, tableId, columns) {
-            const tbody = document.getElementById(tableId);
-            if (!tbody) return;
+            const tbody = document.getElementById(tableId); if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
             try {
                 const data = await apiFetch(endpoint);
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">No data found.</td></tr>`;
-                    return;
-                }
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-gray-500">No data found.</td></tr>`; return; }
                 tbody.innerHTML = data.map(item => `
                     <tr>
                         ${columns.map(col => {
-                            let val = item;
-                            col.split('.').forEach(part => { val = val ? val[part] : null; });
+                            let val = item; col.split('.').forEach(part => { val = val ? val[part] : null; });
                             return `<td class="px-3 py-2 text-sm text-gray-700">${val !== null && val !== undefined ? val : '-'}</td>`;
                         }).join('')}
                     </tr>
                 `).join('');
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
-            }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="${columns.length}" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
         async function fetchDropdown(endpoint) {
             try {
                 const data = await apiFetch(endpoint);
                 return data.map(item => `<option value="${item.id}">${item.name || item.email || item.poNumber || item.sku || item.contractNumber || item.invoiceNumber}</option>`).join('');
-            } catch (e) {
-                return '<option value="">Error loading</option>';
-            }
+            } catch (e) { return '<option value="">Error loading</option>'; }
         }
 
         function showPage(pageId, element, e) {
             if (e && e.preventDefault) e.preventDefault();
             else if (window.event && window.event.preventDefault) window.event.preventDefault();
-
-            if (window.innerWidth < 1024) {
-                document.getElementById('sidebar').classList.add('-translate-x-full');
-            }
-
+            if (window.innerWidth < 1024) { document.getElementById('sidebar').classList.add('-translate-x-full'); }
             document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
             document.getElementById(`page-${pageId}`).classList.add('active');
-            
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
             element.classList.add('active');
-
-            const titles = {
-                'dashboard': 'Dashboard Overview',
-                'company': 'Company Profile',
-                'work-orders': 'Work Orders',
-                'customers': 'Customers',
-                'buildings': 'Buildings & Flats',
-                'amc': 'Services & AMC',
-                'staff': 'Staff Management',
-                'inventory': 'Inventory & Assets',
-                'users': 'System Users',
-                'invoices': 'Invoices',
-                'receipts': 'Receipt Vouchers',
-                'payments': 'Payment Vouchers',
-                'expenses': 'Expenses',
-                'purchases': 'Purchases (Bills)',
-                'po': 'Purchase Orders',
-                'reports': 'Reports & Analytics',
-                'settings': 'System Settings'
-            };
+            const titles = { 'dashboard': 'Dashboard Overview', 'company': 'Company Profile', 'work-orders': 'Work Orders', 'customers': 'Customers', 'buildings': 'Buildings & Flats', 'amc': 'Services & AMC', 'staff': 'Staff Management', 'inventory': 'Inventory & Assets', 'users': 'System Users', 'invoices': 'Invoices', 'receipts': 'Receipt Vouchers', 'payments': 'Payment Vouchers', 'expenses': 'Expenses', 'purchases': 'Purchases (Bills)', 'po': 'Purchase Orders', 'reports': 'Reports & Analytics', 'settings': 'System Settings' };
             document.getElementById('page-title').innerText = titles[pageId];
 
             if (pageId === 'users') fetchAndRenderUsers();
@@ -642,16 +607,10 @@
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
                 handleSubmit('/receipts', {
-                    date: getInput('rv_date'),
-                    customerId: getInput('rv_customerId'),
-                    invoiceId: getInput('rv_invoiceId') || null,
-                    amount: parseFloat(getInput('rv_amount')),
-                    paymentMode: getInput('rv_mode'),
-                    chequeNumber: getInput('rv_chequeNo'),
-                    bankName: getInput('rv_bankName'),
-                    chequeDate: getInput('rv_chequeDate'),
-                    chequeStatus: getInput('rv_chequeStatus'),
-                    description: getInput('rv_desc')
+                    date: getInput('rv_date'), customerId: getInput('rv_customerId'), invoiceId: getInput('rv_invoiceId') || null,
+                    amount: parseFloat(getInput('rv_amount')), paymentMode: getInput('rv_mode'),
+                    chequeNumber: getInput('rv_chequeNo'), bankName: getInput('rv_bankName'),
+                    chequeDate: getInput('rv_chequeDate'), chequeStatus: getInput('rv_chequeStatus'), description: getInput('rv_desc')
                 }, 'Receipt Voucher saved & Invoice updated!', { endpoint: '/receipts', tableId: 'tbody-receipts', columns: ['voucherNumber', 'date', 'customer.name', 'paymentMode', 'amount'] });
             };
         }
@@ -664,9 +623,7 @@
                 const invoices = await apiFetch('/invoices');
                 const unpaid = invoices.filter(inv => inv.customerId === custId && inv.status !== 'PAID' && inv.status !== 'VOID');
                 invSelect.innerHTML = '<option value="">None / Unlinked</option>' + unpaid.map(inv => `<option value="${inv.id}" data-balance="${inv.balanceDue}">${inv.invoiceNumber} (Bal: AED ${inv.balanceDue})</option>`).join('');
-            } else {
-                invSelect.innerHTML = '<option value="">Select Client First</option>';
-            }
+            } else { invSelect.innerHTML = '<option value="">Select Client First</option>'; }
         }
 
         function autoFillReceiptAmount() {
@@ -717,15 +674,9 @@
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
                 handleSubmit('/payments', {
-                    date: getInput('pv_date'),
-                    payeeName: getInput('pv_payee'),
-                    amount: parseFloat(getInput('pv_amount')),
-                    paymentMode: getInput('pv_mode'),
-                    chequeNumber: getInput('pv_chequeNo'),
-                    bankName: getInput('pv_bankName'),
-                    chequeDate: getInput('pv_chequeDate'),
-                    chequeStatus: getInput('pv_chequeStatus'),
-                    description: getInput('pv_desc')
+                    date: getInput('pv_date'), payeeName: getInput('pv_payee'), amount: parseFloat(getInput('pv_amount')),
+                    paymentMode: getInput('pv_mode'), chequeNumber: getInput('pv_chequeNo'), bankName: getInput('pv_bankName'),
+                    chequeDate: getInput('pv_chequeDate'), chequeStatus: getInput('pv_chequeStatus'), description: getInput('pv_desc')
                 }, 'Payment Voucher saved!', { endpoint: '/payments', tableId: 'tbody-payments', columns: ['voucherNumber', 'date', 'payeeName', 'paymentMode', 'amount'] });
             };
         }
@@ -742,15 +693,12 @@
                 const v = await apiFetch(endpoint);
                 const company = await apiFetch('/company');
                 const isReceipt = type === 'receipt';
-                
                 const modalBox = document.querySelector('#modal > div');
                 modalBox.classList.remove('max-w-md'); modalBox.classList.add('max-w-3xl', 'p-0');
-
                 const amountWords = numberToWords(parseFloat(v.amount || 0));
                 const title = isReceipt ? "RECEIPT VOUCHER" : "PAYMENT VOUCHER";
                 const partyLabel = isReceipt ? "Received From" : "Paid To";
                 const partyName = isReceipt ? v.customer?.name : v.payeeName;
-
                 const fields = `
                     <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
                         <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print</button>
@@ -766,25 +714,31 @@
                             </div>
                             <div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">${title}</h2></div>
                         </div>
-                        
                         <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
-                            <div><strong>Voucher No:</strong> ${v.voucherNumber}</div>
-                            <div><strong>Date:</strong> ${v.date ? new Date(v.date).toLocaleDateString() : 'N/A'}</div>
-                            <div><strong>Payment Mode:</strong> ${v.paymentMode}</div>
-                            ${v.chequeNumber ? `<div><strong>Cheque No:</strong> ${v.chequeNumber} (${v.bankName})</div>` : ''}
+                            <div><strong>Voucher No:</strong> ${v.voucherNumber}</div><div><strong>Date:</strong> ${v.date ? new Date(v.date).toLocaleDateString() : 'N/A'}</div>
+                            <div><strong>Payment Mode:</strong> ${v.paymentMode}</div>${v.chequeNumber ? `<div><strong>Cheque No:</strong> ${v.chequeNumber} (${v.bankName})</div>` : ''}
                         </div>
-
                         <div class="border p-4 rounded mb-6">
                             <div class="text-sm mb-2"><strong>${partyLabel}:</strong> ${partyName || 'N/A'}</div>
                             <div class="text-sm mb-2"><strong>Amount:</strong> AED ${parseFloat(v.amount).toFixed(2)}</div>
                             <div class="text-sm mb-2"><strong>Amount in Words:</strong> <span class="italic">${amountWords}</span></div>
                             <div class="text-sm"><strong>Description:</strong> ${v.description || 'N/A'}</div>
                         </div>
-
-                        <div class="flex justify-between mt-12 text-sm">
-                            <div class="text-center"><div class="border-t border-gray-800 w-40 pt-1">Prepared By</div></div>
-                            <div class="text-center"><div class="border-t border-gray-800 w-40 pt-1">Approved By</div></div>
-                            <div class="text-center"><div class="border-t border-gray-800 w-40 pt-1">Receiver Signature</div></div>
+                        <div class="flex justify-between mt-12 text-sm items-end">
+                            <div class="text-center">
+                                ${company.companySealUrl ? `<img src="${company.companySealUrl}" class="w-24 h-24 object-contain mx-auto opacity-90">` : ''}
+                                <span class="text-xs text-gray-500 mt-1 block">Company Seal</span>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500 mb-1">Prepared By</div>
+                                <div class="h-8"></div>
+                                <div class="border-t border-gray-800 w-40 pt-1">Authorized Signatory</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500 mb-1">Received By</div>
+                                <div class="h-8"></div>
+                                <div class="border-t border-gray-800 w-40 pt-1">Receiver Signature</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -835,20 +789,9 @@
             } catch (e) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
-        async function updateWoStatus(id, status) {
-            try { await apiFetch(`/work-orders/${id}/status`, 'PATCH', { status }); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed to update status: ' + e.message); }
-        }
-
-        function sendWhatsAppMsg(phone, msg) {
-            const cleanPhone = phone.replace(/[^0-9]/g, '');
-            window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        async function deleteWo(id) {
-            if (confirm('Are you sure you want to delete this Work Order?')) {
-                try { await apiFetch(`/work-orders/${id}`, 'DELETE'); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed to delete: ' + e.message); }
-            }
-        }
+        async function updateWoStatus(id, status) { try { await apiFetch(`/work-orders/${id}/status`, 'PATCH', { status }); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed to update status: ' + e.message); } }
+        function sendWhatsAppMsg(phone, msg) { const cleanPhone = phone.replace(/[^0-9]/g, ''); window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank'); }
+        async function deleteWo(id) { if (confirm('Are you sure you want to delete this Work Order?')) { try { await apiFetch(`/work-orders/${id}`, 'DELETE'); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed to delete: ' + e.message); } } }
 
         async function viewWorkOrderDetails(id) {
             try {
@@ -873,7 +816,6 @@
         }
 
         let signaturePad = null;
-
         async function openServiceReportModal(workOrderId) {
             try {
                 const wo = await apiFetch(`/work-orders/${workOrderId}`);
@@ -1055,9 +997,97 @@
 
         async function viewInvoice(id) {
             try {
-                const inv = await apiFetch(`/invoices/${id}`); const company = await apiFetch('/company'); 
-                const modalBox = document.querySelector('#modal > div'); modalBox.classList.remove('max-w-md', 'max-w-3xl', 'max-w-sm'); modalBox.classList.add('max-w-5xl', 'p-0');
-                const fields = `<div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b"><button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button><button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button><button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button></div><div id="print-area" class="a4-page"><div class="a4-header"><div>${company.invoiceHeader ? `<img src="${company.invoiceHeader}" alt="Header" class="h-20 mb-2 object-contain">` : `<h1 class="text-2xl font-bold text-blue-800">${company.name || 'MAK INFRATECH'}</h1>`}<p class="text-sm text-gray-600">${company.address || ''}</p><p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p></div><div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">Tax Invoice</h2><p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p></div></div><div class="grid grid-cols-2 gap-8 mb-8"><div><div class="a4-detail-label">Bill To</div><div class="a4-detail-value font-bold">${inv.customer ? inv.customer.name : 'N/A'}</div><div class="text-sm text-gray-600">${inv.customer ? inv.customer.address || '' : ''}</div></div><div class="text-right"><div><span class="a4-detail-label">Invoice No:</span> <span class="font-medium">${inv.invoiceNumber}</span></div><div><span class="a4-detail-label">Issue Date:</span> <span class="font-medium">${new Date(inv.issueDate).toLocaleDateString()}</span></div><div><span class="a4-detail-label">Due Date:</span> <span class="font-medium">${new Date(inv.dueDate).toLocaleDateString()}</span></div></div></div><table class="w-full border-collapse mb-8 text-sm"><thead><tr class="bg-gray-100 border-b-2 border-gray-300"><th class="py-2 px-3 text-left">Description</th><th class="py-2 px-3 text-right">Amount (AED)</th></tr></thead><tbody><tr class="border-b border-gray-200"><td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td><td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td></tr></tbody></table><div class="flex justify-end mb-12"><div class="w-1/2 space-y-2"><div class="flex justify-between"><span>Subtotal:</span><span>AED ${parseFloat(inv.subtotal).toFixed(2)}</span></div><div class="flex justify-between"><span>VAT (5%):</span><span>AED ${parseFloat(inv.vatAmount).toFixed(2)}</span></div><div class="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total:</span><span>AED ${parseFloat(inv.total).toFixed(2)}</span></div></div></div><div class="a4-footer">${company.invoiceFooter ? `<img src="${company.invoiceFooter}" class="w-full max-h-24 object-contain">` : `<div class="text-center text-xs text-gray-400">Thank you for your business!</div>`}</div></div>`;
+                const inv = await apiFetch(`/invoices/${id}`); 
+                const company = await apiFetch('/company'); 
+                const modalBox = document.querySelector('#modal > div'); 
+                modalBox.classList.remove('max-w-md', 'max-w-3xl', 'max-w-sm'); 
+                modalBox.classList.add('max-w-5xl', 'p-0');
+
+                const subtotal = parseFloat(inv.subtotal || 0);
+                const vatAmount = parseFloat(inv.vatAmount || 0);
+                const total = parseFloat(inv.total || 0);
+
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
+                        <button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+                    <div id="print-area" class="a4-page">
+                        <div class="a4-header">
+                            <div>
+                                ${company.invoiceHeader ? `<img src="${company.invoiceHeader}" alt="Header" class="h-20 mb-2 object-contain">` : `<h1 class="text-2xl font-bold text-blue-800">${company.name || 'MAK INFRATECH'}</h1>`}
+                                <p class="text-sm text-gray-600">${company.address || ''}</p>
+                                <p class="text-sm text-gray-600"><strong>TRN:</strong> ${company.trn || 'N/A'}</p>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-2xl font-bold uppercase tracking-wide border-2 border-blue-800 text-blue-800 px-4 py-1 inline-block">TAX INVOICE</h2>
+                                <p class="text-sm text-gray-800 mt-2"><strong>Invoice No:</strong> ${inv.invoiceNumber}</p>
+                                <p class="text-sm text-gray-800"><strong>Date:</strong> ${new Date(inv.issueDate).toLocaleDateString()}</p>
+                                <p class="text-sm text-gray-800"><strong>Due Date:</strong> ${new Date(inv.dueDate).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-8 mb-8 border-b pb-4">
+                            <div>
+                                <div class="text-xs uppercase text-gray-500 mb-1">From</div>
+                                <div class="font-bold text-gray-800">${company.name || 'N/A'}</div>
+                                <div class="text-sm text-gray-600">${company.address || ''}</div>
+                                <div class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs uppercase text-gray-500 mb-1">Bill To</div>
+                                <div class="font-bold text-gray-800">${inv.customer ? inv.customer.name : 'N/A'}</div>
+                                <div class="text-sm text-gray-600">${inv.customer ? inv.customer.address || '' : ''}</div>
+                                <div class="text-sm text-gray-600">TRN: ${inv.customer ? inv.customer.trn || 'N/A' : 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        <table class="w-full border-collapse mb-8 text-sm">
+                            <thead>
+                                <tr class="bg-gray-100 border-b-2 border-gray-300 text-gray-700">
+                                    <th class="py-2 px-3 text-left border-r border-gray-200">#</th>
+                                    <th class="py-2 px-3 text-left border-r border-gray-200">Description</th>
+                                    <th class="py-2 px-3 text-center border-r border-gray-200">Qty</th>
+                                    <th class="py-2 px-3 text-right border-r border-gray-200">Unit Price</th>
+                                    <th class="py-2 px-3 text-right border-r border-gray-200">Total (Excl VAT)</th>
+                                    <th class="py-2 px-3 text-center border-r border-gray-200">VAT %</th>
+                                    <th class="py-2 px-3 text-right">VAT Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-3 px-3 border-r border-gray-200">1</td>
+                                    <td class="py-3 px-3 border-r border-gray-200">${inv.notes || 'Services Rendered'}</td>
+                                    <td class="py-3 px-3 text-center border-r border-gray-200">1</td>
+                                    <td class="py-3 px-3 text-right border-r border-gray-200">${subtotal.toFixed(2)}</td>
+                                    <td class="py-3 px-3 text-right border-r border-gray-200">${subtotal.toFixed(2)}</td>
+                                    <td class="py-3 px-3 text-center border-r border-gray-200">5%</td>
+                                    <td class="py-3 px-3 text-right">${vatAmount.toFixed(2)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="flex justify-end mb-12">
+                            <div class="w-1/2 space-y-2">
+                                <div class="flex justify-between text-sm"><span>Total Excluding VAT:</span><span>AED ${subtotal.toFixed(2)}</span></div>
+                                <div class="flex justify-between text-sm"><span>VAT Payable (5%):</span><span>AED ${vatAmount.toFixed(2)}</span></div>
+                                <div class="flex justify-between font-bold text-lg border-t-2 border-gray-800 pt-2 mt-2"><span>Grand Total Payable:</span><span>AED ${total.toFixed(2)}</span></div>
+                            </div>
+                        </div>
+
+                        <div class="a4-footer flex justify-between items-end">
+                            <div class="text-center">
+                                ${company.companySealUrl ? `<img src="${company.companySealUrl}" class="w-24 h-24 object-contain mx-auto opacity-90">` : ''}
+                                <span class="text-xs text-gray-500 mt-1 block">Company Seal</span>
+                            </div>
+                            <div class="text-center">
+                                ${company.authorizedSignatureUrl ? `<img src="${company.authorizedSignatureUrl}" class="h-16 object-contain mx-auto">` : ''}
+                                <div class="border-t border-gray-800 w-48 pt-1 text-sm font-medium">Authorized Signatory</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 openModal('Invoice Document', fields, true); 
             } catch (e) { alert('Failed to load invoice details'); }
         }
@@ -1215,7 +1245,7 @@
         }
 
         // --- SETTINGS FUNCTIONS ---
-        let companyImageData = { logoUrl: null, invoiceHeader: null, invoiceFooter: null };
+        let companyImageData = { logoUrl: null, invoiceHeader: null, invoiceFooter: null, authorizedSignatureUrl: null, companySealUrl: null };
         function handleImageUpload(event, fieldName, previewId) {
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
@@ -1229,11 +1259,14 @@
                 if (data.logoUrl) document.getElementById('img-preview-logo').src = data.logoUrl;
                 if (data.invoiceHeader) document.getElementById('img-preview-header').src = data.invoiceHeader;
                 if (data.invoiceFooter) document.getElementById('img-preview-footer').src = data.invoiceFooter;
+                if (data.authorizedSignatureUrl) document.getElementById('img-preview-sig').src = data.authorizedSignatureUrl;
+                if (data.companySealUrl) document.getElementById('img-preview-seal').src = data.companySealUrl;
             } catch (e) { console.error("Failed to load company settings", e); }
         }
         async function saveCompanySettings() {
-            const data = { name: document.getElementById('set_name').value, trn: document.getElementById('set_trn').value, phone: document.getElementById('set_phone').value, email: document.getElementById('set_email').value, address: document.getElementById('set_address').value, vatPercent: document.getElementById('set_vat').value, invoicePrefix: document.getElementById('set_invPrefix').value, poPrefix: document.getElementById('set_poPrefix').value, woPrefix: document.getElementById('set_woPrefix').value, logoUrl: companyImageData.logoUrl, invoiceHeader: companyImageData.invoiceHeader, invoiceFooter: companyImageData.invoiceFooter };
+            const data = { name: document.getElementById('set_name').value, trn: document.getElementById('set_trn').value, phone: document.getElementById('set_phone').value, email: document.getElementById('set_email').value, address: document.getElementById('set_address').value, vatPercent: document.getElementById('set_vat').value, invoicePrefix: document.getElementById('set_invPrefix').value, poPrefix: document.getElementById('set_poPrefix').value, woPrefix: document.getElementById('set_woPrefix').value, logoUrl: companyImageData.logoUrl, invoiceHeader: companyImageData.invoiceHeader, invoiceFooter: companyImageData.invoiceFooter, authorizedSignatureUrl: companyImageData.authorizedSignatureUrl, companySealUrl: companyImageData.companySealUrl };
             if (!data.logoUrl) delete data.logoUrl; if (!data.invoiceHeader) delete data.invoiceHeader; if (!data.invoiceFooter) delete data.invoiceFooter;
+            if (!data.authorizedSignatureUrl) delete data.authorizedSignatureUrl; if (!data.companySealUrl) delete data.companySealUrl;
             try { await apiFetch('/company', 'POST', data); alert('Company settings saved successfully!'); } catch (e) { alert('Failed to save settings: ' + e.message); }
         }
         async function loadSystemSettings() {
