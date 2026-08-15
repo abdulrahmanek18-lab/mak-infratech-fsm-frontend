@@ -8,6 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.umd.min.js"></script>
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -26,24 +28,29 @@
         .excel-table tbody tr:hover { background-color: #eff6ff; transition: background-color 0.2s; }
 
         /* A4 Document Styling */
-        .a4-page {
-            width: 794px; min-height: 1123px; background: white; margin: 0 auto; padding: 40px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; color: #333;
-        }
+        .a4-page { width: 794px; min-height: 1123px; background: white; margin: 0 auto; padding: 40px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; color: #333; }
         .a4-header { display: flex; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 20px; margin-bottom: 30px; }
-        .a4-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 40px; }
-        .a4-detail-row { margin-bottom: 15px; }
         .a4-detail-label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
         .a4-detail-value { font-size: 16px; font-weight: 500; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
         .a4-footer { position: absolute; bottom: 40px; left: 40px; right: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+
+        /* Sticker Label Styling (4x2 inch) */
+        .sticker-label {
+            width: 4in; height: 2in; background: white; margin: 0 auto; padding: 10px;
+            border: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .sticker-header { text-align: center; font-weight: bold; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 2px; }
+        .sticker-body { display: flex; align-items: center; justify-content: space-between; height: 100%; }
+        .sticker-info { font-size: 10px; line-height: 1.2; }
+        .sticker-location { font-weight: bold; font-size: 12px; margin-bottom: 4px; }
         
-        /* Print Rules */
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; margin: 0; padding: 0; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; margin: 0; padding: 0; border: none; }
             .no-print { display: none !important; }
-            @page { size: A4; margin: 0; }
+            @page { size: 4in 2in; margin: 0; } /* Sticker size for QR label */
         }
     </style>
 </head>
@@ -124,6 +131,9 @@
                 <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard Overview</h2>
             </div>
             <div class="flex items-center space-x-6">
+                <button onclick="openScannerModal()" class="lg:hidden bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center space-x-2">
+                    <span>📷</span> <span>Scan Asset QR</span>
+                </button>
                 <button class="relative text-gray-500 hover:text-gray-700">
                     <span class="text-2xl">🔔</span>
                     <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -251,7 +261,7 @@
                 </div>
             </section>
 
-            <!-- PURCHASES PAGE (NEW) -->
+            <!-- PURCHASES PAGE -->
             <section id="page-purchases" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
@@ -283,17 +293,17 @@
                 </div>
             </section>
 
-            <!-- INVENTORY PAGE -->
+            <!-- INVENTORY & ASSETS PAGE -->
             <section id="page-inventory" class="page-content">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
                         <h3 class="font-semibold text-gray-800 text-lg">Inventory & Assets</h3>
-                        <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Item</button>
+                        <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ Register Asset</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
                         <table class="excel-table">
-                            <thead><tr><th>Asset No.</th><th>Instrument</th><th>Location</th><th>Action</th></tr></thead>
-                            <tbody id="tbody-inventory"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Inventory items found.</td></tr></tbody>
+                            <thead><tr><th>Asset Code</th><th>Brand/Model</th><th>Client</th><th>Building</th><th>Flat</th><th>Loc</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="tbody-inventory"><tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -457,7 +467,6 @@
             window.location.href = 'login.html';
         }
 
-        // HIDE SIDEBAR LINKS BASED ON ROLE
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 const allowedRoles = link.getAttribute('data-roles');
@@ -477,7 +486,6 @@
             window.location.href = 'login.html';
         }
 
-        // API Helper
         async function apiFetch(endpoint, method = 'GET', body = null) {
             const res = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method,
@@ -494,7 +502,6 @@
             return res.json();
         }
 
-        // Fetch and Render Table Data (Supports nested data like customer.name)
         async function fetchAndRender(endpoint, tableId, columns) {
             const tbody = document.getElementById(tableId);
             if (!tbody) return;
@@ -577,6 +584,262 @@
             if (pageId === 'settings') loadSystemSettings();
         }
 
+        // --- ASSET FUNCTIONS (CASCADING FORM, DETAIL MODAL, QR STICKER) ---
+        let allInvBuildings = [];
+        let allInvFlats = [];
+
+        async function fetchAndRenderAssets() {
+            const tbody = document.getElementById('tbody-inventory');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+            try {
+                const data = await apiFetch('/assets');
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "cursor-pointer hover:bg-blue-50 transition";
+                    tr.addEventListener('click', () => viewAssetDetails(item.id));
+                    const statusColor = item.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                    tr.innerHTML = `
+                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.assetNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.manufacturer || '-'} ${item.model || ''}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.customer?.name || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.building?.name || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.flat?.unitNumber || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.location || '-'}</td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${statusColor}">${item.status || 'ACTIVE'}</span></td>
+                        <td class="px-3 py-2 text-sm text-gray-700 no-print">
+                            <button onclick="event.stopPropagation(); printAssetSticker('${item.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700">Sticker</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            }
+        }
+
+        async function openInventoryModal() {
+            const customers = await apiFetch('/customers');
+            allInvBuildings = await apiFetch('/buildings');
+            allInvFlats = await apiFetch('/flats');
+
+            const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+            const fields = `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
+                    <select id="inv_customerId" required onchange="filterInvBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Select Client</option>
+                        ${custOpts}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label>
+                    <select id="inv_buildingId" required onchange="filterInvFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
+                        <option value="">Select Client First</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number *</label>
+                    <select id="inv_flatId" required disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
+                        <option value="">Select Building First</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Specific AC Location / Area *</label>
+                    <input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Asset Type *</label>
+                        <select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Split AC">Split AC</option>
+                            <option value="FCU">FCU (Fan Coil Unit)</option>
+                            <option value="AHU">AHU (Air Handling Unit)</option>
+                            <option value="Package Unit">Package Unit</option>
+                            <option value="Chiller">Chiller</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                        <input type="text" id="inv_manufacturer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Daikin">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label><input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label><input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Technical Specs (Gas, Capacity, Power Panel)</label>
+                    <textarea id="inv_specs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., R410A, 1.5 Ton, Breaker DB-2"></textarea>
+                </div>
+            `;
+            openModal('Register New Asset', fields);
+            modalForm.onsubmit = (e) => {
+                e.preventDefault();
+                handleSubmit('/assets', {
+                    customerId: getInput('inv_customerId'),
+                    buildingId: getInput('inv_buildingId'),
+                    flatId: getInput('inv_flatId'),
+                    location: getInput('inv_location'),
+                    name: getInput('inv_name'),
+                    manufacturer: getInput('inv_manufacturer'),
+                    model: getInput('inv_model'),
+                    serialNumber: getInput('inv_serial'),
+                    description: getInput('inv_specs')
+                }, 'Asset registered successfully!', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
+            };
+        }
+
+        function filterInvBuildings() {
+            const custId = document.getElementById('inv_customerId').value;
+            const bldgSelect = document.getElementById('inv_buildingId');
+            const flatSelect = document.getElementById('inv_flatId');
+            flatSelect.innerHTML = '<option value="">Select Building First</option>';
+            flatSelect.disabled = true;
+            bldgSelect.innerHTML = '<option value="">Select Building</option>';
+            if (custId) {
+                bldgSelect.disabled = false;
+                allInvBuildings.filter(b => b.customerId === custId).forEach(b => {
+                    bldgSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+                });
+            } else {
+                bldgSelect.disabled = true;
+            }
+        }
+
+        function filterInvFlats() {
+            const bldgId = document.getElementById('inv_buildingId').value;
+            const flatSelect = document.getElementById('inv_flatId');
+            flatSelect.innerHTML = '<option value="">Select Flat</option>';
+            if (bldgId) {
+                flatSelect.disabled = false;
+                allInvFlats.filter(f => f.buildingId === bldgId).forEach(f => {
+                    flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`;
+                });
+            } else {
+                flatSelect.disabled = true;
+            }
+        }
+
+        async function viewAssetDetails(assetId) {
+            try {
+                const asset = await apiFetch(`/assets/${assetId}`);
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md');
+                modalBox.classList.add('max-w-3xl', 'p-0');
+
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="printAssetSticker('${asset.id}')" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700">Print Sticker</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-blue-800 mb-4 border-b pb-2">${asset.name} (${asset.assetNumber})</h2>
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div><strong>Client:</strong> ${asset.building?.customer?.name || 'N/A'}</div>
+                            <div><strong>Building:</strong> ${asset.building?.name || 'N/A'}</div>
+                            <div><strong>Flat:</strong> ${asset.flat?.unitNumber || 'N/A'}</div>
+                            <div><strong>Location:</strong> ${asset.location || 'N/A'}</div>
+                            <div><strong>Brand/Model:</strong> ${asset.manufacturer || ''} ${asset.model || ''}</div>
+                            <div><strong>Serial No:</strong> ${asset.serialNumber || 'N/A'}</div>
+                            <div class="col-span-2"><strong>Technical Specs:</strong> ${asset.description || 'N/A'}</div>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 border-t pt-4">Service History</h3>
+                        <div class="space-y-2">
+                            ${asset.workOrders && asset.workOrders.length > 0 ? asset.workOrders.map(wo => `
+                                <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                                    <div class="flex justify-between"><span class="font-medium">${wo.woNumber}</span><span class="text-xs text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span></div>
+                                    <div class="text-sm text-gray-700 mt-1">${wo.description || wo.title}</div>
+                                </div>
+                            `).join('') : '<p class="text-gray-500 text-sm">No service history found.</p>'}
+                        </div>
+                    </div>
+                `;
+                openModal('Asset Details', fields, true);
+            } catch (e) {
+                alert('Failed to load asset details');
+            }
+        }
+
+        async function printAssetSticker(assetId) {
+            try {
+                const asset = await apiFetch(`/assets/${assetId}`);
+                const qrData = encodeURIComponent(asset.assetNumber);
+                const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
+
+                const modalBox = document.querySelector('#modal > div');
+                modalBox.classList.remove('max-w-md', 'max-w-3xl');
+                modalBox.classList.add('max-w-sm', 'p-0');
+
+                const fields = `
+                    <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Print Sticker</button>
+                        <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+                    </div>
+                    <div id="print-area" class="p-4 bg-white">
+                        <div class="sticker-label">
+                            <div class="sticker-header">MAK INFRATECH FMS</div>
+                            <div class="sticker-body">
+                                <div class="sticker-info">
+                                    <div class="sticker-location">${asset.flat?.unitNumber || 'N/A'} - ${asset.location || 'N/A'}</div>
+                                    <div>${asset.manufacturer || ''} ${asset.model || ''}</div>
+                                    <div>Gas: ${asset.description?.split(',')[0] || 'N/A'}</div>
+                                    <div>SN: ${asset.serialNumber || 'N/A'}</div>
+                                </div>
+                                <img src="${imgSrc}" alt="QR" class="w-24 h-24">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                openModal('Print Sticker', fields, true);
+            } catch (e) {
+                alert('Failed to generate sticker');
+            }
+        }
+
+        // --- QR SCANNER FUNCTION ---
+        function openScannerModal() {
+            const modalBox = document.querySelector('#modal > div');
+            modalBox.classList.remove('max-w-md', 'max-w-3xl');
+            modalBox.classList.add('max-w-md');
+
+            const fields = `
+                <div id="qr-reader" style="width: 100%"></div>
+                <div id="qr-reader-result" class="mt-4 text-center"></div>
+            `;
+            openModal('Scan Asset QR', fields, true);
+
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    html5QrCode.stop().then(() => {
+                        document.getElementById('qr-reader-result').innerText = `Found: ${decodedText}`;
+                        // Attempt to fetch asset by number
+                        apiFetch(`/assets/scan/${decodedText}`).then(asset => {
+                            if(asset) {
+                                closeModal();
+                                viewAssetDetails(asset.id);
+                            } else {
+                                alert('Asset not found in system.');
+                            }
+                        }).catch(() => alert('Asset not found.'));
+                    }).catch(err => console.log(err));
+                },
+                (errorMessage) => { /* Ignore scan errors */ }
+            ).catch(err => {
+                console.log(`Error starting scanner: ${err}`);
+                document.getElementById('qr-reader-result').innerText = "Camera access denied or not available.";
+            });
+        }
+
         // --- INVOICE FUNCTIONS ---
         async function fetchAndRenderInvoices() {
             const tbody = document.getElementById('tbody-invoices');
@@ -612,9 +875,8 @@
             try {
                 const inv = await apiFetch(`/invoices/${id}`);
                 const company = await apiFetch('/company'); 
-                
                 const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md');
+                modalBox.classList.remove('max-w-md', 'max-w-3xl', 'max-w-sm');
                 modalBox.classList.add('max-w-5xl', 'p-0');
 
                 const fields = `
@@ -623,7 +885,6 @@
                         <button onclick="downloadInvoicePDF('${inv.invoiceNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
                         <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
                     </div>
-
                     <div id="print-area" class="a4-page">
                         <div class="a4-header">
                             <div>
@@ -636,7 +897,6 @@
                                 <p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-8 mb-8">
                             <div>
                                 <div class="a4-detail-label">Bill To</div>
@@ -647,25 +907,12 @@
                                 <div class="a4-detail-row"><span class="a4-detail-label">Invoice No:</span> <span class="font-medium">${inv.invoiceNumber}</span></div>
                                 <div class="a4-detail-row"><span class="a4-detail-label">Issue Date:</span> <span class="font-medium">${new Date(inv.issueDate).toLocaleDateString()}</span></div>
                                 <div class="a4-detail-row"><span class="a4-detail-label">Due Date:</span> <span class="font-medium">${new Date(inv.dueDate).toLocaleDateString()}</span></div>
-                                <div class="a4-detail-row"><span class="a4-detail-label">Status:</span> <span class="px-2 py-1 text-xs rounded-full ${inv.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${inv.status}</span></div>
                             </div>
                         </div>
-
                         <table class="w-full border-collapse mb-8 text-sm">
-                            <thead>
-                                <tr class="bg-gray-100 border-b-2 border-gray-300">
-                                    <th class="py-2 px-3 text-left">Description</th>
-                                    <th class="py-2 px-3 text-right">Amount (AED)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-200">
-                                    <td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td>
-                                    <td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td>
-                                </tr>
-                            </tbody>
+                            <thead><tr class="bg-gray-100 border-b-2 border-gray-300"><th class="py-2 px-3 text-left">Description</th><th class="py-2 px-3 text-right">Amount (AED)</th></tr></thead>
+                            <tbody><tr class="border-b border-gray-200"><td class="py-3 px-3">${inv.notes || 'Services Rendered'}</td><td class="py-3 px-3 text-right">${parseFloat(inv.subtotal).toFixed(2)}</td></tr></tbody>
                         </table>
-
                         <div class="flex justify-end mb-12">
                             <div class="w-1/2 space-y-2">
                                 <div class="flex justify-between"><span>Subtotal:</span><span>AED ${parseFloat(inv.subtotal).toFixed(2)}</span></div>
@@ -673,7 +920,6 @@
                                 <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total:</span><span>AED ${parseFloat(inv.total).toFixed(2)}</span></div>
                             </div>
                         </div>
-
                         <div class="a4-footer">
                              ${company.invoiceFooter ? `<img src="${company.invoiceFooter}" class="w-full max-h-24 object-contain">` : `<div class="text-center text-xs text-gray-400">Thank you for your business!</div>`}
                         </div>
@@ -687,17 +933,11 @@
 
         function downloadInvoicePDF(invoiceNumber) {
             const element = document.getElementById('print-area');
-            const opt = {
-                margin: 0,
-                filename: `Invoice_${invoiceNumber}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            const opt = { margin: 0, filename: `Invoice_${invoiceNumber}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
             html2pdf().set(opt).from(element).save();
         }
 
-        // --- PURCHASES FUNCTIONS (NEW) ---
+        // --- PURCHASES FUNCTIONS ---
         async function fetchAndRenderPurchases() {
             const tbody = document.getElementById('tbody-purchases');
             if (!tbody) return;
@@ -714,9 +954,7 @@
                         <td class="px-3 py-2 text-sm text-gray-700">${item.supplierName || '-'}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">
-                            <span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span>
-                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span></td>
                     </tr>
                 `).join('');
             } catch (e) {
@@ -740,7 +978,6 @@
             purchaseReceiptData = null;
             const woOpts = await fetchDropdown('/work-orders');
             const assetOpts = await fetchDropdown('/assets');
-
             const fields = `
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier Name *</label><input type="text" id="pur_supplier" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
@@ -754,42 +991,29 @@
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Work Order</label><select id="pur_woId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${woOpts}</select></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Asset</label><select id="pur_assetId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">None</option>${assetOpts}</select></div>
                 </div>
-                
                 <div class="border-t pt-4 mt-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-sm font-medium text-gray-800">Itemized Purchases</h4>
-                        <button type="button" onclick="addPurchaseItemRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">+ Add Item</button>
-                    </div>
-                    <div id="pur_items_container" class="space-y-2">
-                        <!-- Dynamic rows will go here -->
-                    </div>
+                    <div class="flex justify-between items-center mb-2"><h4 class="text-sm font-medium text-gray-800">Itemized Purchases</h4><button type="button" onclick="addPurchaseItemRow()" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">+ Add Item</button></div>
+                    <div id="pur_items_container" class="space-y-2"></div>
                     <div class="flex justify-end mt-4 space-y-1 text-sm w-full max-w-xs ml-auto">
                         <div class="flex justify-between w-full"><span>Subtotal:</span> <span id="pur_subtotal">0.00</span></div>
                         <div class="flex justify-between w-full"><span>VAT:</span> <span id="pur_vat">0.00</span></div>
                         <div class="flex justify-between w-full font-bold text-base border-t pt-1"><span>Total:</span> <span id="pur_total">0.00</span></div>
                     </div>
                 </div>
-
                 <div class="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Status</label><select id="pur_pstatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="UNPAID">Unpaid</option><option value="PAID">Paid</option><option value="PARTIAL">Partially Paid</option></select></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label><select id="pur_pmethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="CASH">Cash</option><option value="CARD">Card</option><option value="BANK_TRANSFER">Bank Transfer</option></select></div>
                 </div>
-
                 <div class="border-t pt-4 mt-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Attach Receipt / Bill Photo</label>
                     <img id="receipt_preview" src="https://via.placeholder.com/150x100?text=No+Receipt" class="w-full max-h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
                     <input type="file" accept="image/png, image/jpeg" onchange="handleReceiptUpload(event)" class="block w-full text-sm text-gray-500">
                 </div>
             `;
-
             openModal('Add New Purchase', fields);
-            
-            // Expand modal slightly for the big form
             const modalBox = document.querySelector('#modal > div');
             modalBox.classList.remove('max-w-md');
             modalBox.classList.add('max-w-2xl');
-
-            // Add the first row
             addPurchaseItemRow();
             document.getElementById('pur_pdate').valueAsDate = new Date();
 
@@ -805,16 +1029,10 @@
                     const total = (qty * price) + ((qty * price) * (vat / 100));
                     if (name) items.push({ name, cat, qty, price, vat, total });
                 });
-
-                if (items.length === 0) {
-                    alert('Please add at least one item.');
-                    return;
-                }
-
+                if (items.length === 0) { alert('Please add at least one item.'); return; }
                 const subtotal = items.reduce((sum, item) => sum + (item.qty * item.price), 0);
                 const vatAmount = items.reduce((sum, item) => sum + ((item.qty * item.price) * (item.vat / 100)), 0);
                 const totalAmount = subtotal + vatAmount;
-
                 handleSubmit('/purchases', {
                     supplierName: getInput('pur_supplier'),
                     billNumber: getInput('pur_bill'),
@@ -851,8 +1069,7 @@
         }
 
         function updatePurchaseTotals() {
-            let subtotal = 0;
-            let vatAmount = 0;
+            let subtotal = 0, vatAmount = 0;
             document.querySelectorAll('.po-item-row').forEach(row => {
                 const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
                 const price = parseFloat(row.querySelector('.item-price').value) || 0;
@@ -867,51 +1084,6 @@
             document.getElementById('pur_total').innerText = (subtotal + vatAmount).toFixed(2);
         }
 
-        // --- ASSET & QR FUNCTIONS ---
-        async function fetchAndRenderAssets() {
-            const tbody = document.getElementById('tbody-inventory');
-            if (!tbody) return;
-            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-            try {
-                const data = await apiFetch('/assets');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`;
-                    return;
-                }
-                tbody.innerHTML = '';
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.assetNumber}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.name}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.location}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">
-                            <button onclick="generateAssetQR('${item.id}', '${item.name}', '${item.assetNumber}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">View QR</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
-            }
-        }
-
-        function generateAssetQR(assetId, assetName, assetNumber) {
-            const qrData = JSON.stringify({ type: 'ASSET', id: assetId, number: assetNumber });
-            const encodedData = encodeURIComponent(qrData);
-            const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodedData}`;
-
-            const fields = `
-                <div class="text-center space-y-4">
-                    <h3 class="font-bold text-lg text-gray-800">${assetName} (${assetNumber})</h3>
-                    <img src="${imgSrc}" alt="QR Code" class="mx-auto w-64 h-64 border-2 border-gray-100 rounded-lg p-2">
-                    <p class="text-sm text-gray-500">Scan this code with your phone to instantly view the asset's service history.</p>
-                    <a href="${imgSrc}" download="${assetNumber}_QR.png" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Download QR</a>
-                </div>
-            `;
-            openModal('Asset QR Code', fields, true);
-        }
-
         // --- WORK ORDERS & SERVICE REPORTS ---
         async function fetchAndRenderWorkOrders() {
             const tbody = document.getElementById('tbody-work-orders');
@@ -919,26 +1091,17 @@
             tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
             try {
                 const data = await apiFetch('/work-orders');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`;
-                    return;
-                }
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`; return; }
                 tbody.innerHTML = data.map(item => `
                     <tr>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.woNumber}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.title}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">
-                            <span class="px-2 py-1 text-xs rounded-full ${item.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span>
-                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.priority}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">
-                            <button onclick="openServiceReportModal('${item.id}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">Service Report</button>
-                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700"><button onclick="openServiceReportModal('${item.id}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">Service Report</button></td>
                     </tr>
                 `).join('');
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
-            }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
         let signaturePad = null;
@@ -948,54 +1111,26 @@
                 const wo = await apiFetch(`/work-orders/${workOrderId}`);
                 const fields = `
                     <div class="space-y-4 text-gray-800">
-                        <div class="flex justify-between border-b pb-3">
-                            <span class="font-bold text-lg text-blue-600">Service Report</span>
-                            <span class="text-sm text-gray-500">WO: ${wo.woNumber}</span>
-                        </div>
-                        
+                        <div class="flex justify-between border-b pb-3"><span class="font-bold text-lg text-blue-600">Service Report</span><span class="text-sm text-gray-500">WO: ${wo.woNumber}</span></div>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div><strong>Client:</strong> ${wo.customer ? wo.customer.name : 'N/A'}</div>
                             <div><strong>Building:</strong> ${wo.building ? wo.building.name : 'N/A'}</div>
                             <div><strong>Asset Brand:</strong> ${wo.asset ? wo.asset.manufacturer : 'N/A'}</div>
                             <div><strong>Asset Model:</strong> ${wo.asset ? wo.asset.model : 'N/A'}</div>
                         </div>
-
                         <div class="text-sm"><strong>Nature of Complaint:</strong><br>${wo.description || wo.title}</div>
-
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Work Started At</label>
-                                <input type="datetime-local" id="sr_startedAt" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Work Ended At</label>
-                                <input type="datetime-local" id="sr_completedAt" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Work Started At</label><input type="datetime-local" id="sr_startedAt" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Work Ended At</label><input type="datetime-local" id="sr_completedAt" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
                         </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Work Performed</label>
-                            <textarea id="sr_workPerformed" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Materials Used</label>
-                            <textarea id="sr_materials" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 2x Air Filter, 1kg R410 Gas"></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Observations & Recommendations</label>
-                            <textarea id="sr_observations" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Work Performed</label><textarea id="sr_workPerformed" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Materials Used</label><textarea id="sr_materials" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 2x Air Filter, 1kg R410 Gas"></textarea></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Observations & Recommendations</label><textarea id="sr_observations" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea></div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Client Signature</label>
-                            <div class="border-2 border-gray-300 rounded-lg p-2 bg-white">
-                                <canvas id="signature-canvas" width="400" height="150" class="w-full touch-none"></canvas>
-                            </div>
+                            <div class="border-2 border-gray-300 rounded-lg p-2 bg-white"><canvas id="signature-canvas" width="400" height="150" class="w-full touch-none"></canvas></div>
                             <button type="button" onclick="clearSignature()" class="text-xs text-red-500 mt-1">Clear Signature</button>
                         </div>
-
                         <div class="flex gap-3 pt-4">
                             <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200">Cancel</button>
                             <button type="button" onclick="saveAndDownloadPDF('${wo.id}')" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Save & Download PDF</button>
@@ -1003,22 +1138,16 @@
                     </div>
                 `;
                 openModal('Complete Service Report', fields, true);
-
                 const canvas = document.getElementById('signature-canvas');
                 signaturePad = new SignaturePad(canvas);
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext("2d").scale(ratio, ratio);
-
-            } catch (e) {
-                alert('Failed to load Work Order details');
-            }
+            } catch (e) { alert('Failed to load Work Order details'); }
         }
 
-        function clearSignature() {
-            if (signaturePad) signaturePad.clear();
-        }
+        function clearSignature() { if (signaturePad) signaturePad.clear(); }
 
         async function saveAndDownloadPDF(workOrderId) {
             const startedAt = document.getElementById('sr_startedAt').value;
@@ -1027,43 +1156,17 @@
             const materials = document.getElementById('sr_materials').value;
             const observations = document.getElementById('sr_observations').value;
             const signatureData = signaturePad.isEmpty() ? null : signaturePad.toDataURL();
-
-            if (!workPerformed || !startedAt || !completedAt) {
-                alert('Please fill in the Start Time, End Time, and Work Performed.');
-                return;
-            }
-
+            if (!workPerformed || !startedAt || !completedAt) { alert('Please fill in the Start Time, End Time, and Work Performed.'); return; }
             try {
-                await apiFetch(`/work-orders/${workOrderId}`, 'PATCH', {
-                    startedAt,
-                    completedAt,
-                    workPerformed,
-                    materialsUsed: { items: materials },
-                    observations,
-                    clientSignature: signatureData,
-                    technicianName: 'Admin User'
-                });
-
-                generatePDF({
-                    woId: workOrderId,
-                    startedAt,
-                    completedAt,
-                    workPerformed,
-                    materials,
-                    observations,
-                    signature: signatureData
-                });
-
+                await apiFetch(`/work-orders/${workOrderId}`, 'PATCH', { startedAt, completedAt, workPerformed, materialsUsed: { items: materials }, observations, clientSignature: signatureData, technicianName: 'Admin User' });
+                generatePDF({ woId: workOrderId, startedAt, completedAt, workPerformed, materials, observations, signature: signatureData });
                 closeModal();
                 fetchAndRenderWorkOrders();
-            } catch (e) {
-                alert('Failed to save Service Report: ' + e.message);
-            }
+            } catch (e) { alert('Failed to save Service Report: ' + e.message); }
         }
 
         function generatePDF(data) {
             const formatTime = (t) => new Date(t).toLocaleString();
-            
             const pdfContent = document.createElement('div');
             pdfContent.style.padding = '20px';
             pdfContent.style.fontFamily = 'Arial, sans-serif';
@@ -1075,17 +1178,12 @@
                     <p><strong>Start Time:</strong> ${formatTime(data.startedAt)}</p>
                     <p><strong>End Time:</strong> ${formatTime(data.completedAt)}</p>
                 </div>
-                <h4>Work Performed:</h4>
-                <p>${data.workPerformed}</p>
-                <h4>Materials Used:</h4>
-                <p>${data.materials}</p>
-                <h4>Observations:</h4>
-                <p>${data.observations}</p>
+                <h4>Work Performed:</h4><p>${data.workPerformed}</p>
+                <h4>Materials Used:</h4><p>${data.materials}</p>
+                <h4>Observations:</h4><p>${data.observations}</p>
                 <hr style="margin: 20px 0;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div>
-                        <p><strong>Technician:</strong> Admin User</p>
-                    </div>
+                    <div><p><strong>Technician:</strong> Admin User</p></div>
                     <div style="text-align: center;">
                         ${data.signature ? `<img src="${data.signature}" height="80" width="200" /><br>` : ''}
                         <span style="border-top: 1px solid #000; padding-top: 5px; display: inline-block; width: 200px;">Client Signature</span>
@@ -1093,96 +1191,35 @@
                 </div>
             `;
             document.body.appendChild(pdfContent);
-
-            const opt = {
-                margin: 10,
-                filename: `Service_Report_${data.woId.substring(0, 8)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            html2pdf().set(opt).from(pdfContent).save().then(() => {
-                document.body.removeChild(pdfContent);
-            });
+            const opt = { margin: 10, filename: `Service_Report_${data.woId.substring(0, 8)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(pdfContent).save().then(() => { document.body.removeChild(pdfContent); });
         }
 
         // --- WORK ORDER CASCADING FORM ---
-        let allWoBuildings = [];
-        let allWoFlats = [];
-
+        let allWoBuildings = [], allWoFlats = [];
         async function openWorkOrderModal() {
             const customers = await apiFetch('/customers');
             allWoBuildings = await apiFetch('/buildings');
             allWoFlats = await apiFetch('/flats');
-
             const custOpts = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-
             const fields = `
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
-                    <select id="wo_customerId" required onchange="filterWoBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">Select Client</option>
-                        ${custOpts}
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label>
-                    <select id="wo_buildingId" required onchange="filterWoFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
-                        <option value="">Select Client First</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Service Address</label>
-                    <input type="text" id="wo_address" readonly placeholder="Auto-filled on building selection" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none bg-gray-100 text-gray-500">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number</label>
-                    <select id="wo_flatId" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100">
-                        <option value="">Select Building First</option>
-                    </select>
-                </div>
-
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label><select id="wo_customerId" required onchange="filterWoBuildings()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Select Client</option>${custOpts}</select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Building Name *</label><select id="wo_buildingId" required onchange="filterWoFlats()" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Client First</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Service Address</label><input type="text" id="wo_address" readonly placeholder="Auto-filled on building selection" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none bg-gray-100 text-gray-500"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Flat / Unit Number</label><select id="wo_flatId" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100"><option value="">Select Building First</option></select></div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date *</label>
-                        <input type="date" id="wo_scheduledDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Time *</label>
-                        <input type="time" id="wo_scheduledTime" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Date *</label><input type="date" id="wo_scheduledDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Scheduled Time *</label><input type="time" id="wo_scheduledTime" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nature of Complaint *</label>
-                    <textarea id="wo_complaint" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Describe the client's issue or job scope..."></textarea>
-                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Nature of Complaint *</label><textarea id="wo_complaint" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Describe the client's issue or job scope..."></textarea></div>
             `;
-            
             openModal('Create New Work Order', fields);
-            
             document.getElementById('wo_scheduledDate').valueAsDate = new Date();
-
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                
-                const dateVal = getInput('wo_scheduledDate');
-                const timeVal = getInput('wo_scheduledTime');
+                const dateVal = getInput('wo_scheduledDate'), timeVal = getInput('wo_scheduledTime');
                 const scheduledDateTime = new Date(`${dateVal}T${timeVal}`);
-
-                handleSubmit('/work-orders', {
-                    title: 'Service Request', 
-                    description: getInput('wo_complaint'),
-                    customerId: getInput('wo_customerId'),
-                    buildingId: getInput('wo_buildingId'),
-                    flatId: getInput('wo_flatId') || null,
-                    scheduledDate: scheduledDateTime,
-                    priority: 'MEDIUM'
-                }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
+                handleSubmit('/work-orders', { title: 'Service Request', description: getInput('wo_complaint'), customerId: getInput('wo_customerId'), buildingId: getInput('wo_buildingId'), flatId: getInput('wo_flatId') || null, scheduledDate: scheduledDateTime, priority: 'MEDIUM' }, 'Work Order created successfully!', { endpoint: '/work-orders', tableId: 'tbody-work-orders', columns: ['woNumber', 'title', 'status', 'priority'] });
             };
         }
 
@@ -1191,61 +1228,23 @@
             const bldgSelect = document.getElementById('wo_buildingId');
             const addrInput = document.getElementById('wo_address');
             const flatSelect = document.getElementById('wo_flatId');
-            
-            addrInput.value = '';
-            flatSelect.innerHTML = '<option value="">Select Building First</option>';
-            flatSelect.disabled = true;
-            flatSelect.classList.add('bg-gray-100');
-            bldgSelect.innerHTML = '<option value="">Select Building</option>';
-            
+            addrInput.value = ''; flatSelect.innerHTML = '<option value="">Select Building First</option>'; flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Building</option>';
             if (custId) {
-                bldgSelect.disabled = false;
-                bldgSelect.classList.remove('bg-gray-100');
+                bldgSelect.disabled = false; bldgSelect.classList.remove('bg-gray-100');
                 const filtered = allWoBuildings.filter(b => b.customerId === custId);
-                
-                if (filtered.length > 0) {
-                    filtered.forEach(b => {
-                        bldgSelect.innerHTML += `<option value="${b.id}" data-address="${b.address || ''}">${b.name}</option>`;
-                    });
-                } else {
-                    bldgSelect.innerHTML = '<option value="">No Buildings for this Client</option>';
-                }
-            } else {
-                bldgSelect.disabled = true;
-                bldgSelect.classList.add('bg-gray-100');
-                bldgSelect.innerHTML = '<option value="">Select Client First</option>';
-            }
+                if (filtered.length > 0) { filtered.forEach(b => { bldgSelect.innerHTML += `<option value="${b.id}" data-address="${b.address || ''}">${b.name}</option>`; }); } else { bldgSelect.innerHTML = '<option value="">No Buildings for this Client</option>'; }
+            } else { bldgSelect.disabled = true; bldgSelect.classList.add('bg-gray-100'); bldgSelect.innerHTML = '<option value="">Select Client First</option>'; }
         }
 
         function filterWoFlats() {
-            const bldgSelect = document.getElementById('wo_buildingId');
-            const bldgId = bldgSelect.value;
-            const selectedOption = bldgSelect.options[bldgSelect.selectedIndex];
-            
-            const addrInput = document.getElementById('wo_address');
-            const flatSelect = document.getElementById('wo_flatId');
-
-            addrInput.value = selectedOption.getAttribute('data-address') || 'N/A';
-
-            flatSelect.innerHTML = '<option value="">Select Flat</option>';
-            
+            const bldgSelect = document.getElementById('wo_buildingId'); const bldgId = bldgSelect.value; const selectedOption = bldgSelect.options[bldgSelect.selectedIndex];
+            const addrInput = document.getElementById('wo_address'); const flatSelect = document.getElementById('wo_flatId');
+            addrInput.value = selectedOption.getAttribute('data-address') || 'N/A'; flatSelect.innerHTML = '<option value="">Select Flat</option>';
             if (bldgId) {
-                flatSelect.disabled = false;
-                flatSelect.classList.remove('bg-gray-100');
+                flatSelect.disabled = false; flatSelect.classList.remove('bg-gray-100');
                 const filtered = allWoFlats.filter(f => f.buildingId === bldgId);
-                
-                if (filtered.length > 0) {
-                    filtered.forEach(f => {
-                        flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`;
-                    });
-                } else {
-                    flatSelect.innerHTML = '<option value="">No Flats for this Building</option>';
-                }
-            } else {
-                flatSelect.disabled = true;
-                flatSelect.classList.add('bg-gray-100');
-                flatSelect.innerHTML = '<option value="">Select Building First</option>';
-            }
+                if (filtered.length > 0) { filtered.forEach(f => { flatSelect.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`; }); } else { flatSelect.innerHTML = '<option value="">No Flats for this Building</option>'; }
+            } else { flatSelect.disabled = true; flatSelect.classList.add('bg-gray-100'); flatSelect.innerHTML = '<option value="">Select Building First</option>'; }
         }
 
         // --- REPORTS FUNCTION ---
@@ -1253,12 +1252,10 @@
             try {
                 const data = await apiFetch('/reports/summary');
                 const formatNum = (num) => parseFloat(num).toFixed(2);
-                
                 document.getElementById('rep-revenue').innerText = `AED ${formatNum(data.revenue.total)}`;
                 document.getElementById('rep-collected').innerText = `AED ${formatNum(data.revenue.paid)}`;
                 document.getElementById('rep-expenses').innerText = `AED ${formatNum(data.expenses.total)}`;
                 document.getElementById('rep-profit').innerText = `AED ${formatNum(data.netProfit)}`;
-                
                 let woHtml = '';
                 if (data.workOrders && data.workOrders.length > 0) {
                     data.workOrders.forEach(stat => {
@@ -1268,142 +1265,65 @@
                         if (stat.status === 'PENDING') color = 'bg-yellow-100 text-yellow-700';
                         woHtml += `<span class="px-4 py-2 rounded-lg text-sm font-medium ${color}">${stat.status.replace('_', ' ')}: ${stat._count.status}</span>`;
                     });
-                } else {
-                    woHtml = '<span class="text-gray-500">No work orders found.</span>';
-                }
+                } else { woHtml = '<span class="text-gray-500">No work orders found.</span>'; }
                 document.getElementById('rep-wo-stats').innerHTML = woHtml;
-            } catch (e) {
-                console.error('Failed to load reports', e);
-            }
+            } catch (e) { console.error('Failed to load reports', e); }
         }
 
-        // --- COMPANY SETTINGS FUNCTIONS ---
+        // --- SETTINGS FUNCTIONS ---
         let companyImageData = { logoUrl: null, invoiceHeader: null, invoiceFooter: null };
-
         function handleImageUpload(event, fieldName, previewId) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = (e) => {
-                companyImageData[fieldName] = e.target.result;
-                document.getElementById(previewId).src = e.target.result;
-            };
+            reader.onload = (e) => { companyImageData[fieldName] = e.target.result; document.getElementById(previewId).src = e.target.result; };
             reader.readAsDataURL(file);
         }
-
         async function loadCompanySettings() {
             try {
                 const data = await apiFetch('/company');
-                document.getElementById('set_name').value = data.name || '';
-                document.getElementById('set_trn').value = data.trn || '';
-                document.getElementById('set_phone').value = data.phone || '';
-                document.getElementById('set_email').value = data.email || '';
-                document.getElementById('set_address').value = data.address || '';
-                document.getElementById('set_vat').value = data.vatPercent || 5;
-                document.getElementById('set_invPrefix').value = data.invoicePrefix || 'INV-';
-                document.getElementById('set_poPrefix').value = data.poPrefix || 'PO-';
-                document.getElementById('set_woPrefix').value = data.woPrefix || 'WO-';
-
+                document.getElementById('set_name').value = data.name || ''; document.getElementById('set_trn').value = data.trn || ''; document.getElementById('set_phone').value = data.phone || ''; document.getElementById('set_email').value = data.email || ''; document.getElementById('set_address').value = data.address || ''; document.getElementById('set_vat').value = data.vatPercent || 5; document.getElementById('set_invPrefix').value = data.invoicePrefix || 'INV-'; document.getElementById('set_poPrefix').value = data.poPrefix || 'PO-'; document.getElementById('set_woPrefix').value = data.woPrefix || 'WO-';
                 if (data.logoUrl) document.getElementById('img-preview-logo').src = data.logoUrl;
                 if (data.invoiceHeader) document.getElementById('img-preview-header').src = data.invoiceHeader;
                 if (data.invoiceFooter) document.getElementById('img-preview-footer').src = data.invoiceFooter;
-            } catch (e) {
-                console.error("Failed to load company settings", e);
-            }
+            } catch (e) { console.error("Failed to load company settings", e); }
         }
-
         async function saveCompanySettings() {
-            const data = {
-                name: document.getElementById('set_name').value,
-                trn: document.getElementById('set_trn').value,
-                phone: document.getElementById('set_phone').value,
-                email: document.getElementById('set_email').value,
-                address: document.getElementById('set_address').value,
-                vatPercent: document.getElementById('set_vat').value,
-                invoicePrefix: document.getElementById('set_invPrefix').value,
-                poPrefix: document.getElementById('set_poPrefix').value,
-                woPrefix: document.getElementById('set_woPrefix').value,
-                logoUrl: companyImageData.logoUrl, 
-                invoiceHeader: companyImageData.invoiceHeader,
-                invoiceFooter: companyImageData.invoiceFooter
-            };
-            if (!data.logoUrl) delete data.logoUrl;
-            if (!data.invoiceHeader) delete data.invoiceHeader;
-            if (!data.invoiceFooter) delete data.invoiceFooter;
-
-            try {
-                await apiFetch('/company', 'POST', data);
-                alert('Company settings saved successfully!');
-            } catch (e) {
-                alert('Failed to save settings: ' + e.message);
-            }
+            const data = { name: document.getElementById('set_name').value, trn: document.getElementById('set_trn').value, phone: document.getElementById('set_phone').value, email: document.getElementById('set_email').value, address: document.getElementById('set_address').value, vatPercent: document.getElementById('set_vat').value, invoicePrefix: document.getElementById('set_invPrefix').value, poPrefix: document.getElementById('set_poPrefix').value, woPrefix: document.getElementById('set_woPrefix').value, logoUrl: companyImageData.logoUrl, invoiceHeader: companyImageData.invoiceHeader, invoiceFooter: companyImageData.invoiceFooter };
+            if (!data.logoUrl) delete data.logoUrl; if (!data.invoiceHeader) delete data.invoiceHeader; if (!data.invoiceFooter) delete data.invoiceFooter;
+            try { await apiFetch('/company', 'POST', data); alert('Company settings saved successfully!'); } catch (e) { alert('Failed to save settings: ' + e.message); }
         }
-
-        // --- SYSTEM SETTINGS FUNCTIONS ---
         async function loadSystemSettings() {
             try {
                 const data = await apiFetch('/settings');
-                document.getElementById('set_sysName').value = data.systemName || '';
-                document.getElementById('set_currency').value = data.currency || 'AED';
-                document.getElementById('set_timezone').value = data.timezone || 'Asia/Dubai';
-                document.getElementById('set_lowStock').value = data.lowStockThreshold || 5;
-                document.getElementById('set_emailNotif').checked = data.enableEmailNotifications;
-                document.getElementById('set_smsNotif').checked = data.enableSMSNotifications;
-            } catch (e) {
-                console.error("Failed to load system settings", e);
-            }
+                document.getElementById('set_sysName').value = data.systemName || ''; document.getElementById('set_currency').value = data.currency || 'AED'; document.getElementById('set_timezone').value = data.timezone || 'Asia/Dubai'; document.getElementById('set_lowStock').value = data.lowStockThreshold || 5; document.getElementById('set_emailNotif').checked = data.enableEmailNotifications; document.getElementById('set_smsNotif').checked = data.enableSMSNotifications;
+            } catch (e) { console.error("Failed to load system settings", e); }
         }
-
         async function saveSystemSettings() {
-            const data = {
-                systemName: document.getElementById('set_sysName').value,
-                currency: document.getElementById('set_currency').value,
-                timezone: document.getElementById('set_timezone').value,
-                lowStockThreshold: parseInt(document.getElementById('set_lowStock').value),
-                enableEmailNotifications: document.getElementById('set_emailNotif').checked,
-                enableSMSNotifications: document.getElementById('set_smsNotif').checked
-            };
-            try {
-                await apiFetch('/settings', 'POST', data);
-                alert('System settings saved successfully!');
-            } catch (e) {
-                alert('Failed to save settings: ' + e.message);
-            }
+            const data = { systemName: document.getElementById('set_sysName').value, currency: document.getElementById('set_currency').value, timezone: document.getElementById('set_timezone').value, lowStockThreshold: parseInt(document.getElementById('set_lowStock').value), enableEmailNotifications: document.getElementById('set_emailNotif').checked, enableSMSNotifications: document.getElementById('set_smsNotif').checked };
+            try { await apiFetch('/settings', 'POST', data); alert('System settings saved successfully!'); } catch (e) { alert('Failed to save settings: ' + e.message); }
         }
 
         // --- STAFF FUNCTIONS ---
         let staffPhotoData = null;
-
         function handleStaffPhotoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = (e) => {
-                staffPhotoData = e.target.result;
-                document.getElementById('staff_photo_preview').src = e.target.result;
-            };
+            reader.onload = (e) => { staffPhotoData = e.target.result; document.getElementById('staff_photo_preview').src = e.target.result; };
             reader.readAsDataURL(file);
         }
-
         async function fetchAndRenderStaff() {
-            const tbody = document.getElementById('tbody-staff');
-            if (!tbody) return;
+            const tbody = document.getElementById('tbody-staff'); if (!tbody) return;
             tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
             try {
                 const data = await apiFetch('/staff');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr>`;
-                    return;
-                }
+                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr>`; return; }
                 tbody.innerHTML = '';
                 data.forEach(item => {
                     const tr = document.createElement('tr');
                     tr.className = "cursor-pointer hover:bg-blue-50 transition";
                     tr.addEventListener('click', () => viewStaffDocument(item.id));
                     tr.innerHTML = `
-                        <td class="px-3 py-2 text-sm text-gray-700">
-                            ${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}
-                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.firstName} ${item.lastName}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.jobTitle || '-'}</td>
                         <td class="px-3 py-2 text-sm text-gray-700">${item.nationality || '-'}</td>
@@ -1413,27 +1333,21 @@
                     `;
                     tbody.appendChild(tr);
                 });
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
-            }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
-
         async function viewStaffDocument(staffId) {
             try {
                 const staff = await apiFetch(`/staff/${staffId}`);
                 const company = await apiFetch('/company'); 
-                
                 const modalBox = document.querySelector('#modal > div');
-                modalBox.classList.remove('max-w-md', 'max-w-2xl');
+                modalBox.classList.remove('max-w-md', 'max-w-2xl', 'max-w-sm');
                 modalBox.classList.add('max-w-5xl', 'p-0');
-
                 const fields = `
                     <div class="no-print sticky top-0 bg-gray-100 py-2 px-4 flex justify-end gap-2 z-10 border-b">
                         <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print Document</button>
                         <button onclick="downloadStaffPDF('${staff.id}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Download PDF</button>
                         <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
                     </div>
-
                     <div id="print-area" class="a4-page">
                         <div class="a4-header">
                             <div>
@@ -1441,126 +1355,46 @@
                                 <p class="text-sm text-gray-600">${company.address || ''}</p>
                                 <p class="text-sm text-gray-600">TRN: ${company.trn || 'N/A'}</p>
                             </div>
-                            <div class="text-right">
-                                <h2 class="text-xl font-bold uppercase tracking-wide">Staff Record Form</h2>
-                                <p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p>
-                            </div>
+                            <div class="text-right"><h2 class="text-xl font-bold uppercase tracking-wide">Staff Record Form</h2><p class="text-sm text-gray-500">Generated: ${new Date().toLocaleString()}</p></div>
                         </div>
-
                         <div class="a4-grid">
-                            <div class="text-center">
-                                ${staff.photoUrl ? `<img src="${staff.photoUrl}" class="w-40 h-48 object-cover mx-auto border border-gray-300">` : `<div class="w-40 h-48 bg-gray-100 mx-auto flex items-center justify-center text-gray-400 border border-gray-300">No Photo</div>`}
-                            </div>
+                            <div class="text-center">${staff.photoUrl ? `<img src="${staff.photoUrl}" class="w-40 h-48 object-cover mx-auto border border-gray-300">` : `<div class="w-40 h-48 bg-gray-100 mx-auto flex items-center justify-center text-gray-400 border border-gray-300">No Photo</div>`}</div>
                             <div>
-                                <div class="a4-detail-row">
-                                    <div class="a4-detail-label">Employee ID</div>
-                                    <div class="a4-detail-value">${staff.id.substring(0, 8).toUpperCase()}</div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="a4-detail-row">
-                                        <div class="a4-detail-label">First Name</div>
-                                        <div class="a4-detail-value">${staff.firstName}</div>
-                                    </div>
-                                    <div class="a4-detail-row">
-                                        <div class="a4-detail-label">Last Name</div>
-                                        <div class="a4-detail-value">${staff.lastName}</div>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="a4-detail-row">
-                                        <div class="a4-detail-label">Designation / Job Title</div>
-                                        <div class="a4-detail-value">${staff.jobTitle || 'N/A'}</div>
-                                    </div>
-                                    <div class="a4-detail-row">
-                                        <div class="a4-detail-label">Nationality</div>
-                                        <div class="a4-detail-value">${staff.nationality || 'N/A'}</div>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="a4-detail-row">
-                                        <div class="a4-detail-label">Mobile Number</div>
-                                        <div class="a4-detail-value">${staff.phone || 'N/A'}</div>
-                                    </div>
-                                    <div class="a4-detail-row">
-                                        <div class="a4-detail-label">Joining Date</div>
-                                        <div class="a4-detail-value">${new Date(staff.createdAt).toLocaleDateString()}</div>
-                                    </div>
-                                </div>
+                                <div class="a4-detail-row"><div class="a4-detail-label">Employee ID</div><div class="a4-detail-value">${staff.id.substring(0, 8).toUpperCase()}</div></div>
+                                <div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">First Name</div><div class="a4-detail-value">${staff.firstName}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Last Name</div><div class="a4-detail-value">${staff.lastName}</div></div></div>
+                                <div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">Designation / Job Title</div><div class="a4-detail-value">${staff.jobTitle || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Nationality</div><div class="a4-detail-value">${staff.nationality || 'N/A'}</div></div></div>
+                                <div class="grid grid-cols-2 gap-4"><div class="a4-detail-row"><div class="a4-detail-label">Mobile Number</div><div class="a4-detail-value">${staff.phone || 'N/A'}</div></div><div class="a4-detail-row"><div class="a4-detail-label">Joining Date</div><div class="a4-detail-value">${new Date(staff.createdAt).toLocaleDateString()}</div></div></div>
                             </div>
                         </div>
-
                         <h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Document & Visa Details</h3>
                         <div class="grid grid-cols-3 gap-4 mb-8">
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Passport Number</div>
-                                <div class="a4-detail-value">${staff.passportNumber || 'N/A'}</div>
-                            </div>
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Passport Expiry</div>
-                                <div class="a4-detail-value">${staff.passportExpiry ? new Date(staff.passportExpiry).toLocaleDateString() : 'N/A'}</div>
-                            </div>
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Visa Number</div>
-                                <div class="a4-detail-value">${staff.visaNumber || 'N/A'}</div>
-                            </div>
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Visa Expiry</div>
-                                <div class="a4-detail-value">${staff.visaExpiry ? new Date(staff.visaExpiry).toLocaleDateString() : 'N/A'}</div>
-                            </div>
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Emirates ID</div>
-                                <div class="a4-detail-value">${staff.emiratesId || 'N/A'}</div>
-                            </div>
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Emirates ID Expiry</div>
-                                <div class="a4-detail-value">${staff.emiratesIdExpiry ? new Date(staff.emiratesIdExpiry).toLocaleDateString() : 'N/A'}</div>
-                            </div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Passport Number</div><div class="a4-detail-value">${staff.passportNumber || 'N/A'}</div></div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Passport Expiry</div><div class="a4-detail-value">${staff.passportExpiry ? new Date(staff.passportExpiry).toLocaleDateString() : 'N/A'}</div></div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Visa Number</div><div class="a4-detail-value">${staff.visaNumber || 'N/A'}</div></div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Visa Expiry</div><div class="a4-detail-value">${staff.visaExpiry ? new Date(staff.visaExpiry).toLocaleDateString() : 'N/A'}</div></div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Emirates ID</div><div class="a4-detail-value">${staff.emiratesId || 'N/A'}</div></div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Emirates ID Expiry</div><div class="a4-detail-value">${staff.emiratesIdExpiry ? new Date(staff.emiratesIdExpiry).toLocaleDateString() : 'N/A'}</div></div>
                         </div>
-
                         <h3 class="text-lg font-bold text-blue-800 border-b pb-2 mb-4">Insurance Details</h3>
                         <div class="grid grid-cols-3 gap-4 mb-8">
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Provider</div>
-                                <div class="a4-detail-value">${staff.insuranceProvider || 'N/A'}</div>
-                            </div>
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Policy Number</div>
-                                <div class="a4-detail-value">${staff.insurancePolicyNumber || 'N/A'}</div>
-                            </div>
-                            <div class="a4-detail-row">
-                                <div class="a4-detail-label">Expiry Date</div>
-                                <div class="a4-detail-value">${staff.insuranceExpiry ? new Date(staff.insuranceExpiry).toLocaleDateString() : 'N/A'}</div>
-                            </div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Provider</div><div class="a4-detail-value">${staff.insuranceProvider || 'N/A'}</div></div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Policy Number</div><div class="a4-detail-value">${staff.insurancePolicyNumber || 'N/A'}</div></div>
+                            <div class="a4-detail-row"><div class="a4-detail-label">Expiry Date</div><div class="a4-detail-value">${staff.insuranceExpiry ? new Date(staff.insuranceExpiry).toLocaleDateString() : 'N/A'}</div></div>
                         </div>
-
                         <div class="a4-footer">
-                            <div class="text-center">
-                                <div class="w-24 h-24 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xs text-gray-400">Company Seal</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="border-t border-gray-800 w-48 mt-12 pt-1 text-sm font-medium">Authorized Signatory</div>
-                            </div>
+                            <div class="text-center"><div class="w-24 h-24 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-xs text-gray-400">Company Seal</div></div>
+                            <div class="text-center"><div class="border-t border-gray-800 w-48 mt-12 pt-1 text-sm font-medium">Authorized Signatory</div></div>
                         </div>
                     </div>
                 `;
                 openModal('Staff Document', fields, true);
-            } catch (e) {
-                alert('Failed to load staff document');
-            }
+            } catch (e) { alert('Failed to load staff document'); }
         }
-
         function downloadStaffPDF(staffId) {
             const element = document.getElementById('print-area');
-            const opt = {
-                margin: 0,
-                filename: `Staff_Record_${staffId.substring(0, 8)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            const opt = { margin: 0, filename: `Staff_Record_${staffId.substring(0, 8)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
             html2pdf().set(opt).from(element).save();
         }
-
         async function openStaffModal() {
             staffPhotoData = null; 
             const fields = `
@@ -1579,15 +1413,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
                     <select id="st_nat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="United Arab Emirates">United Arab Emirates</option>
-                        <option value="India">India</option>
-                        <option value="Pakistan">Pakistan</option>
-                        <option value="Philippines">Philippines</option>
-                        <option value="Egypt">Egypt</option>
-                        <option value="Nepal">Nepal</option>
-                        <option value="Bangladesh">Bangladesh</option>
-                        <option value="Sri Lanka">Sri Lanka</option>
-                        <option value="Other">Other</option>
+                        <option value="United Arab Emirates">United Arab Emirates</option><option value="India">India</option><option value="Pakistan">Pakistan</option><option value="Philippines">Philippines</option><option value="Egypt">Egypt</option><option value="Nepal">Nepal</option><option value="Bangladesh">Bangladesh</option><option value="Sri Lanka">Sri Lanka</option><option value="Other">Other</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -1602,10 +1428,7 @@
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Number</label><input type="text" id="st_visa" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
                 </div>
-                
-                <hr class="border-gray-200 my-2">
-                <h4 class="text-sm font-medium text-gray-800">Insurance Details</h4>
-                
+                <hr class="border-gray-200 my-2"><h4 class="text-sm font-medium text-gray-800">Insurance Details</h4>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Nextcare"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Policy Number</label><input type="text" id="st_insPol" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
@@ -1616,21 +1439,7 @@
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
                 handleSubmit('/staff', {
-                    firstName: getInput('st_fname'),
-                    lastName: getInput('st_lname'),
-                    photoUrl: staffPhotoData, 
-                    jobTitle: getInput('st_job'),
-                    phone: getInput('st_phone'),
-                    nationality: getInput('st_nat'),
-                    passportNumber: getInput('st_pp'),
-                    passportExpiry: getInput('st_ppExp'),
-                    emiratesId: getInput('st_eid'),
-                    emiratesIdExpiry: getInput('st_eidExp'),
-                    visaNumber: getInput('st_visa'),
-                    visaExpiry: getInput('st_visaExp'),
-                    insuranceProvider: getInput('st_insProv'),
-                    insurancePolicyNumber: getInput('st_insPol'),
-                    insuranceExpiry: getInput('st_insExp')
+                    firstName: getInput('st_fname'), lastName: getInput('st_lname'), photoUrl: staffPhotoData, jobTitle: getInput('st_job'), phone: getInput('st_phone'), nationality: getInput('st_nat'), passportNumber: getInput('st_pp'), passportExpiry: getInput('st_ppExp'), emiratesId: getInput('st_eid'), emiratesIdExpiry: getInput('st_eidExp'), visaNumber: getInput('st_visa'), visaExpiry: getInput('st_visaExp'), insuranceProvider: getInput('st_insProv'), insurancePolicyNumber: getInput('st_insPol'), insuranceExpiry: getInput('st_insExp')
                 }, 'Staff added successfully!', { endpoint: '/staff', tableId: 'tbody-staff', columns: ['firstName', 'lastName', 'jobTitle', 'nationality', 'phone', 'passportExpiry', 'emiratesIdExpiry'] });
             };
         }
@@ -1647,22 +1456,16 @@
             modalTitle.innerText = title;
             modalFields.innerHTML = fieldsHtml;
             modal.classList.add('active');
-            if (isViewOnly) {
-                modalSubmitBtn.style.display = 'none';
-            } else {
-                modalSubmitBtn.style.display = 'block';
-            }
+            if (isViewOnly) { modalSubmitBtn.style.display = 'none'; } else { modalSubmitBtn.style.display = 'block'; }
         }
 
         function closeModal() {
             modal.classList.remove('active');
             modalForm.reset();
             modalError.classList.add('hidden');
-            
-            // Revert modal width for normal forms
             const modalBox = document.querySelector('#modal > div');
             modalBox.classList.add('max-w-md');
-            modalBox.classList.remove('max-w-5xl', 'max-w-2xl', 'p-0');
+            modalBox.classList.remove('max-w-5xl', 'max-w-2xl', 'max-w-3xl', 'max-w-sm', 'p-0');
         }
 
         async function handleSubmit(endpoint, data, successMsg, refreshPage) {
@@ -1673,19 +1476,12 @@
                 closeModal();
                 alert(successMsg);
                 if (refreshPage) {
-                    if (refreshPage.tableId === 'tbody-work-orders') {
-                        fetchAndRenderWorkOrders();
-                    } else if (refreshPage.tableId === 'tbody-invoices') {
-                        fetchAndRenderInvoices();
-                    } else if (refreshPage.tableId === 'tbody-inventory') {
-                        fetchAndRenderAssets();
-                    } else if (refreshPage.tableId === 'tbody-staff') {
-                        fetchAndRenderStaff();
-                    } else if (refreshPage.tableId === 'tbody-purchases') {
-                        fetchAndRenderPurchases();
-                    } else {
-                        fetchAndRender(refreshPage.endpoint, refreshPage.tableId, refreshPage.columns);
-                    }
+                    if (refreshPage.tableId === 'tbody-work-orders') { fetchAndRenderWorkOrders(); } 
+                    else if (refreshPage.tableId === 'tbody-invoices') { fetchAndRenderInvoices(); } 
+                    else if (refreshPage.tableId === 'tbody-inventory') { fetchAndRenderAssets(); } 
+                    else if (refreshPage.tableId === 'tbody-staff') { fetchAndRenderStaff(); } 
+                    else if (refreshPage.tableId === 'tbody-purchases') { fetchAndRenderPurchases(); } 
+                    else { fetchAndRender(refreshPage.endpoint, refreshPage.tableId, refreshPage.columns); }
                 }
             } catch (error) {
                 modalError.innerText = error.message;
@@ -1710,12 +1506,7 @@
             openModal('Add New Customer', fields);
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                handleSubmit('/customers', {
-                    name: getInput('c_name'),
-                    phone: getInput('c_phone'),
-                    email: getInput('c_email'),
-                    address: getInput('c_address')
-                }, 'Customer created successfully!', { endpoint: '/customers', tableId: 'tbody-customers', columns: ['name', 'phone', 'email', 'address'] });
+                handleSubmit('/customers', { name: getInput('c_name'), phone: getInput('c_phone'), email: getInput('c_email'), address: getInput('c_address') }, 'Customer created successfully!', { endpoint: '/customers', tableId: 'tbody-customers', columns: ['name', 'phone', 'email', 'address'] });
             };
         }
 
@@ -1731,13 +1522,7 @@
             openModal('Add New Building', fields);
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                handleSubmit('/buildings', {
-                    customerId: getInput('b_customerId'),
-                    name: getInput('b_name'),
-                    address: getInput('b_address'),
-                    city: getInput('b_city'),
-                    emirate: getInput('b_emirate')
-                }, 'Building created successfully!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] });
+                handleSubmit('/buildings', { customerId: getInput('b_customerId'), name: getInput('b_name'), address: getInput('b_address'), city: getInput('b_city'), emirate: getInput('b_emirate') }, 'Building created successfully!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] });
             };
         }
 
@@ -1753,8 +1538,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Payment Type</label>
                     <select id="a_paymentType" onchange="toggleEmiField()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="LUMPSUM">Lump Sum</option>
-                        <option value="EMI">EMI</option>
+                        <option value="LUMPSUM">Lump Sum</option><option value="EMI">EMI</option>
                     </select>
                 </div>
                 <div id="emiCountDiv" style="display:none;">
@@ -1763,35 +1547,19 @@
                 </div>
             `;
             openModal('Add New AMC', fields);
-            
             document.getElementById('a_startDate').valueAsDate = new Date();
-            let nextYear = new Date();
-            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            let nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear() + 1);
             document.getElementById('a_endDate').valueAsDate = nextYear;
-
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                handleSubmit('/amc', {
-                    customerId: getInput('a_customerId'),
-                    contractNumber: getInput('a_contractNumber'),
-                    startDate: getInput('a_startDate'),
-                    endDate: getInput('a_endDate'),
-                    value: parseFloat(getInput('a_value')),
-                    ppmFrequency: parseInt(getInput('a_ppmFrequency')),
-                    paymentType: getInput('a_paymentType'),
-                    emiCount: parseInt(getInput('a_emiCount')) || 0
-                }, 'AMC created successfully! Schedules auto-generated.', { endpoint: '/amc', tableId: 'tbody-amc', columns: ['contractNumber', 'value', 'status'] });
+                handleSubmit('/amc', { customerId: getInput('a_customerId'), contractNumber: getInput('a_contractNumber'), startDate: getInput('a_startDate'), endDate: getInput('a_endDate'), value: parseFloat(getInput('a_value')), ppmFrequency: parseInt(getInput('a_ppmFrequency')), paymentType: getInput('a_paymentType'), emiCount: parseInt(getInput('a_emiCount')) || 0 }, 'AMC created successfully! Schedules auto-generated.', { endpoint: '/amc', tableId: 'tbody-amc', columns: ['contractNumber', 'value', 'status'] });
             };
         }
 
         function toggleEmiField() {
             const paymentType = document.getElementById('a_paymentType').value;
             const emiDiv = document.getElementById('emiCountDiv');
-            if (paymentType === 'EMI') {
-                emiDiv.style.display = 'block';
-            } else {
-                emiDiv.style.display = 'none';
-            }
+            if (paymentType === 'EMI') { emiDiv.style.display = 'block'; } else { emiDiv.style.display = 'none'; }
         }
 
         async function openInvoiceModal() {
@@ -1814,8 +1582,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Type</label>
                     <select id="i_type" onchange="toggleInvoiceFields()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="ADHOC">Ad-hoc Service / Repair</option>
-                        <option value="EMI">AMC EMI Payment</option>
+                        <option value="ADHOC">Ad-hoc Service / Repair</option><option value="EMI">AMC EMI Payment</option>
                     </select>
                 </div>
                 <div id="emi_select_div" style="display:none;">
@@ -1841,42 +1608,23 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select id="i_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="DRAFT">Draft</option>
-                        <option value="SENT">Sent</option>
-                        <option value="PAID">Paid</option>
+                        <option value="DRAFT">Draft</option><option value="SENT">Sent</option><option value="PAID">Paid</option>
                     </select>
                 </div>
             `;
             openModal('Add New Invoice', fields);
-            let dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 15);
+            let dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 15);
             document.getElementById('i_dueDate').valueAsDate = dueDate;
-
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                handleSubmit('/invoices', {
-                    customerId: getInput('i_customerId'),
-                    dueDate: getInput('i_dueDate'),
-                    subtotal: parseFloat(getInput('i_subtotal')),
-                    status: getInput('i_status'),
-                    notes: getInput('i_notes'),
-                    emiId: getInput('i_emiId') || null
-                }, 'Invoice created successfully!', { endpoint: '/invoices', tableId: 'tbody-invoices', columns: ['invoiceNumber', 'total', 'status'] });
+                handleSubmit('/invoices', { customerId: getInput('i_customerId'), dueDate: getInput('i_dueDate'), subtotal: parseFloat(getInput('i_subtotal')), status: getInput('i_status'), notes: getInput('i_notes'), emiId: getInput('i_emiId') || null }, 'Invoice created successfully!', { endpoint: '/invoices', tableId: 'tbody-invoices', columns: ['invoiceNumber', 'total', 'status'] });
             };
         }
 
         function toggleInvoiceFields() {
             const type = document.getElementById('i_type').value;
             const emiDiv = document.getElementById('emi_select_div');
-            if (type === 'EMI') {
-                emiDiv.style.display = 'block';
-            } else {
-                emiDiv.style.display = 'none';
-                document.getElementById('i_emiId').value = '';
-                document.getElementById('i_notes').value = '';
-                document.getElementById('i_subtotal').value = '';
-                document.getElementById('i_customerId').value = '';
-            }
+            if (type === 'EMI') { emiDiv.style.display = 'block'; } else { emiDiv.style.display = 'none'; document.getElementById('i_emiId').value = ''; document.getElementById('i_notes').value = ''; document.getElementById('i_subtotal').value = ''; document.getElementById('i_customerId').value = ''; }
         }
 
         function autoFillEmiData() {
@@ -1898,11 +1646,7 @@
             openModal('Add New Expense', fields);
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                handleSubmit('/expenses', {
-                    category: getInput('e_category'),
-                    amount: parseFloat(getInput('e_amount')),
-                    description: getInput('e_description')
-                }, 'Expense created successfully!', { endpoint: '/expenses', tableId: 'tbody-expenses', columns: ['category', 'amount', 'status'] });
+                handleSubmit('/expenses', { category: getInput('e_category'), amount: parseFloat(getInput('e_amount')), description: getInput('e_description') }, 'Expense created successfully!', { endpoint: '/expenses', tableId: 'tbody-expenses', columns: ['category', 'amount', 'status'] });
             };
         }
 
@@ -1917,115 +1661,7 @@
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
                 const total = parseFloat(getInput('p_total'));
-                handleSubmit('/po', {
-                    poNumber: getInput('p_poNumber'),
-                    supplierName: getInput('p_supplierName'),
-                    supplierPhone: getInput('p_supplierPhone'),
-                    subtotal: total,
-                    vatAmount: total * 0.05,
-                    total: total + (total * 0.05)
-                }, 'Purchase Order created successfully!', { endpoint: '/po', tableId: 'tbody-po', columns: ['poNumber', 'supplierName', 'total'] });
-            };
-        }
-
-        async function openInventoryModal() {
-            const fields = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Instrument Type</label>
-                        <select id="inv_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="Split AC">Split AC</option>
-                            <option value="Window AC">Window AC</option>
-                            <option value="Cassette AC">Cassette AC</option>
-                            <option value="Ducted AC">Ducted AC</option>
-                            <option value="Package Unit">Package Unit</option>
-                            <option value="Chiller">Chiller</option>
-                            <option value="VRF System">VRF System</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
-                        <select id="inv_manufacturer" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="Daikin">Daikin</option>
-                            <option value="LG">LG</option>
-                            <option value="Samsung">Samsung</option>
-                            <option value="Gree">Gree</option>
-                            <option value="Midea">Midea</option>
-                            <option value="O General">O General</option>
-                            <option value="Carrier">Carrier</option>
-                            <option value="Trane">Trane</option>
-                            <option value="York">York</option>
-                            <option value="Fujitsu">Fujitsu</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Model Number</label>
-                        <input type="text" id="inv_model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., FTKH-2024">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
-                        <input type="text" id="inv_serial" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., SN-987654">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Location / Flat</label>
-                    <input type="text" id="inv_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Master Bedroom">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Refrigerant Type</label>
-                        <select id="inv_refrigerant" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="R410A">R410A</option>
-                            <option value="R32">R32</option>
-                            <option value="R22">R22</option>
-                            <option value="R134a">R134a</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tonnage / BTU</label>
-                        <select id="inv_tonnage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="1 Ton">1 Ton</option>
-                            <option value="1.5 Ton">1.5 Ton</option>
-                            <option value="2 Ton">2 Ton</option>
-                            <option value="3 Ton">3 Ton</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Condenser Coil Condition</label>
-                        <select id="inv_coil" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="Good">Good</option>
-                            <option value="Needs Cleaning">Needs Cleaning</option>
-                            <option value="Needs Replacement">Needs Replacement</option>
-                            <option value="Corroded">Corroded</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Ampere (A)</label>
-                        <input type="number" step="0.1" id="inv_ampere" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 12.5">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Gas Pressure (PSI)</label>
-                    <input type="number" step="0.1" id="inv_pressure" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., 150">
-                </div>
-            `;
-            openModal('Register New AC / Asset', fields);
-            modalForm.onsubmit = (e) => {
-                e.preventDefault();
-                const techDetails = `Refrigerant: ${getInput('inv_refrigerant')} | Tonnage: ${getInput('inv_tonnage')} | Coil: ${getInput('inv_coil')} | Ampere: ${getInput('inv_ampere')}A | Gas Pressure: ${getInput('inv_pressure')} PSI`;
-                handleSubmit('/assets', {
-                    name: getInput('inv_name'),
-                    manufacturer: getInput('inv_manufacturer'),
-                    model: getInput('inv_model'),
-                    serialNumber: getInput('inv_serial'),
-                    location: getInput('inv_location'),
-                    description: techDetails
-                }, 'Asset registered successfully! Asset Number generated.', { endpoint: '/assets', tableId: 'tbody-inventory', columns: ['assetNumber', 'name', 'location'] });
+                handleSubmit('/po', { poNumber: getInput('p_poNumber'), supplierName: getInput('p_supplierName'), supplierPhone: getInput('p_supplierPhone'), subtotal: total, vatAmount: total * 0.05, total: total + (total * 0.05) }, 'Purchase Order created successfully!', { endpoint: '/po', tableId: 'tbody-po', columns: ['poNumber', 'supplierName', 'total'] });
             };
         }
 
@@ -2039,12 +1675,7 @@
             openModal('Add New User', fields);
             modalForm.onsubmit = (e) => {
                 e.preventDefault();
-                handleSubmit('/users', {
-                    name: getInput('u_name'),
-                    email: getInput('u_email'),
-                    password: getInput('u_password'),
-                    role: getInput('u_role')
-                }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] });
+                handleSubmit('/users', { name: getInput('u_name'), email: getInput('u_email'), password: getInput('u_password'), role: getInput('u_role') }, 'User created successfully!', { endpoint: '/users', tableId: 'tbody-users', columns: ['name', 'email', 'role'] });
             };
         }
     </script>
