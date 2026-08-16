@@ -44,6 +44,45 @@
             .no-print { display: none !important; }
             @page { size: A4; margin: 0; }
         }
+            /* Custom Dark Scrollbar for Sidebar */
+        #sidebar nav::-webkit-scrollbar {
+            width: 8px; /* Width of the scrollbar */
+        }
+        #sidebar nav::-webkit-scrollbar-track {
+            background: #11131A; /* Exact match to sidebar background to prevent bleed */
+        }
+        #sidebar nav::-webkit-scrollbar-thumb {
+            background: #334155; /* Dark slate color for the draggable part */
+            border-radius: 4px; /* Rounded edges */
+        }
+        #sidebar nav::-webkit-scrollbar-thumb:hover {
+            background: #475569; /* Lighter color when hovering over the scrollbar */
+        }
+        
+        /* Firefox Sidebar Scrollbar */
+        #sidebar nav {
+            scrollbar-width: thin;
+            scrollbar-color: #334155 #11131A;
+        }
+
+        /* Custom Dark Scrollbar for Main Content (Optional but recommended for consistency) */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 8px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #0f1117;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .overflow-y-auto {
+            scrollbar-width: thin;
+            scrollbar-color: #334155 #0f1117;
+        }
     </style>
 </head>
 <body class="bg-slate-50 h-screen flex overflow-hidden">
