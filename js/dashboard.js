@@ -6,7 +6,7 @@ async function loadDashboardData() {
         const wos = await apiFetch('/work-orders');
         dashboardData.wos = wos;
         renderDashboardWOs(wos);
-        generateMiniCalendar();
+        generateMiniCalendar(); // This relies on the calendar.js file
 
         const invs = await apiFetch('/invoices');
         dashboardData.invs = invs;
@@ -92,4 +92,13 @@ function renderAmcAlerts(amcs) {
             </div>`;
         }).join('');
     }
+}
+
+// ==========================================
+// INITIALIZATION (This was missing!)
+// ==========================================
+// Since this script is loaded with 'defer', we can run this immediately.
+// This tells the dashboard to start fetching data as soon as the page loads.
+if (document.getElementById('page-dashboard')) {
+    loadDashboardData();
 }
