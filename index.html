@@ -11,13 +11,16 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; }
+        body { font-family: 'Inter', sans-serif; background-color: #F4F6F8; color: #334155; }
         .sidebar-link.active { background-color: #2563eb; color: white; }
         .sidebar-link:hover { background-color: #1e293b; color: white; }
         .page-content { display: none; }
         .page-content.active { display: block; }
         .modal { display: none; }
         .modal.active { display: flex; }
+        
+        /* Soft-UI Card Styling */
+        .soft-card { background: #FFFFFF; border: 1px solid #EAEEF4; border-radius: 14px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03); }
         
         /* Custom Dark Scrollbar for Sidebar */
         #sidebar nav::-webkit-scrollbar { width: 8px; }
@@ -28,10 +31,10 @@
         
         /* Excel-like Table Styling */
         .excel-table { border-collapse: collapse; width: 100%; }
-        .excel-table th, .excel-table td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; font-size: 13px; white-space: nowrap; }
-        .excel-table th { background-color: #f1f5f9; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }
-        .excel-table tbody tr:nth-child(even) { background-color: #f8fafc; }
-        .excel-table tbody tr:hover { background-color: #eff6ff; transition: background-color 0.2s; }
+        .excel-table th, .excel-table td { border-bottom: 1px solid #EAEEF4; padding: 12px 16px; text-align: left; font-size: 13px; white-space: nowrap; }
+        .excel-table th { background-color: #F8FAFC; font-weight: 600; color: #64748B; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10; }
+        .excel-table tbody tr:hover { background-color: #F8FAFC; transition: background-color 0.2s; }
+        .excel-table tbody tr:last-child td { border-bottom: none; }
 
         /* A4 Document remains white for printing */
         .a4-page { width: 794px; min-height: 1123px; background: white; margin: 0 auto; padding: 40px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; color: #333; }
@@ -136,57 +139,61 @@
 
     <!-- Main Content -->
     <main class="flex-1 h-screen flex flex-col overflow-hidden relative z-0">
-        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 shrink-0 border-b border-gray-200 relative z-40">
-            <div class="flex items-center gap-4">
-                <button class="lg:hidden text-2xl text-gray-600" onclick="toggleSidebar()">&#9776;</button>
-                <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard Overview</h2>
-            </div>
-            <div class="flex items-center gap-6">
-                <button onclick="openScannerModal()" class="lg:hidden bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2">
-                    <span>📷</span> <span>Scan Asset QR</span>
-                </button>
-                <button class="relative text-gray-500 hover:text-gray-700">
-                    <span class="text-2xl">🔔</span>
-                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-            </div>
-        </header>
+        <!-- Mobile Menu Button -->
+        <div class="lg:hidden p-4 flex justify-between items-center bg-white border-b border-gray-200 sticky top-0 z-40 no-print">
+            <button class="text-2xl text-gray-600" onclick="toggleSidebar()">&#9776;</button>
+            <h2 id="page-title-mobile" class="text-lg font-semibold text-gray-800">Dashboard</h2>
+            <button onclick="openScannerModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700">Scan QR</button>
+        </div>
 
-        <div class="p-8 flex-1 overflow-y-auto">
+        <div class="flex-1 overflow-y-auto">
+            <div class="p-6 md:p-8">
             
             <!-- DASHBOARD PAGE -->
             <section id="page-dashboard" class="page-content active">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Good Morning, Admin</h2>
-                        <p class="text-gray-500">Here's your field service overview for today.</p>
+                        <p class="text-gray-500 text-sm mt-1">Here's your field service & scheduling overview for today.</p>
                     </div>
                     <div class="flex gap-3 mt-4 md:mt-0">
                         <button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 shadow-sm">+ New Work Order</button>
-                        <button onclick="openInvoiceModal()" class="bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 shadow-sm">Create Invoice</button>
+                        <button onclick="openInvoiceModal()" class="bg-white text-gray-700 border border-gray-200 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 shadow-sm">Create Invoice</button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Active Work Orders</h3>
-                        <p class="text-3xl font-bold text-gray-800" id="kpi-wo">47</p>
-                        <p class="text-green-500 text-sm mt-2">↑ 12% this week</p>
+                    <div class="soft-card p-6 flex items-center gap-4">
+                        <div class="p-3 rounded-xl bg-blue-50 text-blue-600 text-2xl">🛠️</div>
+                        <div>
+                            <h3 class="text-gray-500 text-sm font-medium">Active Work Orders</h3>
+                            <p class="text-3xl font-bold text-gray-800">47</p>
+                            <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1 inline-block">↑ 12% this week</span>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Pending Invoices</h3>
-                        <p class="text-3xl font-bold text-gray-800" id="kpi-inv">18</p>
-                        <p class="text-red-500 text-sm mt-2">AED 42,300 outstanding</p>
+                    <div class="soft-card p-6 flex items-center gap-4">
+                        <div class="p-3 rounded-xl bg-red-50 text-red-600 text-2xl">🧾</div>
+                        <div>
+                            <h3 class="text-gray-500 text-sm font-medium">Pending Invoices</h3>
+                            <p class="text-3xl font-bold text-gray-800">18</p>
+                            <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full mt-1 inline-block">AED 42,300 outstanding</span>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Active AMC Contracts</h3>
-                        <p class="text-3xl font-bold text-gray-800" id="kpi-amc">124</p>
-                        <p class="text-yellow-500 text-sm mt-2">3 expiring this month</p>
+                    <div class="soft-card p-6 flex items-center gap-4">
+                        <div class="p-3 rounded-xl bg-yellow-50 text-yellow-600 text-2xl">📋</div>
+                        <div>
+                            <h3 class="text-gray-500 text-sm font-medium">Active AMC Contracts</h3>
+                            <p class="text-3xl font-bold text-gray-800">124</p>
+                            <span class="text-xs font-semibold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full mt-1 inline-block">3 expiring this month</span>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium mb-2">Total Revenue MTD</h3>
-                        <p class="text-3xl font-bold text-gray-800" id="kpi-rev">AED 128.4K</p>
-                        <p class="text-green-500 text-sm mt-2">↑ 8.4% vs last month</p>
+                    <div class="soft-card p-6 flex items-center gap-4">
+                        <div class="p-3 rounded-xl bg-purple-50 text-purple-600 text-2xl">📈</div>
+                        <div>
+                            <h3 class="text-gray-500 text-sm font-medium">Total Revenue (MTD)</h3>
+                            <p class="text-3xl font-bold text-gray-800">د.إ 128.4K</p>
+                            <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1 inline-block">↑ 8.4% vs last month</span>
+                        </div>
                     </div>
                 </div>
 
@@ -194,54 +201,74 @@
                     <!-- Left Column -->
                     <div class="lg:col-span-2 space-y-6">
                         <!-- Recent Work Orders -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="font-semibold text-gray-800 text-lg">Recent Work Orders</h3>
+                        <div class="soft-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                                <h3 class="font-bold text-gray-800 text-lg">Recent Work Orders</h3>
                                 <button onclick="showPage('work-orders', document.querySelector('[onclick*=\"work-orders\"]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button>
                             </div>
-                            <div class="overflow-x-auto max-h-[40vh]">
+                            <div class="overflow-x-auto">
                                 <table class="excel-table">
-                                    <thead><tr><th>WO Number</th><th>Title</th><th>Location</th><th>Status</th><th>Technician</th></tr></thead>
-                                    <tbody id="tbody-dash-wo"><tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody>
+                                    <thead><tr><th>WO #</th><th>Title / Location</th><th>Status</th><th>Technician</th></tr></thead>
+                                    <tbody id="tbody-dash-wo">
+                                        <tr><td colspan="4" class="p-10 text-center text-gray-400">
+                                            <div class="flex flex-col items-center">
+                                                <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                                <span>No active work orders for today</span>
+                                            </div>
+                                        </td></tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
 
                         <!-- Upcoming Invoices -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="font-semibold text-gray-800 text-lg">Upcoming Invoices</h3>
+                        <div class="soft-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                                <h3 class="font-bold text-gray-800 text-lg">Upcoming Invoices</h3>
                                 <button onclick="showPage('invoices', document.querySelector('[onclick*=\"invoices\"]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button>
                             </div>
                             <div id="upcoming-invoices-list" class="divide-y divide-gray-100">
-                                <div class="p-6 text-center text-gray-500">No upcoming invoices.</div>
+                                <div class="p-6 text-center text-gray-400">No upcoming invoices.</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Column -->
                     <div class="space-y-6">
-                        <!-- AMC Renewal Alerts -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 bg-slate-50">
-                                <h3 class="font-semibold text-gray-800 text-lg">AMC Renewal Alerts</h3>
+                        <!-- Calendar -->
+                        <div class="soft-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                                <h3 class="font-bold text-gray-800 text-lg">Work Schedule</h3>
+                                <span class="text-sm text-gray-400" id="calendar-today-label">Today</span>
                             </div>
-                            <div id="amc-alerts-list" class="p-6 space-y-4">
-                                <div class="p-6 text-center text-gray-500">No alerts.</div>
+                            <div class="p-4">
+                                <div class="flex justify-between items-center mb-4">
+                                    <span class="font-semibold text-gray-700 text-sm" id="calendar-month-label">August 2026</span>
+                                    <div class="flex gap-1">
+                                        <button onclick="changeMonth(-1)" class="p-1 rounded hover:bg-gray-100 text-gray-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                                        <button onclick="changeMonth(1)" class="p-1 rounded hover:bg-gray-100 text-gray-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-semibold">
+                                    <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+                                </div>
+                                <div id="mini-calendar" class="grid grid-cols-7 gap-1 text-sm"></div>
+                            </div>
+                            <div class="p-6 border-t border-gray-100">
+                                <h4 class="font-semibold text-gray-700 text-sm mb-4" id="schedule-date-label">Schedule for Today</h4>
+                                <div id="daily-schedule-feed" class="space-y-3 text-sm">
+                                    <div class="text-gray-400 text-center py-4">No jobs scheduled.</div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Schedule Calendar -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="font-semibold text-gray-800 text-lg">Schedule</h3>
-                                <span class="text-sm text-gray-400" id="calendar-month-label">August 2026</span>
+                        <!-- AMC Alerts -->
+                        <div class="soft-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-100">
+                                <h3 class="font-bold text-gray-800 text-lg">AMC Renewal Alerts</h3>
                             </div>
-                            <div class="p-4">
-                                <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-semibold">
-                                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                                </div>
-                                <div id="mini-calendar" class="grid grid-cols-7 gap-1"></div>
+                            <div id="amc-alerts-list" class="p-6 space-y-3">
+                                <div class="text-gray-400 text-center py-4">No alerts.</div>
                             </div>
                         </div>
                     </div>
@@ -250,9 +277,10 @@
 
             <!-- WORK ORDERS PAGE -->
             <section id="page-work-orders" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">All Work Orders</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">All Work Orders</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Operations</h3>
                         <button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Work Order</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -266,9 +294,10 @@
 
             <!-- CUSTOMERS PAGE -->
             <section id="page-customers" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">All Customers</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">All Customers</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">CRM</h3>
                         <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Customer</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -282,9 +311,10 @@
 
             <!-- BUILDINGS PAGE -->
             <section id="page-buildings" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Buildings & Flats</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Buildings & Flats</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Properties</h3>
                         <button onclick="openBuildingModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Building</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -298,9 +328,10 @@
 
             <!-- AMC PAGE -->
             <section id="page-amc" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Annual Maintenance Contracts (AMC)</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Annual Maintenance Contracts (AMC)</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Contracts</h3>
                         <button onclick="openAmcModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New AMC</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -314,9 +345,10 @@
 
             <!-- INVOICES PAGE -->
             <section id="page-invoices" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">All Invoices</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">All Invoices</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Billing</h3>
                         <button onclick="openInvoiceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Invoice</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -330,9 +362,10 @@
 
             <!-- RECEIPT VOUCHERS PAGE -->
             <section id="page-receipts" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Receipt Vouchers (Money Received)</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Receipt Vouchers (Money Received)</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Receipts</h3>
                         <button onclick="openReceiptModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Receipt</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -346,9 +379,10 @@
 
             <!-- PAYMENT VOUCHERS PAGE -->
             <section id="page-payments" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Payment Vouchers (Money Paid)</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Payment Vouchers (Money Paid)</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Payments</h3>
                         <button onclick="openPaymentModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Payment</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -362,9 +396,10 @@
 
             <!-- EXPENSES PAGE -->
             <section id="page-expenses" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">All Expenses</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">All Expenses</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Outgoing</h3>
                         <button onclick="openExpenseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New Expense</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -378,9 +413,10 @@
 
             <!-- PURCHASES PAGE -->
             <section id="page-purchases" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Purchases / Supplier Bills</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Purchases / Supplier Bills</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Procurement</h3>
                         <button onclick="openPurchaseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ Add Purchase</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -394,9 +430,10 @@
 
             <!-- PO PAGE -->
             <section id="page-po" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Purchase Orders (PO)</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Purchase Orders (PO)</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Orders</h3>
                         <button onclick="openPoModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New PO</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -410,9 +447,10 @@
 
             <!-- INVENTORY & ASSETS PAGE -->
             <section id="page-inventory" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Inventory & Assets</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Inventory & Assets</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Assets</h3>
                         <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ Register Asset</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -426,9 +464,10 @@
 
             <!-- STAFF PAGE -->
             <section id="page-staff" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Staff Management</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Staff Management</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">HR</h3>
                         <button onclick="openStaffModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ Add Staff</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -442,9 +481,10 @@
 
             <!-- USERS PAGE -->
             <section id="page-users" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">System Users</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">System Users</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Access Control</h3>
                         <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">+ New User</button>
                     </div>
                     <div class="overflow-auto max-h-[60vh] border-b border-gray-100">
@@ -458,13 +498,14 @@
 
             <!-- REPORTS PAGE -->
             <section id="page-reports" class="page-content">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Reports & Analytics</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Total Revenue (Invoiced)</h3><p id="rep-revenue" class="text-2xl font-bold text-gray-800">AED 0</p></div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Collected (Paid)</h3><p id="rep-collected" class="text-2xl font-bold text-green-600">AED 0</p></div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Total Expenses</h3><p id="rep-expenses" class="text-2xl font-bold text-red-600">AED 0</p></div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100"><h3 class="text-gray-500 text-sm font-medium mb-2">Net Profit</h3><p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p></div>
+                    <div class="soft-card p-6"><h3 class="text-gray-500 text-sm font-medium mb-2">Total Revenue (Invoiced)</h3><p id="rep-revenue" class="text-2xl font-bold text-gray-800">AED 0</p></div>
+                    <div class="soft-card p-6"><h3 class="text-gray-500 text-sm font-medium mb-2">Collected (Paid)</h3><p id="rep-collected" class="text-2xl font-bold text-green-600">AED 0</p></div>
+                    <div class="soft-card p-6"><h3 class="text-gray-500 text-sm font-medium mb-2">Total Expenses</h3><p id="rep-expenses" class="text-2xl font-bold text-red-600">AED 0</p></div>
+                    <div class="soft-card p-6"><h3 class="text-gray-500 text-sm font-medium mb-2">Net Profit</h3><p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="soft-card p-6">
                     <h3 class="font-semibold text-gray-800 text-lg mb-4">Work Order Status Breakdown</h3>
                     <div id="rep-wo-stats" class="flex flex-wrap gap-3"><span class="text-gray-500">Loading stats...</span></div>
                 </div>
@@ -472,37 +513,17 @@
 
             <!-- COMPANY SETTINGS PAGE -->
             <section id="page-company" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Company Profile & Settings</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">Company Profile & Settings</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Branding & Details</h3>
                         <button onclick="saveCompanySettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Changes</button>
                     </div>
                     <div class="p-6 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
-                                <div class="relative w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-gray-400 text-xs text-center p-2 overflow-hidden">
-                                    <span class="img-fallback-icon">Upload Logo</span>
-                                    <img id="img-preview-logo" class="absolute inset-0 w-full h-full object-contain p-2 hidden" src="#">
-                                </div>
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logoUrl', 'img-preview-logo', this)" class="block w-full text-sm text-gray-500 mt-2">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Header Image</label>
-                                <div class="relative w-full h-24 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-gray-400 text-xs text-center p-2 overflow-hidden">
-                                    <span class="img-fallback-icon">Upload Header</span>
-                                    <img id="img-preview-header" class="absolute inset-0 w-full h-full object-contain p-2 hidden" src="#">
-                                </div>
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceHeader', 'img-preview-header', this)" class="block w-full text-sm text-gray-500 mt-2">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Footer Image</label>
-                                <div class="relative w-full h-24 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-gray-400 text-xs text-center p-2 overflow-hidden">
-                                    <span class="img-fallback-icon">Upload Footer</span>
-                                    <img id="img-preview-footer" class="absolute inset-0 w-full h-full object-contain p-2 hidden" src="#">
-                                </div>
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceFooter', 'img-preview-footer', this)" class="block w-full text-sm text-gray-500 mt-2">
-                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label><img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logoUrl', 'img-preview-logo')" class="block w-full text-sm text-gray-500"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Header Image</label><img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceHeader', 'img-preview-header')" class="block w-full text-sm text-gray-500"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Footer Image</label><img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'invoiceFooter', 'img-preview-footer')" class="block w-full text-sm text-gray-500"></div>
                         </div>
                         <hr class="border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -521,22 +542,8 @@
                         </div>
                         <hr class="border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Authorized Signature (PNG)</label>
-                                <div class="relative w-48 h-24 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-gray-400 text-xs text-center p-2 overflow-hidden">
-                                    <span class="img-fallback-icon">Upload Signature</span>
-                                    <img id="img-preview-sig" class="absolute inset-0 w-full h-full object-contain p-2 hidden" src="#">
-                                </div>
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'authorizedSignatureUrl', 'img-preview-sig', this)" class="block w-full text-sm text-gray-500 mt-2">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Seal / Stamp (PNG)</label>
-                                <div class="relative w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-gray-400 text-xs text-center p-2 overflow-hidden">
-                                    <span class="img-fallback-icon">Upload Seal</span>
-                                    <img id="img-preview-seal" class="absolute inset-0 w-full h-full object-contain p-2 hidden" src="#">
-                                </div>
-                                <input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'companySealUrl', 'img-preview-seal', this)" class="block w-full text-sm text-gray-500 mt-2">
-                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Authorized Signature (PNG)</label><img id="img-preview-sig" src="https://via.placeholder.com/200x100?text=Signature" class="w-48 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'authorizedSignatureUrl', 'img-preview-sig')" class="block w-full text-sm text-gray-500"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Company Seal / Stamp (PNG)</label><img id="img-preview-seal" src="https://via.placeholder.com/100x100?text=Seal" class="w-24 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'companySealUrl', 'img-preview-seal')" class="block w-full text-sm text-gray-500"></div>
                         </div>
                     </div>
                 </div>
@@ -544,9 +551,10 @@
 
             <!-- SYSTEM SETTINGS PAGE -->
             <section id="page-settings" class="page-content">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">System Settings</h2>
+                <div class="soft-card overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-                        <h3 class="font-semibold text-gray-800 text-lg">System Settings</h3>
+                        <h3 class="font-semibold text-gray-800 text-lg">Configurations</h3>
                         <button onclick="saveSystemSettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Save Settings</button>
                     </div>
                     <div class="p-6 space-y-6">
@@ -566,6 +574,7 @@
                 </div>
             </section>
 
+            </div>
         </div>
     </main>
 
@@ -591,19 +600,10 @@
         const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
         const token = localStorage.getItem('fsm_token');
         const userRole = localStorage.getItem('fsm_role') || 'GUEST';
+        let calendarDate = new Date();
+        let dashboardData = { wos: [], invs: [], amcs: [] };
 
         if (!token) { window.location.href = 'login.html'; }
-
-        // Global Broken Image Protection
-        document.addEventListener('error', function (e) {
-            if (e.target.tagName.toLowerCase() === 'img') {
-                e.target.style.display = 'none';
-                let sibling = e.target.previousElementSibling;
-                if (sibling && sibling.classList.contains('img-fallback-icon')) {
-                    sibling.style.display = 'flex';
-                }
-            }
-        }, true);
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -612,7 +612,7 @@
                     link.style.display = 'none';
                 }
             });
-            generateMiniCalendar(); // Generate calendar on load
+            generateMiniCalendar();
         });
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
@@ -641,7 +641,7 @@
                     <tr>
                         ${columns.map(col => {
                             let val = item; col.split('.').forEach(part => { val = val ? val[part] : null; });
-                            return `<td class="px-3 py-2 text-sm text-gray-700">${val !== null && val !== undefined ? val : '-'}</td>`;
+                            return `<td class="px-4 py-3 text-sm text-gray-700">${val !== null && val !== undefined ? val : '-'}</td>`;
                         }).join('')}
                     </tr>
                 `).join('');
@@ -663,8 +663,9 @@
             document.getElementById(`page-${pageId}`).classList.add('active');
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
             element.classList.add('active');
-            const titles = { 'dashboard': 'Dashboard Overview', 'company': 'Company Profile', 'work-orders': 'Work Orders', 'customers': 'Customers', 'buildings': 'Buildings & Flats', 'amc': 'Services & AMC', 'staff': 'Staff Management', 'inventory': 'Inventory & Assets', 'users': 'System Users', 'invoices': 'Invoices', 'receipts': 'Receipt Vouchers', 'payments': 'Payment Vouchers', 'expenses': 'Expenses', 'purchases': 'Purchases (Bills)', 'po': 'Purchase Orders', 'reports': 'Reports & Analytics', 'settings': 'System Settings' };
-            document.getElementById('page-title').innerText = titles[pageId];
+            
+            const mobileTitle = document.getElementById('page-title-mobile');
+            if(mobileTitle) mobileTitle.innerText = element.querySelector('span:last-child').innerText;
 
             if (pageId === 'dashboard') loadDashboardData();
             if (pageId === 'users') fetchAndRenderUsers();
@@ -685,132 +686,188 @@
             if (pageId === 'settings') loadSystemSettings();
         }
 
-        // --- DASHBOARD DATA LOADING ---
+        // --- DASHBOARD DATA & CALENDAR ---
         async function loadDashboardData() {
             try {
-                // Fetch Work Orders for Table & Calendar
                 const wos = await apiFetch('/work-orders');
-                const woTbody = document.getElementById('tbody-dash-wo');
-                if (wos.length === 0) {
-                    woTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`;
-                } else {
-                    woTbody.innerHTML = wos.slice(0, 5).map(item => `
-                        <tr>
-                            <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.woNumber}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700">${item.title}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700">${item.building?.name || '-'} ${item.flat?.unitNumber ? '('+item.flat.unitNumber+')' : ''}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>
-                            <td class="px-3 py-2 text-sm text-gray-700">${item.technician?.name || 'Unassigned'}</td>
-                        </tr>
-                    `).join('');
-                }
+                dashboardData.wos = wos;
+                renderDashboardWOs(wos);
+                generateMiniCalendar();
 
-                // Populate Calendar Dots
-                document.querySelectorAll('.cal-day .cal-dot').forEach(d => d.remove());
-                wos.forEach(wo => {
-                    if (wo.scheduledDate) {
-                        const date = new Date(wo.scheduledDate);
-                        const dayDiv = document.querySelector(`.cal-day[data-date="${date.getDate()}"]`);
-                        if (dayDiv) {
-                            const dot = document.createElement('div');
-                            dot.className = 'cal-dot w-1.5 h-1.5 bg-blue-500 rounded-full mt-1';
-                            dayDiv.appendChild(dot);
-                        }
-                    }
-                });
-
-                // Fetch Upcoming Invoices
                 const invs = await apiFetch('/invoices');
-                const upcomingInvList = document.getElementById('upcoming-invoices-list');
-                const upcoming = invs.filter(inv => inv.status !== 'PAID' && inv.status !== 'VOID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate)).slice(0, 4);
-                
-                if (upcoming.length === 0) {
-                    upcomingInvList.innerHTML = `<div class="p-6 text-center text-gray-500">No upcoming invoices.</div>`;
-                } else {
-                    upcomingInvList.innerHTML = upcoming.map(inv => {
-                        const dueDate = new Date(inv.dueDate);
-                        const today = new Date();
-                        const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-                        let badgeClass = 'bg-gray-100 text-gray-600';
-                        let badgeText = `Due in ${diffDays} days`;
-                        if (diffDays < 0) { badgeClass = 'bg-red-100 text-red-700'; badgeText = 'Overdue'; }
-                        if (diffDays === 0) { badgeClass = 'bg-orange-100 text-orange-700'; badgeText = 'Due Today'; }
-                        if (diffDays === 1) { badgeClass = 'bg-yellow-100 text-yellow-700'; badgeText = 'Due Tomorrow'; }
+                dashboardData.invs = invs;
+                renderUpcomingInvoices(invs);
 
-                        return `
-                            <div class="p-4 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-gray-50 transition">
-                                <div class="mb-2 md:mb-0">
-                                    <div class="font-semibold text-gray-800">${inv.customer?.name || 'N/A'}</div>
-                                    <div class="text-sm text-gray-500">${inv.invoiceNumber}</div>
-                                </div>
-                                <div class="flex items-center gap-4">
-                                    <span class="px-2.5 py-1 text-xs rounded-full ${badgeClass} font-medium">${badgeText}</span>
-                                    <div class="text-right">
-                                        <div class="font-bold text-gray-800">AED ${parseFloat(inv.total).toFixed(2)}</div>
-                                        <span class="text-xs ${inv.status === 'PARTIAL' ? 'text-yellow-500' : 'text-red-500'}">${inv.status}</span>
-                                    </div>
+                const amcs = await apiFetch('/amc');
+                dashboardData.amcs = amcs;
+                renderAmcAlerts(amcs);
+            } catch (e) { console.error("Failed to load dashboard data", e); }
+        }
+
+        function renderDashboardWOs(wos) {
+            const woTbody = document.getElementById('tbody-dash-wo');
+            if (wos.length === 0) {
+                woTbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-400">
+                    <div class="flex flex-col items-center">
+                        <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        <span>No active work orders for today</span>
+                    </div>
+                </td></tr>`;
+            } else {
+                woTbody.innerHTML = wos.slice(0, 5).map(item => {
+                    const statusColors = { 'PENDING': 'bg-yellow-100 text-yellow-700', 'ASSIGNED': 'bg-blue-100 text-blue-700', 'IN_PROGRESS': 'bg-amber-100 text-amber-700', 'PENDING_PARTS': 'bg-orange-100 text-orange-700', 'COMPLETED': 'bg-green-100 text-green-700' };
+                    const status = item.status || 'PENDING';
+                    return `
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-blue-600 font-medium">${item.woNumber}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">${item.title} <br><span class="text-xs text-gray-400">${item.building?.name || '-'} ${item.flat?.unitNumber ? '('+item.flat.unitNumber+')' : ''}</span></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full ${statusColors[status]}">${status}</span></td>
+                            <td class="px-4 py-3 text-sm text-gray-700">${item.technician?.name || 'Unassigned'}</td>
+                        </tr>`;
+                }).join('');
+            }
+        }
+
+        function renderUpcomingInvoices(invs) {
+            const list = document.getElementById('upcoming-invoices-list');
+            const upcoming = invs.filter(inv => inv.status !== 'PAID' && inv.status !== 'VOID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate)).slice(0, 4);
+            if (upcoming.length === 0) {
+                list.innerHTML = `<div class="p-6 text-center text-gray-400">No upcoming invoices.</div>`;
+            } else {
+                list.innerHTML = upcoming.map(inv => {
+                    const dueDate = new Date(inv.dueDate);
+                    const today = new Date();
+                    const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                    let badgeClass = 'bg-gray-100 text-gray-600';
+                    let badgeText = `Due in ${diffDays} days`;
+                    if (diffDays < 0) { badgeClass = 'bg-red-100 text-red-700'; badgeText = 'Overdue'; }
+                    if (diffDays === 0) { badgeClass = 'bg-orange-100 text-orange-700'; badgeText = 'Due Today'; }
+                    if (diffDays === 1) { badgeClass = 'bg-yellow-100 text-yellow-700'; badgeText = 'Due Tomorrow'; }
+                    return `
+                        <div class="p-4 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-gray-50 transition">
+                            <div class="mb-2 md:mb-0">
+                                <div class="font-semibold text-gray-800">${inv.customer?.name || 'N/A'}</div>
+                                <div class="text-sm text-gray-500">${inv.invoiceNumber}</div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="px-2.5 py-1 text-xs rounded-full ${badgeClass} font-medium">${badgeText}</span>
+                                <div class="text-right">
+                                    <div class="font-bold text-gray-800">AED ${parseFloat(inv.total).toFixed(2)}</div>
+                                    <span class="text-xs ${inv.status === 'PARTIAL' ? 'text-yellow-500' : 'text-red-500'}">${inv.status}</span>
                                 </div>
                             </div>
-                        `;
-                    }).join('');
-                }
+                        </div>`;
+                }).join('');
+            }
+        }
 
-                // Fetch AMC Alerts
-                const amcs = await apiFetch('/amc');
-                const amcAlertsList = document.getElementById('amc-alerts-list');
-                const today = new Date();
-                const upcomingAmcs = amcs.filter(amc => {
-                    if (!amc.endDate) return false;
+        function renderAmcAlerts(amcs) {
+            const list = document.getElementById('amc-alerts-list');
+            const today = new Date();
+            const upcomingAmcs = amcs.filter(amc => {
+                if (!amc.endDate) return false;
+                const end = new Date(amc.endDate);
+                const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+                return diffDays >= 0 && diffDays <= 30;
+            }).sort((a,b) => new Date(a.endDate) - new Date(b.endDate)).slice(0, 4);
+
+            if (upcomingAmcs.length === 0) {
+                list.innerHTML = `<div class="text-gray-400 text-center py-4">No alerts.</div>`;
+            } else {
+                list.innerHTML = upcomingAmcs.map(amc => {
                     const end = new Date(amc.endDate);
                     const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-                    return diffDays >= 0 && diffDays <= 30; // Expiring within 30 days
-                }).sort((a,b) => new Date(a.endDate) - new Date(b.endDate)).slice(0, 4);
-
-                if (upcomingAmcs.length === 0) {
-                    amcAlertsList.innerHTML = `<div class="p-6 text-center text-gray-500">No alerts.</div>`;
-                } else {
-                    amcAlertsList.innerHTML = upcomingAmcs.map(amc => {
-                        const end = new Date(amc.endDate);
-                        const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-                        let borderClass = 'border-green-200 bg-green-50';
-                        if (diffDays <= 7) borderClass = 'border-red-200 bg-red-50';
-                        else if (diffDays <= 14) borderClass = 'border-yellow-200 bg-yellow-50';
-
-                        return `
-                            <div class="p-4 rounded-lg border ${borderClass}">
-                                <div class="font-semibold text-gray-800 text-sm">${amc.contractNumber}</div>
-                                <div class="text-xs text-gray-500 mt-1">${amc.customer?.name || 'N/A'}</div>
-                                <div class="text-xs font-bold mt-2 ${diffDays <= 7 ? 'text-red-600' : 'text-gray-600'}">${diffDays === 0 ? 'Expires Today' : `${diffDays} Days Left`}</div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-            } catch (e) {
-                console.error("Failed to load dashboard data", e);
+                    let borderClass = 'border-green-200 bg-green-50';
+                    if (diffDays <= 7) borderClass = 'border-red-200 bg-red-50';
+                    else if (diffDays <= 14) borderClass = 'border-yellow-200 bg-yellow-50';
+                    return `
+                        <div class="p-4 rounded-lg border ${borderClass}">
+                            <div class="font-semibold text-gray-800 text-sm">${amc.contractNumber}</div>
+                            <div class="text-xs text-gray-500 mt-1">${amc.customer?.name || 'N/A'}</div>
+                            <div class="text-xs font-bold mt-2 ${diffDays <= 7 ? 'text-red-600' : 'text-gray-600'}">${diffDays === 0 ? 'Expires Today' : `${diffDays} Days Left`}</div>
+                        </div>`;
+                }).join('');
             }
+        }
+
+        function changeMonth(delta) {
+            calendarDate.setMonth(calendarDate.getMonth() + delta);
+            generateMiniCalendar();
         }
 
         function generateMiniCalendar() {
             const calendarEl = document.getElementById('mini-calendar');
-            const date = new Date();
-            const currentMonth = date.getMonth();
-            const currentYear = date.getFullYear();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
             const monthLabel = document.getElementById('calendar-month-label');
-            monthLabel.innerText = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            
+            monthLabel.innerText = calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
             let html = '';
             for (let i = 0; i < firstDay; i++) {
                 html += `<div class="text-center text-xs text-gray-300 p-1"></div>`;
             }
             for (let i = 1; i <= daysInMonth; i++) {
-                const isToday = i === date.getDate() ? 'bg-blue-600 text-white rounded-full' : 'text-gray-600';
-                html += `<div class="cal-day text-center text-xs p-1 flex flex-col items-center justify-center ${isToday}" data-date="${i}">${i}</div>`;
+                const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear() ? 'bg-blue-600 text-white rounded-full' : 'text-gray-600 hover:bg-gray-100 rounded cursor-pointer';
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                
+                // Check for events
+                let dotsHtml = '<div class="flex justify-center gap-0.5 h-1 mt-0.5"></div>';
+                const dayEvents = dashboardData.wos.filter(wo => {
+                    if (!wo.scheduledDate) return false;
+                    const d = new Date(wo.scheduledDate);
+                    return d.getFullYear() === year && d.getMonth() === month && d.getDate() === i;
+                });
+                
+                if (dayEvents.length > 0) {
+                    dotsHtml = '<div class="flex justify-center gap-0.5 h-1 mt-0.5">';
+                    const colors = ['bg-blue-500', 'bg-orange-500', 'bg-purple-500', 'bg-green-500'];
+                    dayEvents.slice(0, 4).forEach((e, idx) => {
+                        dotsHtml += `<div class="w-1 h-1 ${colors[idx % colors.length]} rounded-full"></div>`;
+                    });
+                    dotsHtml += '</div>';
+                }
+
+                html += `<div class="cal-day text-center text-xs p-1 flex flex-col items-center justify-center ${isToday}" onclick="selectCalendarDate('${dateStr}')">${i}${dotsHtml}</div>`;
             }
             calendarEl.innerHTML = html;
+            
+            // Auto select today on load
+            if (month === today.getMonth() && year === today.getFullYear()) {
+                selectCalendarDate(`${year}-${String(month + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+            }
+        }
+
+        function selectCalendarDate(dateStr) {
+            const date = new Date(dateStr);
+            const label = document.getElementById('schedule-date-label');
+            const feed = document.getElementById('daily-schedule-feed');
+            label.innerText = `Schedule for ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+            
+            const dayJobs = dashboardData.wos.filter(wo => {
+                if (!wo.scheduledDate) return false;
+                const d = new Date(wo.scheduledDate);
+                return d.toDateString() === date.toDateString();
+            });
+
+            if (dayJobs.length === 0) {
+                feed.innerHTML = `<div class="text-gray-400 text-center py-4">No jobs scheduled.</div>`;
+            } else {
+                feed.innerHTML = dayJobs.map(job => {
+                    const time = new Date(job.scheduledDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50">
+                            <div class="bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded">${time}</div>
+                            <div>
+                                <div class="text-sm text-gray-800 font-medium">${job.title}</div>
+                                <div class="text-xs text-gray-500">${job.building?.name || '-'} ${job.flat?.unitNumber ? '('+job.flat.unitNumber+')' : ''}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+            }
         }
 
         // --- VOUCHER FUNCTIONS ---
@@ -836,12 +893,12 @@
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No Receipts found.</td></tr>`; return; }
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.customer?.name || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.paymentMode || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'receipt')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️ View</button></td>
+                        <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.paymentMode || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'receipt')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️ View</button></td>
                     </tr>
                 `).join('');
             } catch (e) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
@@ -905,12 +962,12 @@
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No Payments found.</td></tr>`; return; }
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.payeeName || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.paymentMode || '-'}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'payment')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️ View</button></td>
+                        <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.payeeName || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.paymentMode || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'payment')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️ View</button></td>
                     </tr>
                 `).join('');
             } catch (e) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
@@ -1026,7 +1083,7 @@
                 const data = await apiFetch('/work-orders');
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`; return; }
                 tbody.innerHTML = data.map(item => {
-                    const statusColors = { 'PENDING': 'bg-yellow-100 text-yellow-700', 'ASSIGNED': 'bg-blue-100 text-blue-700', 'IN_PROGRESS': 'bg-purple-100 text-purple-700', 'PENDING_PARTS': 'bg-orange-100 text-orange-700', 'COMPLETED': 'bg-green-100 text-green-700', 'CANCELLED': 'bg-red-100 text-red-700' };
+                    const statusColors = { 'PENDING': 'bg-yellow-100 text-yellow-700', 'ASSIGNED': 'bg-blue-100 text-blue-700', 'IN_PROGRESS': 'bg-amber-100 text-amber-700', 'PENDING_PARTS': 'bg-orange-100 text-orange-700', 'COMPLETED': 'bg-green-100 text-green-700', 'CANCELLED': 'bg-red-100 text-red-700' };
                     const status = item.status || 'PENDING';
                     const scheduleDate = item.scheduledDate ? new Date(item.scheduledDate).toLocaleString() : 'N/A';
                     const techName = item.technician ? item.technician.name : '<span class="text-gray-400 italic">Unassigned</span>';
@@ -1035,18 +1092,18 @@
                     const whatsappBtn = canManage && item.customer?.phone ? `<button onclick="sendWhatsAppMsg('${item.customer.phone}', 'Update regarding WO ${item.woNumber}: ${item.title}')" class="text-green-600 hover:text-green-800 text-sm px-1">💬</button>` : '';
                     return `
                         <tr>
-                            <td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.woNumber}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700">${item.customer?.name || '-'}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700">${location}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700 max-w-xs truncate">${item.description || item.title}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700">${scheduleDate}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700">${techName}</td>
-                            <td class="px-3 py-2 text-sm text-gray-700">
+                            <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.woNumber}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name || '-'}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">${location}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">${item.description || item.title}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">${scheduleDate}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">${techName}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">
                                 <select onchange="updateWoStatus('${item.id}', this.value)" class="px-2 py-1 bg-white border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none ${statusColors[status]}">
                                     <option value="PENDING" ${status === 'PENDING' ? 'selected' : ''}>Pending</option><option value="ASSIGNED" ${status === 'ASSIGNED' ? 'selected' : ''}>Scheduled</option><option value="IN_PROGRESS" ${status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option><option value="PENDING_PARTS" ${status === 'PENDING_PARTS' ? 'selected' : ''}>Pending Parts</option><option value="COMPLETED" ${status === 'COMPLETED' ? 'selected' : ''}>Completed</option><option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
                                 </select>
                             </td>
-                            <td class="px-3 py-2 text-sm text-gray-700 flex gap-1">
+                            <td class="px-4 py-3 text-sm text-gray-700 flex gap-1">
                                 <button onclick="viewWorkOrderDetails('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm px-1">👁️</button>${whatsappBtn}${canManage ? `<button onclick="openServiceReportModal('${item.id}')" class="text-purple-600 hover:text-purple-800 text-sm px-1">📝</button><button onclick="deleteWo('${item.id}')" class="text-red-600 hover:text-red-800 text-sm px-1">🗑️</button>` : ''}
                             </td>
                         </tr>`;
@@ -1185,7 +1242,7 @@
                     tr.className = "cursor-pointer hover:bg-blue-50 transition";
                     tr.addEventListener('click', () => viewAssetDetails(item.id));
                     const statusColor = item.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-                    tr.innerHTML = `<td class="px-3 py-2 text-sm text-gray-700 font-medium">${item.assetNumber || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.manufacturer || '-'} ${item.model || ''}</td><td class="px-3 py-2 text-sm text-gray-700">${item.building?.customer?.name || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.building?.name || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.flat?.unitNumber || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.location || '-'}</td><td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${statusColor}">${item.status || 'ACTIVE'}</span></td><td class="px-3 py-2 text-sm text-gray-700 no-print"><button onclick="event.stopPropagation(); printAssetSticker('${item.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700">Sticker</button></td>`;
+                    tr.innerHTML = `<td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.assetNumber || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.manufacturer || '-'} ${item.model || ''}</td><td class="px-4 py-3 text-sm text-gray-700">${item.building?.customer?.name || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.building?.name || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.flat?.unitNumber || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.location || '-'}</td><td class="px-4 py-3 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${statusColor}">${item.status || 'ACTIVE'}</span></td><td class="px-4 py-3 text-sm text-gray-700 no-print"><button onclick="event.stopPropagation(); printAssetSticker('${item.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-xs hover:bg-purple-700">Sticker</button></td>`;
                     tbody.appendChild(tr);
                 });
             } catch (e) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
@@ -1254,7 +1311,7 @@
                 tbody.innerHTML = '';
                 data.forEach(item => {
                     const tr = document.createElement('tr'); tr.className = "cursor-pointer hover:bg-blue-50 transition"; tr.addEventListener('click', () => viewInvoice(item.id));
-                    tr.innerHTML = `<td class="px-3 py-2 text-sm text-gray-700">${item.invoiceNumber}</td><td class="px-3 py-2 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td><td class="px-3 py-2 text-sm text-gray-700">AED ${item.total}</td><td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>`;
+                    tr.innerHTML = `<td class="px-4 py-3 text-sm text-gray-700">${item.invoiceNumber}</td><td class="px-4 py-3 text-sm text-gray-700">${item.customer ? item.customer.name : '-'}</td><td class="px-4 py-3 text-sm text-gray-700">AED ${item.total}</td><td class="px-4 py-3 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.status}</span></td>`;
                     tbody.appendChild(tr);
                 });
             } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
@@ -1370,7 +1427,7 @@
             try {
                 const data = await apiFetch('/purchases');
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr>`; return; }
-                tbody.innerHTML = data.map(item => `<tr><td class="px-3 py-2 text-sm text-gray-700">${item.billNumber || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.supplierName || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td><td class="px-3 py-2 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td><td class="px-3 py-2 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span></td></tr>`).join('');
+                tbody.innerHTML = data.map(item => `<tr><td class="px-4 py-3 text-sm text-gray-700">${item.billNumber || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.supplierName || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : '-'}</td><td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td><td class="px-4 py-3 text-sm text-gray-700"><span class="px-2 py-1 text-xs rounded-full ${item.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${item.paymentStatus || 'UNPAID'}</span></td></tr>`).join('');
             } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
         }
 
@@ -1419,10 +1476,10 @@
                 if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Users found.</td></tr>`; return; }
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.name}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.email}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700">${item.role}</td>
-                        <td class="px-3 py-2 text-sm text-gray-700 flex gap-2">
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.email}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.role}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700 flex gap-2">
                             <button onclick="editUser('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm px-1">✏️ Edit</button>
                             <button onclick="deleteUser('${item.id}')" class="text-red-600 hover:text-red-800 text-sm px-1">🗑️ Delete</button>
                         </td>
@@ -1511,44 +1568,21 @@
 
         // --- SETTINGS FUNCTIONS ---
         let companyImageData = { logoUrl: null, invoiceHeader: null, invoiceFooter: null, authorizedSignatureUrl: null, companySealUrl: null };
-        
-        function handleImageUpload(event, fieldName, previewId, inputElement) {
+        function handleImageUpload(event, fieldName, previewId) {
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = (e) => {
-                companyImageData[fieldName] = e.target.result;
-                const img = document.getElementById(previewId);
-                const fallback = img.previousElementSibling;
-                img.src = e.target.result;
-                img.classList.remove('hidden');
-                if (fallback) fallback.style.display = 'none';
-            };
+            reader.onload = (e) => { companyImageData[fieldName] = e.target.result; document.getElementById(previewId).src = e.target.result; };
             reader.readAsDataURL(file);
         }
-
         async function loadCompanySettings() {
             try {
                 const data = await apiFetch('/company');
                 document.getElementById('set_name').value = data.name || ''; document.getElementById('set_trn').value = data.trn || ''; document.getElementById('set_phone').value = data.phone || ''; document.getElementById('set_email').value = data.email || ''; document.getElementById('set_address').value = data.address || ''; document.getElementById('set_vat').value = data.vatPercent || 5; document.getElementById('set_invPrefix').value = data.invoicePrefix || 'INV-'; document.getElementById('set_poPrefix').value = data.poPrefix || 'PO-'; document.getElementById('set_woPrefix').value = data.woPrefix || 'WO-';
-                
-                const setImage = (id, url) => {
-                    const img = document.getElementById(id);
-                    const fallback = img.previousElementSibling;
-                    if (url) {
-                        img.src = url;
-                        img.classList.remove('hidden');
-                        if (fallback) fallback.style.display = 'none';
-                    } else {
-                        img.classList.add('hidden');
-                        if (fallback) fallback.style.display = 'flex';
-                    }
-                };
-                setImage('img-preview-logo', data.logoUrl);
-                setImage('img-preview-header', data.invoiceHeader);
-                setImage('img-preview-footer', data.invoiceFooter);
-                setImage('img-preview-sig', data.authorizedSignatureUrl);
-                setImage('img-preview-seal', data.companySealUrl);
-
+                if (data.logoUrl) document.getElementById('img-preview-logo').src = data.logoUrl;
+                if (data.invoiceHeader) document.getElementById('img-preview-header').src = data.invoiceHeader;
+                if (data.invoiceFooter) document.getElementById('img-preview-footer').src = data.invoiceFooter;
+                if (data.authorizedSignatureUrl) document.getElementById('img-preview-sig').src = data.authorizedSignatureUrl;
+                if (data.companySealUrl) document.getElementById('img-preview-seal').src = data.companySealUrl;
             } catch (e) { console.error("Failed to load company settings", e); }
         }
         async function saveCompanySettings() {
@@ -1585,7 +1619,7 @@
                 tbody.innerHTML = '';
                 data.forEach(item => {
                     const tr = document.createElement('tr'); tr.className = "cursor-pointer hover:bg-blue-50 transition"; tr.addEventListener('click', () => viewStaffDocument(item.id));
-                    tr.innerHTML = `<td class="px-3 py-2 text-sm text-gray-700">${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}</td><td class="px-3 py-2 text-sm text-gray-700">${item.firstName} ${item.lastName}</td><td class="px-3 py-2 text-sm text-gray-700">${item.jobTitle || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.nationality || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.phone || '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td><td class="px-3 py-2 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>`;
+                    tr.innerHTML = `<td class="px-4 py-3 text-sm text-gray-700">${item.photoUrl ? `<img src="${item.photoUrl}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>`}</td><td class="px-4 py-3 text-sm text-gray-700">${item.firstName} ${item.lastName}</td><td class="px-4 py-3 text-sm text-gray-700">${item.jobTitle || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.nationality || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.phone || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.passportExpiry ? new Date(item.passportExpiry).toLocaleDateString() : '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.emiratesIdExpiry ? new Date(item.emiratesIdExpiry).toLocaleDateString() : '-'}</td>`;
                     tbody.appendChild(tr);
                 });
             } catch (e) { tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
