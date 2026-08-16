@@ -9,10 +9,10 @@ function showPage(pageId, element, e) {
     document.getElementById(`page-${pageId}`).classList.add('active');
     
     document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
-    element.classList.add('active');
+    if (element) element.classList.add('active');
     
     const mobileTitle = document.getElementById('page-title-mobile');
-    if (mobileTitle) mobileTitle.innerText = element.querySelector('span:last-child').innerText;
+    if (mobileTitle && element) mobileTitle.innerText = element.querySelector('span:last-child').innerText;
 
     // Load page-specific data
     if (pageId === 'dashboard') loadDashboardData();
@@ -53,4 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Highlight selected template
     if (typeof highlightSelectedTemplate === 'function') highlightSelectedTemplate();
+
+    // ==========================================
+    // THE FIX: Trigger initial data load for the dashboard
+    // ==========================================
+    const initialActiveLink = document.querySelector('.sidebar-link.active');
+    if (initialActiveLink) {
+        // This tells the app to load the dashboard data right when the page opens
+        showPage('dashboard', initialActiveLink, null);
+    }
 });
