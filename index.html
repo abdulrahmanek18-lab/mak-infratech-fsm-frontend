@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAK INFRATECH FMS | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.umd.min.js" defer></script>
-    <script src="https://unpkg.com/html5-qrcode" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -67,68 +63,20 @@
                         <button onclick="openInvoiceModal()" class="bg-white text-gray-700 border border-gray-200 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 shadow-sm">Create Invoice</button>
                     </div>
                 </div>
-
-                <!-- COMPACT KPI CARDS -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div class="soft-card kpi-card kpi-blue">
-                        <div class="kpi-icon">🛠️</div>
-                        <div>
-                            <div class="kpi-label">Active Work Orders</div>
-                            <div class="kpi-value text-gray-800">47</div>
-                            <span class="kpi-pill bg-green-100 text-green-700">↑ 12% this week</span>
-                        </div>
-                    </div>
-                    <div class="soft-card kpi-card kpi-coral">
-                        <div class="kpi-icon">🧾</div>
-                        <div>
-                            <div class="kpi-label">Pending Invoices</div>
-                            <div class="kpi-value text-gray-800">18</div>
-                            <span class="kpi-pill bg-red-100 text-red-700">AED 42,300 outstanding</span>
-                        </div>
-                    </div>
-                    <div class="soft-card kpi-card kpi-purple">
-                        <div class="kpi-icon">📋</div>
-                        <div>
-                            <div class="kpi-label">Active AMC Contracts</div>
-                            <div class="kpi-value text-gray-800">124</div>
-                            <span class="kpi-pill bg-purple-100 text-purple-700">3 expiring</span>
-                        </div>
-                    </div>
-                    <div class="soft-card kpi-card kpi-mint">
-                        <div class="kpi-icon">📈</div>
-                        <div>
-                            <div class="kpi-label">Total Revenue (MTD)</div>
-                            <div class="kpi-value text-gray-800">AED 128.4K</div>
-                            <span class="kpi-pill bg-green-100 text-green-700">↑ 8.4% vs last month</span>
-                        </div>
-                    </div>
+                    <div class="soft-card kpi-card kpi-blue"><div class="kpi-icon">🛠️</div><div><div class="kpi-label">Active Work Orders</div><div class="kpi-value text-gray-800">47</div><span class="kpi-pill bg-green-100 text-green-700">↑ 12% this week</span></div></div>
+                    <div class="soft-card kpi-card kpi-coral"><div class="kpi-icon">🧾</div><div><div class="kpi-label">Pending Invoices</div><div class="kpi-value text-gray-800">18</div><span class="kpi-pill bg-red-100 text-red-700">AED 42,300 outstanding</span></div></div>
+                    <div class="soft-card kpi-card kpi-purple"><div class="kpi-icon">📋</div><div><div class="kpi-label">Active AMC Contracts</div><div class="kpi-value text-gray-800">124</div><span class="kpi-pill bg-purple-100 text-purple-700">3 expiring</span></div></div>
+                    <div class="soft-card kpi-card kpi-mint"><div class="kpi-icon">📈</div><div><div class="kpi-label">Total Revenue (MTD)</div><div class="kpi-value text-gray-800">AED 128.4K</div><span class="kpi-pill bg-green-100 text-green-700">↑ 8.4% vs last month</span></div></div>
                 </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 space-y-6">
-                        <div class="soft-card overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Recent Work Orders</h3><button onclick="showPage('work-orders', document.querySelector('[onclick*=work-orders]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button></div>
-                            <div class="overflow-x-auto"><table class="excel-table"><thead><tr><th>WO #</th><th>Title / Location</th><th>Status</th><th>Technician</th></tr></thead><tbody id="tbody-dash-wo"><tr><td colspan="4" class="p-10 text-center text-gray-400">Loading...</td></tr></tbody></table></div>
-                        </div>
-                        <div class="soft-card overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Upcoming Invoices</h3><button onclick="showPage('invoices', document.querySelector('[onclick*=invoices]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button></div>
-                            <div id="upcoming-invoices-list" class="divide-y divide-gray-100"><div class="p-6 text-center text-gray-400">Loading...</div></div>
-                        </div>
+                        <div class="soft-card overflow-hidden"><div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Recent Work Orders</h3><button onclick="showPage('work-orders', document.querySelector('[onclick*=work-orders]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button></div><div class="overflow-x-auto"><table class="excel-table"><thead><tr><th>WO #</th><th>Title / Location</th><th>Status</th><th>Technician</th></tr></thead><tbody id="tbody-dash-wo"><tr><td colspan="4" class="p-10 text-center text-gray-400">Loading...</td></tr></tbody></table></div></div>
+                        <div class="soft-card overflow-hidden"><div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Upcoming Invoices</h3><button onclick="showPage('invoices', document.querySelector('[onclick*=invoices]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button></div><div id="upcoming-invoices-list" class="divide-y divide-gray-100"><div class="p-6 text-center text-gray-400">Loading...</div></div></div>
                     </div>
                     <div class="space-y-6">
-                        <div class="soft-card overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Work Schedule</h3></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-center mb-4"><span class="font-semibold text-gray-700 text-sm" id="calendar-month-label">Loading...</span><div class="flex gap-1"><button onclick="changeMonth(-1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">←</button><button onclick="changeMonth(1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">→</button></div></div>
-                                <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-semibold"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
-                                <div id="mini-calendar" class="grid grid-cols-7 gap-1"></div>
-                            </div>
-                            <div class="p-6 border-t border-gray-100"><div id="schedule-date-label" class="font-semibold text-gray-700 text-sm mb-4">Schedule</div><div id="daily-schedule-feed" class="space-y-3 text-sm"><div class="text-gray-400 text-center py-4">Loading...</div></div></div>
-                        </div>
-                        <div class="soft-card overflow-hidden">
-                            <div class="p-6 border-b border-gray-100"><h3 class="font-bold text-gray-800 text-lg">AMC Renewal Alerts</h3></div>
-                            <div id="amc-alerts-list" class="p-6 space-y-3"><div class="text-gray-400 text-center py-4">Loading...</div></div>
-                        </div>
+                        <div class="soft-card overflow-hidden"><div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Work Schedule</h3></div><div class="p-4"><div class="flex justify-between items-center mb-4"><span class="font-semibold text-gray-700 text-sm" id="calendar-month-label">Loading...</span><div class="flex gap-1"><button onclick="changeMonth(-1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">←</button><button onclick="changeMonth(1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">→</button></div></div><div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-semibold"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div><div id="mini-calendar" class="grid grid-cols-7 gap-1"></div></div><div class="p-6 border-t border-gray-100"><div id="schedule-date-label" class="font-semibold text-gray-700 text-sm mb-4">Schedule</div><div id="daily-schedule-feed" class="space-y-3 text-sm"><div class="text-gray-400 text-center py-4">Loading...</div></div></div></div>
+                        <div class="soft-card overflow-hidden"><div class="p-6 border-b border-gray-100"><h3 class="font-bold text-gray-800 text-lg">AMC Renewal Alerts</h3></div><div id="amc-alerts-list" class="p-6 space-y-3"><div class="text-gray-400 text-center py-4">Loading...</div></div></div>
                     </div>
                 </div>
             </section>
@@ -178,7 +126,16 @@
         </div>
     </div>
 
-    <script src="js/app.js" defer></script>
+    <!-- 1. PDF/QR Libraries (load first, no defer) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.umd.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <!-- 2. Global App Config & API Client (no defer - loads synchronously) -->
+    <script src="js/app.js"></script>
+
+    <!-- 3. Feature Modules (defer - loads after app.js) -->
     <script src="js/sidebar.js" defer></script>
     <script src="js/dashboard.js" defer></script>
     <script src="js/calendar.js" defer></script>
