@@ -11,6 +11,11 @@ function generateMiniCalendar() {
     const ml = document.getElementById('calendar-month-label');
     if (!cal || !ml) return;
     
+    // Safety check: ensure dashboardData exists so the script doesn't crash
+    if (typeof dashboardData === 'undefined') {
+        window.dashboardData = { wos: [] };
+    }
+    
     const y = calendarDate.getFullYear(), m = calendarDate.getMonth();
     const fd = new Date(y, m, 1).getDay();
     const dim = new Date(y, m + 1, 0).getDate();
@@ -65,6 +70,11 @@ function selectCalendarDate(dateStr) {
     const feed = document.getElementById('daily-schedule-feed');
     if (!label || !feed) return;
     
+    // Safety check
+    if (typeof dashboardData === 'undefined') {
+        window.dashboardData = { wos: [] };
+    }
+    
     label.innerHTML = `Schedule for ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} <button onclick="openWorkOrderModal('${dateStr}')" class="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-700">+ Schedule</button>`;
     
     const dayJobs = (dashboardData.wos || []).filter(wo => {
@@ -87,4 +97,13 @@ function selectCalendarDate(dateStr) {
             </div>`;
         }).join('');
     }
+}
+
+// ==========================================
+// INITIALIZATION (This was missing!)
+// ==========================================
+// Since this script is loaded with 'defer', we can run this immediately.
+// It will check if the calendar exists on the page, and if so, render it.
+if (document.getElementById('mini-calendar')) {
+    generateMiniCalendar();
 }
