@@ -523,8 +523,8 @@
     </main>
 
     <!-- MODAL -->
-    <!-- FIX: Added 'hidden' and 'flex' classes to the modal so it stays hidden until called -->
-    <div id="modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <!-- FIX: Removed 'hidden' and 'flex' classes so the CSS can properly control its visibility -->
+    <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4 overflow-y-auto">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 max-h-[90vh] overflow-y-auto border border-gray-200 my-8">
             <div class="flex justify-between items-center mb-6">
                 <h3 id="modal-title" class="text-xl font-bold text-gray-800">Add New</h3>
