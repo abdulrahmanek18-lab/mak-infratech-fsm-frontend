@@ -69,12 +69,12 @@ const modalSubmitBtn = document.getElementById('modal-submit-btn');
 function openModal(title, fieldsHtml, isViewOnly = false) {
     modalTitle.innerText = title;
     modalFields.innerHTML = fieldsHtml;
-    modal.classList.remove('hidden'); // Removes hidden to show modal
+    modal.classList.add('active'); // FIX: Uses the 'active' class from your CSS
     modalSubmitBtn.style.display = isViewOnly ? 'none' : 'block';
 }
 
 function closeModal() {
-    modal.classList.add('hidden'); // Adds hidden back to close modal
+    modal.classList.remove('active'); // FIX: Removes 'active' to hide it
     modalForm.reset();
     modalError.classList.add('hidden');
     const mb = document.querySelector('#modal > div');
