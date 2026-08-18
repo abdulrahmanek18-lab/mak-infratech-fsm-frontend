@@ -6,7 +6,8 @@ function showPage(pageId, element, e) {
     if (window.innerWidth < 1024) { document.getElementById('sidebar').classList.add('-translate-x-full'); }
     
     document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
-    document.getElementById(`page-${pageId}`).classList.add('active');
+    const page = document.getElementById(`page-${pageId}`);
+    if (page) page.classList.add('active');
     
     document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
     if (element) element.classList.add('active');
@@ -36,12 +37,13 @@ function showPage(pageId, element, e) {
 
 // ==================== RBAC: Role-Based Access Control ====================
 document.addEventListener('DOMContentLoaded', () => {
+    const role = (typeof userRole !== 'undefined') ? userRole : 'GUEST';
+    
     document.querySelectorAll('.sidebar-link').forEach(link => {
         const allowedRoles = link.getAttribute('data-roles');
         if (allowedRoles) {
             const roles = allowedRoles.split(',').map(r => r.trim().toUpperCase());
-            const upperRole = userRole.toUpperCase();
-            // PART 1 FIX: Grant access if role is in list, OR if user is SUPER_ADMIN/ADMIN (fallback)
+            const upperRole = role.toUpperCase();
             if (!roles.includes(upperRole) && upperRole !== 'SUPER_ADMIN' && upperRole !== 'ADMIN') {
                 link.style.display = 'none';
             }
@@ -55,11 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof highlightSelectedTemplate === 'function') highlightSelectedTemplate();
 
     // ==========================================
-    // THE FIX: Trigger initial data load for the dashboard
+    // INITIALIZATION: Trigger initial data load for the dashboard
     // ==========================================
     const initialActiveLink = document.querySelector('.sidebar-link.active');
     if (initialActiveLink) {
-        // This tells the app to load the dashboard data right when the page opens
         showPage('dashboard', initialActiveLink, null);
     }
 });
