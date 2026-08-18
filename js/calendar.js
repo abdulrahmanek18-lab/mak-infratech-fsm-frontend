@@ -11,7 +11,7 @@ function generateMiniCalendar() {
     const ml = document.getElementById('calendar-month-label');
     if (!cal || !ml) return;
     
-    // Safety check: ensure dashboardData exists so the script doesn't crash
+    // Safety check: ensure dashboardData exists
     if (typeof dashboardData === 'undefined') {
         window.dashboardData = { wos: [] };
     }
@@ -97,13 +97,4 @@ function selectCalendarDate(dateStr) {
             </div>`;
         }).join('');
     }
-}
-
-// ==========================================
-// INITIALIZATION (This was missing!)
-// ==========================================
-// Since this script is loaded with 'defer', we can run this immediately.
-// It will check if the calendar exists on the page, and if so, render it.
-if (document.getElementById('mini-calendar')) {
-    generateMiniCalendar();
 }
