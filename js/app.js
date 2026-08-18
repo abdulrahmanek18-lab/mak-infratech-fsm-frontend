@@ -1,5 +1,5 @@
 // ==================== GLOBAL STATE ====================
-const API_BASE_URL = 'https://makinfratech-api.onrender.com/api';
+const API_BASE_URL = '/api';
 const token = localStorage.getItem('fsm_token');
 let userRole = (localStorage.getItem('fsm_role') || 'SUPER_ADMIN').toUpperCase();
 let selectedInvoiceTemplate = localStorage.getItem('invoice_template') || 'modern';
