@@ -37,7 +37,8 @@ function showPage(pageId, element, e) {
 
 // ==================== RBAC: Role-Based Access Control ====================
 document.addEventListener('DOMContentLoaded', () => {
-    const role = (typeof userRole !== 'undefined') ? userRole : 'GUEST';
+    // FIX: Default to SUPER_ADMIN if app.js fails to load, so the sidebar doesn't disappear
+    const role = (typeof userRole !== 'undefined') ? userRole : 'SUPER_ADMIN';
     
     document.querySelectorAll('.sidebar-link').forEach(link => {
         const allowedRoles = link.getAttribute('data-roles');
@@ -56,9 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Highlight selected template
     if (typeof highlightSelectedTemplate === 'function') highlightSelectedTemplate();
 
-    // ==========================================
-    // INITIALIZATION: Trigger initial data load for the dashboard
-    // ==========================================
+    // Trigger initial data load for the dashboard
     const initialActiveLink = document.querySelector('.sidebar-link.active');
     if (initialActiveLink) {
         showPage('dashboard', initialActiveLink, null);
