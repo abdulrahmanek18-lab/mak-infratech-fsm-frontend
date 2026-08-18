@@ -14,7 +14,6 @@
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <!-- SIDEBAR -->
     <aside class="w-64 bg-[#11131A] h-screen flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out fixed lg:static top-0 left-0 shrink-0 border-r border-slate-800" id="sidebar">
         <div class="h-16 flex items-center justify-center border-b border-slate-800 shrink-0">
             <h1 class="text-xl font-bold text-blue-400 tracking-wide">MAK INFRATECH</h1>
@@ -22,18 +21,15 @@
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             <a href="#" onclick="showPage('dashboard', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,COORDINATOR,TECHNICIAN,ACCOUNTANT" class="sidebar-link active flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm font-medium transition text-slate-400"><span>📊</span> <span>Dashboard</span></a>
             <a href="#" onclick="showPage('company', this, event)" data-roles="SUPER_ADMIN,ADMIN" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>🏢</span> <span>Company Profile</span></a>
-            
             <div class="pt-4 pb-2 px-4 text-xs text-slate-500 uppercase tracking-wider font-semibold">Operations</div>
             <a href="#" onclick="showPage('work-orders', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,COORDINATOR,TECHNICIAN" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>🛠️</span> <span>Work Orders</span></a>
             <a href="#" onclick="showPage('customers', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,COORDINATOR,ACCOUNTANT" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>🤝</span> <span>Customers</span></a>
             <a href="#" onclick="showPage('buildings', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,COORDINATOR" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>🏠</span> <span>Buildings & Flats</span></a>
             <a href="#" onclick="showPage('amc', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>📋</span> <span>Services & AMC</span></a>
-            
             <div class="pt-4 pb-2 px-4 text-xs text-slate-500 uppercase tracking-wider font-semibold">Management</div>
             <a href="#" onclick="showPage('staff', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>👷</span> <span>Staff Management</span></a>
             <a href="#" onclick="showPage('inventory', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,COORDINATOR,TECHNICIAN" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>🔧</span> <span>Inventory & Assets</span></a>
             <a href="#" onclick="showPage('users', this, event)" data-roles="SUPER_ADMIN,ADMIN" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>👥</span> <span>Users</span></a>
-            
             <div class="pt-4 pb-2 px-4 text-xs text-slate-500 uppercase tracking-wider font-semibold">Finance & Reports</div>
             <a href="#" onclick="showPage('invoices', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>🧾</span> <span>Invoices</span></a>
             <a href="#" onclick="showPage('receipts', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>💰</span> <span>Receipt Vouchers</span></a>
@@ -42,7 +38,6 @@
             <a href="#" onclick="showPage('purchases', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>🛍️</span> <span>Purchases</span></a>
             <a href="#" onclick="showPage('po', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>📦</span> <span>Purchase Orders</span></a>
             <a href="#" onclick="showPage('reports', this, event)" data-roles="SUPER_ADMIN,ADMIN,MANAGER,ACCOUNTANT" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>📈</span> <span>Reports</span></a>
-            
             <div class="pt-4 pb-2 px-4 text-xs text-slate-500 uppercase tracking-wider font-semibold">System</div>
             <a href="#" onclick="showPage('settings', this, event)" data-roles="SUPER_ADMIN,ADMIN" class="sidebar-link flex items-center gap-3 min-h-[44px] px-4 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition"><span>⚙️</span> <span>System Settings</span></a>
         </nav>
@@ -51,18 +46,14 @@
         </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main class="flex-1 h-screen flex flex-col overflow-hidden relative z-0">
         <div class="lg:hidden p-4 flex justify-between items-center bg-white border-b border-gray-200 sticky top-0 z-40 no-print">
             <button class="text-2xl text-gray-600" onclick="toggleSidebar()">&#9776;</button>
             <h2 id="page-title-mobile" class="text-lg font-semibold text-gray-800">Dashboard</h2>
             <button onclick="openScannerModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700">Scan QR</button>
         </div>
-        
         <div class="flex-1 overflow-y-auto">
             <div class="p-6 md:p-8">
-
-                <!-- DASHBOARD -->
                 <section id="page-dashboard" class="page-content active">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                         <div>
@@ -74,62 +65,20 @@
                             <button onclick="openInvoiceModal()" class="bg-white text-gray-700 border border-gray-200 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 shadow-sm">Create Invoice</button>
                         </div>
                     </div>
-
-                    <!-- KPI CARDS -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div class="soft-card kpi-card kpi-blue">
-                            <div class="kpi-icon">🛠️</div>
-                            <div>
-                                <div class="kpi-label">Active Work Orders</div>
-                                <div class="kpi-value text-gray-800">47</div>
-                                <span class="kpi-pill bg-green-100 text-green-700">↑ 12% this week</span>
-                            </div>
-                        </div>
-                        <div class="soft-card kpi-card kpi-coral">
-                            <div class="kpi-icon">🧾</div>
-                            <div>
-                                <div class="kpi-label">Pending Invoices</div>
-                                <div class="kpi-value text-gray-800">18</div>
-                                <span class="kpi-pill bg-red-100 text-red-700">AED 42,300 outstanding</span>
-                            </div>
-                        </div>
-                        <div class="soft-card kpi-card kpi-purple">
-                            <div class="kpi-icon">📋</div>
-                            <div>
-                                <div class="kpi-label">Active AMC Contracts</div>
-                                <div class="kpi-value text-gray-800">124</div>
-                                <span class="kpi-pill bg-purple-100 text-purple-700">3 expiring</span>
-                            </div>
-                        </div>
-                        <div class="soft-card kpi-card kpi-mint">
-                            <div class="kpi-icon">📈</div>
-                            <div>
-                                <div class="kpi-label">Total Revenue (MTD)</div>
-                                <div class="kpi-value text-gray-800">AED 128.4K</div>
-                                <span class="kpi-pill bg-green-100 text-green-700">↑ 8.4% vs last month</span>
-                            </div>
-                        </div>
+                        <div class="soft-card kpi-card kpi-blue"><div class="kpi-icon">🛠️</div><div><div class="kpi-label">Active Work Orders</div><div class="kpi-value text-gray-800">47</div><span class="kpi-pill bg-green-100 text-green-700">↑ 12% this week</span></div></div>
+                        <div class="soft-card kpi-card kpi-coral"><div class="kpi-icon">🧾</div><div><div class="kpi-label">Pending Invoices</div><div class="kpi-value text-gray-800">18</div><span class="kpi-pill bg-red-100 text-red-700">AED 42,300 outstanding</span></div></div>
+                        <div class="soft-card kpi-card kpi-purple"><div class="kpi-icon">📋</div><div><div class="kpi-label">Active AMC Contracts</div><div class="kpi-value text-gray-800">124</div><span class="kpi-pill bg-purple-100 text-purple-700">3 expiring</span></div></div>
+                        <div class="soft-card kpi-card kpi-mint"><div class="kpi-icon">📈</div><div><div class="kpi-label">Total Revenue (MTD)</div><div class="kpi-value text-gray-800">AED 128.4K</div><span class="kpi-pill bg-green-100 text-green-700">↑ 8.4% vs last month</span></div></div>
                     </div>
-
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 space-y-6">
                             <div class="soft-card overflow-hidden">
-                                <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                                    <h3 class="font-bold text-gray-800 text-lg">Recent Work Orders</h3>
-                                    <button onclick="showPage('work-orders', document.querySelector('[onclick*=work-orders]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button>
-                                </div>
-                                <div class="overflow-x-auto">
-                                    <table class="excel-table">
-                                        <thead><tr><th>WO #</th><th>Title / Location</th><th>Status</th><th>Technician</th></tr></thead>
-                                        <tbody id="tbody-dash-wo"><tr><td colspan="4" class="p-10 text-center text-gray-400">Loading...</td></tr></tbody>
-                                    </table>
-                                </div>
+                                <div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Recent Work Orders</h3><button onclick="showPage('work-orders', document.querySelector('[onclick*=work-orders]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button></div>
+                                <div class="overflow-x-auto"><table class="excel-table"><thead><tr><th>WO #</th><th>Title / Location</th><th>Status</th><th>Technician</th></tr></thead><tbody id="tbody-dash-wo"><tr><td colspan="4" class="p-10 text-center text-gray-400">Loading...</td></tr></tbody></table></div>
                             </div>
                             <div class="soft-card overflow-hidden">
-                                <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                                    <h3 class="font-bold text-gray-800 text-lg">Upcoming Invoices</h3>
-                                    <button onclick="showPage('invoices', document.querySelector('[onclick*=invoices]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button>
-                                </div>
+                                <div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Upcoming Invoices</h3><button onclick="showPage('invoices', document.querySelector('[onclick*=invoices]'), event)" class="text-blue-600 text-sm font-medium hover:underline">View All</button></div>
                                 <div id="upcoming-invoices-list" class="divide-y divide-gray-100"><div class="p-6 text-center text-gray-400">Loading...</div></div>
                             </div>
                         </div>
@@ -137,22 +86,11 @@
                             <div class="soft-card overflow-hidden">
                                 <div class="p-6 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800 text-lg">Work Schedule</h3></div>
                                 <div class="p-4">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <span class="font-semibold text-gray-700 text-sm" id="calendar-month-label">Loading...</span>
-                                        <div class="flex gap-1">
-                                            <button onclick="changeMonth(-1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">←</button>
-                                            <button onclick="changeMonth(1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">→</button>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-semibold">
-                                        <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
-                                    </div>
+                                    <div class="flex justify-between items-center mb-4"><span class="font-semibold text-gray-700 text-sm" id="calendar-month-label">Loading...</span><div class="flex gap-1"><button onclick="changeMonth(-1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">←</button><button onclick="changeMonth(1)" class="p-1 rounded hover:bg-gray-100 text-gray-500">→</button></div></div>
+                                    <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-semibold"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
                                     <div id="mini-calendar" class="grid grid-cols-7 gap-1"></div>
                                 </div>
-                                <div class="p-6 border-t border-gray-100">
-                                    <div id="schedule-date-label" class="font-semibold text-gray-700 text-sm mb-4">Schedule</div>
-                                    <div id="daily-schedule-feed" class="space-y-3 text-sm"><div class="text-gray-400 text-center py-4">Loading...</div></div>
-                                </div>
+                                <div class="p-6 border-t border-gray-100"><div id="schedule-date-label" class="font-semibold text-gray-700 text-sm mb-4">Schedule</div><div id="daily-schedule-feed" class="space-y-3 text-sm"><div class="text-gray-400 text-center py-4">Loading...</div></div></div>
                             </div>
                             <div class="soft-card overflow-hidden">
                                 <div class="p-6 border-b border-gray-100"><h3 class="font-bold text-gray-800 text-lg">AMC Renewal Alerts</h3></div>
@@ -161,390 +99,36 @@
                         </div>
                     </div>
                 </section>
-
-                <!-- WORK ORDERS -->
-                <section id="page-work-orders" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">All Work Orders</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Operations</h3>
-                            <button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Work Order</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>WO Number</th><th>Client</th><th>Location</th><th>Complaint</th><th>Schedule</th><th>Technician</th><th>Status</th><th>Actions</th></tr></thead>
-                                <tbody id="tbody-work-orders"><tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- CUSTOMERS -->
-                <section id="page-customers" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">All Customers</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">CRM</h3>
-                            <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Customer</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead>
-                                <tbody id="tbody-customers"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Customers found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- BUILDINGS & FLATS -->
-                <section id="page-buildings" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Buildings & Flats</h2>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="soft-card overflow-hidden">
-                            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                                <h3 class="font-semibold text-lg">Buildings</h3>
-                                <button onclick="openBuildingModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Building</button>
-                            </div>
-                            <div class="overflow-auto max-h-[60vh]">
-                                <table class="excel-table">
-                                    <thead><tr><th>Name</th><th>City</th><th>Emirate</th></tr></thead>
-                                    <tbody id="tbody-buildings"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Buildings found.</td></tr></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="soft-card overflow-hidden">
-                            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                                <h3 class="font-semibold text-lg">Flats / Units</h3>
-                                <button onclick="openFlatModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Flat</button>
-                            </div>
-                            <div class="overflow-auto max-h-[60vh]">
-                                <table class="excel-table">
-                                    <thead><tr><th>Unit Number</th><th>Building</th><th>Floor</th><th>Type</th></tr></thead>
-                                    <tbody id="tbody-flats"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Flats found.</td></tr></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- AMC -->
-                <section id="page-amc" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Annual Maintenance Contracts (AMC)</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Contracts</h3>
-                            <button onclick="openAmcModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New AMC</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Contract No.</th><th>Value (AED)</th><th>Status</th></tr></thead>
-                                <tbody id="tbody-amc"><tr><td colspan="3" class="p-6 text-center text-gray-500">No AMCs found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- INVOICES -->
-                <section id="page-invoices" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">All Invoices</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Billing</h3>
-                            <button onclick="openInvoiceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Invoice</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Invoice No.</th><th>Date</th><th>Customer</th><th>Due Date</th><th>Status</th><th>Total (Inc VAT)</th><th>Actions</th></tr></thead>
-                                <tbody id="tbody-invoices"><tr><td colspan="7" class="p-6 text-center text-gray-500">No Invoices found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- RECEIPTS -->
-                <section id="page-receipts" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Receipt Vouchers</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Receipts</h3>
-                            <button onclick="openReceiptModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Receipt</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Voucher No.</th><th>Date</th><th>Client</th><th>Mode</th><th>Amount</th><th>Actions</th></tr></thead>
-                                <tbody id="tbody-receipts"><tr><td colspan="6" class="p-6 text-center text-gray-500">No Receipts found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- PAYMENTS -->
-                <section id="page-payments" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Payment Vouchers</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Payments</h3>
-                            <button onclick="openPaymentModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Payment</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Voucher No.</th><th>Date</th><th>Payee</th><th>Mode</th><th>Amount</th><th>Actions</th></tr></thead>
-                                <tbody id="tbody-payments"><tr><td colspan="6" class="p-6 text-center text-gray-500">No Payments found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- EXPENSES -->
-                <section id="page-expenses" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">All Expenses</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Outgoing</h3>
-                            <button onclick="openExpenseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Expense</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Category</th><th>Amount (AED)</th><th>Status</th></tr></thead>
-                                <tbody id="tbody-expenses"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Expenses found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- PURCHASES -->
-                <section id="page-purchases" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Purchases / Supplier Bills</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Procurement</h3>
-                            <button onclick="openPurchaseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Add Purchase</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Bill No.</th><th>Supplier</th><th>Date</th><th>Total (AED)</th><th>Payment Status</th></tr></thead>
-                                <tbody id="tbody-purchases"><tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- PO -->
-                <section id="page-po" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Purchase Orders (PO)</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Orders</h3>
-                            <button onclick="openPoModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New PO</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>PO Number</th><th>Supplier</th><th>Total (AED)</th></tr></thead>
-                                <tbody id="tbody-po"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Purchase Orders found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- INVENTORY -->
-                <section id="page-inventory" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Inventory & Assets</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Assets</h3>
-                            <button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Register Asset</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Asset Code</th><th>Brand/Model</th><th>Client</th><th>Building</th><th>Flat</th><th>Loc</th><th>Status</th><th>Action</th></tr></thead>
-                                <tbody id="tbody-inventory"><tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- STAFF -->
-                <section id="page-staff" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Staff Management</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">HR</h3>
-                            <button onclick="openStaffModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Add Staff</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Photo</th><th>Name</th><th>Job Title</th><th>Nationality</th><th>Phone</th><th>Passport Exp.</th><th>Emirates ID Exp.</th></tr></thead>
-                                <tbody id="tbody-staff"><tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- USERS -->
-                <section id="page-users" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">System Users</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Access Control</h3>
-                            <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New User</button>
-                        </div>
-                        <div class="overflow-auto max-h-[60vh]">
-                            <table class="excel-table">
-                                <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
-                                <tbody id="tbody-users"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Users found.</td></tr></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- REPORTS -->
-                <section id="page-reports" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Reports & Analytics</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Total Revenue</h3><p id="rep-revenue" class="text-2xl font-bold text-gray-800">AED 0</p></div>
-                        <div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Collected</h3><p id="rep-collected" class="text-2xl font-bold text-green-600">AED 0</p></div>
-                        <div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Total Expenses</h3><p id="rep-expenses" class="text-2xl font-bold text-red-600">AED 0</p></div>
-                        <div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Net Profit</h3><p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p></div>
-                    </div>
-                    <div class="soft-card p-6">
-                        <h3 class="font-semibold text-lg mb-4">WO Status Breakdown</h3>
-                        <div id="rep-wo-stats" class="flex flex-wrap gap-3"><span class="text-gray-500">Loading...</span></div>
-                    </div>
-                </section>
-
-                <!-- COMPANY SETTINGS -->
-                <section id="page-company" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Company Profile & Settings</h2>
-                    <div class="soft-card overflow-hidden mb-6">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Branding & Details</h3>
-                            <button onclick="saveCompanySettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Save Changes</button>
-                        </div>
-                        <div class="p-6 space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <label class="block text-sm mb-1">Company Logo</label>
-                                    <img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                    <input type="file" accept="image/*" onchange="handleImageUpload(event,'logoUrl','img-preview-logo')" class="text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm mb-1">Invoice Header</label>
-                                    <img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                    <input type="file" accept="image/*" onchange="handleImageUpload(event,'invoiceHeader','img-preview-header')" class="text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm mb-1">Invoice Footer</label>
-                                    <img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                    <input type="file" accept="image/*" onchange="handleImageUpload(event,'invoiceFooter','img-preview-footer')" class="text-sm">
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><label class="block text-sm mb-1">Company Name</label><input type="text" id="set_name" class="dark-input"></div>
-                                <div><label class="block text-sm mb-1">TRN</label><input type="text" id="set_trn" class="dark-input"></div>
-                                <div><label class="block text-sm mb-1">Phone</label><input type="text" id="set_phone" class="dark-input"></div>
-                                <div><label class="block text-sm mb-1">Email</label><input type="email" id="set_email" class="dark-input"></div>
-                            </div>
-                            <div><label class="block text-sm mb-1">Address</label><textarea id="set_address" rows="2" class="dark-input"></textarea></div>
-                            <hr>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div><label class="block text-sm mb-1">VAT (%)</label><input type="number" step="0.01" id="set_vat" class="dark-input" value="5"></div>
-                                <div><label class="block text-sm mb-1">Invoice Prefix</label><input type="text" id="set_invPrefix" class="dark-input" value="INV-"></div>
-                                <div><label class="block text-sm mb-1">PO Prefix</label><input type="text" id="set_poPrefix" class="dark-input" value="PO-"></div>
-                                <div><label class="block text-sm mb-1">WO Prefix</label><input type="text" id="set_woPrefix" class="dark-input" value="WO-"></div>
-                            </div>
-                            <hr>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm mb-1">Authorized Signature</label>
-                                    <img id="img-preview-sig" src="https://via.placeholder.com/200x100?text=Signature" class="w-48 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                    <input type="file" accept="image/*" onchange="handleImageUpload(event,'authorizedSignatureUrl','img-preview-sig')" class="text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm mb-1">Company Seal</label>
-                                    <img id="img-preview-seal" src="https://via.placeholder.com/100x100?text=Seal" class="w-24 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2">
-                                    <input type="file" accept="image/*" onchange="handleImageUpload(event,'companySealUrl','img-preview-seal')" class="text-sm">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b bg-slate-50"><h3 class="font-semibold text-lg">Invoice Customization</h3></div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <div class="template-card soft-card p-4 cursor-pointer" onclick="selectInvoiceTemplate('modern')" id="tpl-modern">
-                                    <div class="text-center mb-2"><span class="text-2xl">📄</span></div>
-                                    <h4 class="font-semibold text-center">Standard Modern</h4>
-                                    <p class="text-xs text-gray-500 text-center mt-1">Clean Soft-UI with border grid</p>
-                                </div>
-                                <div class="template-card soft-card p-4 cursor-pointer" onclick="selectInvoiceTemplate('classic')" id="tpl-classic">
-                                    <div class="text-center mb-2"><span class="text-2xl">🏛️</span></div>
-                                    <h4 class="font-semibold text-center">Classic Corporate</h4>
-                                    <p class="text-xs text-gray-500 text-center mt-1">Formal layout with bold header block</p>
-                                </div>
-                                <div class="template-card soft-card p-4 cursor-pointer" onclick="selectInvoiceTemplate('detailed')" id="tpl-detailed">
-                                    <div class="text-center mb-2"><span class="text-2xl">🔧</span></div>
-                                    <h4 class="font-semibold text-center">Detailed Technical</h4>
-                                    <p class="text-xs text-gray-500 text-center mt-1">Expanded description fields with asset metadata</p>
-                                </div>
-                            </div>
-                            <button onclick="saveInvoiceTemplate()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Save Template Preference</button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- SYSTEM SETTINGS -->
-                <section id="page-settings" class="page-content">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">System Settings</h2>
-                    <div class="soft-card overflow-hidden">
-                        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                            <h3 class="font-semibold text-lg">Configurations</h3>
-                            <button onclick="saveSystemSettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Save Settings</button>
-                        </div>
-                        <div class="p-6 space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><label class="block text-sm mb-1">System Name</label><input type="text" id="set_sysName" class="dark-input"></div>
-                                <div><label class="block text-sm mb-1">Default Currency</label><select id="set_currency" class="dark-input"><option>AED</option><option>USD</option><option>SAR</option></select></div>
-                                <div><label class="block text-sm mb-1">Timezone</label><select id="set_timezone" class="dark-input"><option>Asia/Dubai</option><option>Asia/Riyadh</option></select></div>
-                                <div><label class="block text-sm mb-1">Low Stock Alert</label><input type="number" id="set_lowStock" class="dark-input"></div>
-                            </div>
-                            <hr>
-                            <div class="space-y-4">
-                                <h4 class="font-medium">Notification Preferences</h4>
-                                <div class="flex items-center"><input type="checkbox" id="set_emailNotif" class="w-4 h-4"><label for="set_emailNotif" class="ml-2 text-sm">Enable Email Notifications</label></div>
-                                <div class="flex items-center"><input type="checkbox" id="set_smsNotif" class="w-4 h-4"><label for="set_smsNotif" class="ml-2 text-sm">Enable SMS Notifications</label></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
+                <section id="page-work-orders" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">All Work Orders</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Operations</h3><button onclick="openWorkOrderModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Work Order</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>WO Number</th><th>Client</th><th>Location</th><th>Complaint</th><th>Schedule</th><th>Technician</th><th>Status</th><th>Actions</th></tr></thead><tbody id="tbody-work-orders"><tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr></tbody></table></div></div></section>
+                <section id="page-customers" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">All Customers</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">CRM</h3><button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Customer</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead><tbody id="tbody-customers"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Customers found.</td></tr></tbody></table></div></div></section>
+                <section id="page-buildings" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Buildings & Flats</h2><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Buildings</h3><button onclick="openBuildingModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Building</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Name</th><th>City</th><th>Emirate</th></tr></thead><tbody id="tbody-buildings"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Buildings found.</td></tr></tbody></table></div></div><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Flats / Units</h3><button onclick="openFlatModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Flat</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Unit Number</th><th>Building</th><th>Floor</th><th>Type</th></tr></thead><tbody id="tbody-flats"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Flats found.</td></tr></tbody></table></div></div></div></section>
+                <section id="page-amc" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Annual Maintenance Contracts (AMC)</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Contracts</h3><button onclick="openAmcModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New AMC</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Contract No.</th><th>Value (AED)</th><th>Status</th></tr></thead><tbody id="tbody-amc"><tr><td colspan="3" class="p-6 text-center text-gray-500">No AMCs found.</td></tr></tbody></table></div></div></section>
+                <section id="page-invoices" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">All Invoices</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Billing</h3><button onclick="openInvoiceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Invoice</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Invoice No.</th><th>Date</th><th>Customer</th><th>Due Date</th><th>Status</th><th>Total (Inc VAT)</th><th>Actions</th></tr></thead><tbody id="tbody-invoices"><tr><td colspan="7" class="p-6 text-center text-gray-500">No Invoices found.</td></tr></tbody></table></div></div></section>
+                <section id="page-receipts" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Receipt Vouchers</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Receipts</h3><button onclick="openReceiptModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Receipt</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Voucher No.</th><th>Date</th><th>Client</th><th>Mode</th><th>Amount</th><th>Actions</th></tr></thead><tbody id="tbody-receipts"><tr><td colspan="6" class="p-6 text-center text-gray-500">No Receipts found.</td></tr></tbody></table></div></div></section>
+                <section id="page-payments" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Payment Vouchers</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Payments</h3><button onclick="openPaymentModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Payment</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Voucher No.</th><th>Date</th><th>Payee</th><th>Mode</th><th>Amount</th><th>Actions</th></tr></thead><tbody id="tbody-payments"><tr><td colspan="6" class="p-6 text-center text-gray-500">No Payments found.</td></tr></tbody></table></div></div></section>
+                <section id="page-expenses" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">All Expenses</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Outgoing</h3><button onclick="openExpenseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New Expense</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Category</th><th>Amount (AED)</th><th>Status</th></tr></thead><tbody id="tbody-expenses"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Expenses found.</td></tr></tbody></table></div></div></section>
+                <section id="page-purchases" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Purchases / Supplier Bills</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Procurement</h3><button onclick="openPurchaseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Add Purchase</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Bill No.</th><th>Supplier</th><th>Date</th><th>Total (AED)</th><th>Payment Status</th></tr></thead><tbody id="tbody-purchases"><tr><td colspan="5" class="p-6 text-center text-gray-500">No Purchases found.</td></tr></tbody></table></div></div></section>
+                <section id="page-po" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Purchase Orders (PO)</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Orders</h3><button onclick="openPoModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New PO</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>PO Number</th><th>Supplier</th><th>Total (AED)</th></tr></thead><tbody id="tbody-po"><tr><td colspan="3" class="p-6 text-center text-gray-500">No Purchase Orders found.</td></tr></tbody></table></div></div></section>
+                <section id="page-inventory" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Inventory & Assets</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Assets</h3><button onclick="openInventoryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Register Asset</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Asset Code</th><th>Brand/Model</th><th>Client</th><th>Building</th><th>Flat</th><th>Loc</th><th>Status</th><th>Action</th></tr></thead><tbody id="tbody-inventory"><tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr></tbody></table></div></div></section>
+                <section id="page-staff" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Staff Management</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">HR</h3><button onclick="openStaffModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Add Staff</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Photo</th><th>Name</th><th>Job Title</th><th>Nationality</th><th>Phone</th><th>Passport Exp.</th><th>Emirates ID Exp.</th></tr></thead><tbody id="tbody-staff"><tr><td colspan="7" class="p-6 text-center text-gray-500">No Staff found.</td></tr></tbody></table></div></div></section>
+                <section id="page-users" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">System Users</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Access Control</h3><button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ New User</button></div><div class="overflow-auto max-h-[60vh]"><table class="excel-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody id="tbody-users"><tr><td colspan="4" class="p-6 text-center text-gray-500">No Users found.</td></tr></tbody></table></div></div></section>
+                <section id="page-reports" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Reports & Analytics</h2><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"><div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Total Revenue</h3><p id="rep-revenue" class="text-2xl font-bold text-gray-800">AED 0</p></div><div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Collected</h3><p id="rep-collected" class="text-2xl font-bold text-green-600">AED 0</p></div><div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Total Expenses</h3><p id="rep-expenses" class="text-2xl font-bold text-red-600">AED 0</p></div><div class="soft-card p-6"><h3 class="text-gray-500 text-sm mb-2">Net Profit</h3><p id="rep-profit" class="text-2xl font-bold text-blue-600">AED 0</p></div></div><div class="soft-card p-6"><h3 class="font-semibold text-lg mb-4">WO Status Breakdown</h3><div id="rep-wo-stats" class="flex flex-wrap gap-3"><span class="text-gray-500">Loading...</span></div></div></section>
+                <section id="page-company" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">Company Profile & Settings</h2><div class="soft-card overflow-hidden mb-6"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Branding & Details</h3><button onclick="saveCompanySettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Save Changes</button></div><div class="p-6 space-y-6"><div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div><label class="block text-sm mb-1">Company Logo</label><img id="img-preview-logo" src="https://via.placeholder.com/150x150?text=Logo" class="w-32 h-32 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/*" onchange="handleImageUpload(event,'logoUrl','img-preview-logo')" class="text-sm"></div><div><label class="block text-sm mb-1">Invoice Header</label><img id="img-preview-header" src="https://via.placeholder.com/300x100?text=Header" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/*" onchange="handleImageUpload(event,'invoiceHeader','img-preview-header')" class="text-sm"></div><div><label class="block text-sm mb-1">Invoice Footer</label><img id="img-preview-footer" src="https://via.placeholder.com/300x100?text=Footer" class="w-full h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/*" onchange="handleImageUpload(event,'invoiceFooter','img-preview-footer')" class="text-sm"></div></div><hr><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="block text-sm mb-1">Company Name</label><input type="text" id="set_name" class="dark-input"></div><div><label class="block text-sm mb-1">TRN</label><input type="text" id="set_trn" class="dark-input"></div><div><label class="block text-sm mb-1">Phone</label><input type="text" id="set_phone" class="dark-input"></div><div><label class="block text-sm mb-1">Email</label><input type="email" id="set_email" class="dark-input"></div></div><div><label class="block text-sm mb-1">Address</label><textarea id="set_address" rows="2" class="dark-input"></textarea></div><hr><div class="grid grid-cols-2 md:grid-cols-4 gap-6"><div><label class="block text-sm mb-1">VAT (%)</label><input type="number" step="0.01" id="set_vat" class="dark-input" value="5"></div><div><label class="block text-sm mb-1">Invoice Prefix</label><input type="text" id="set_invPrefix" class="dark-input" value="INV-"></div><div><label class="block text-sm mb-1">PO Prefix</label><input type="text" id="set_poPrefix" class="dark-input" value="PO-"></div><div><label class="block text-sm mb-1">WO Prefix</label><input type="text" id="set_woPrefix" class="dark-input" value="WO-"></div></div><hr><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="block text-sm mb-1">Authorized Signature</label><img id="img-preview-sig" src="https://via.placeholder.com/200x100?text=Signature" class="w-48 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/*" onchange="handleImageUpload(event,'authorizedSignatureUrl','img-preview-sig')" class="text-sm"></div><div><label class="block text-sm mb-1">Company Seal</label><img id="img-preview-seal" src="https://via.placeholder.com/100x100?text=Seal" class="w-24 h-24 object-contain border-2 border-gray-200 rounded-lg mb-2 bg-gray-50 p-2"><input type="file" accept="image/*" onchange="handleImageUpload(event,'companySealUrl','img-preview-seal')" class="text-sm"></div></div></div></div><div class="soft-card overflow-hidden"><div class="p-6 border-b bg-slate-50"><h3 class="font-semibold text-lg">Invoice Customization</h3></div><div class="p-6"><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="template-card soft-card p-4 cursor-pointer" onclick="selectInvoiceTemplate('modern')" id="tpl-modern"><div class="text-center mb-2"><span class="text-2xl">📄</span></div><h4 class="font-semibold text-center">Standard Modern</h4><p class="text-xs text-gray-500 text-center mt-1">Clean Soft-UI with border grid</p></div><div class="template-card soft-card p-4 cursor-pointer" onclick="selectInvoiceTemplate('classic')" id="tpl-classic"><div class="text-center mb-2"><span class="text-2xl">🏛️</span></div><h4 class="font-semibold text-center">Classic Corporate</h4><p class="text-xs text-gray-500 text-center mt-1">Formal layout with bold header block</p></div><div class="template-card soft-card p-4 cursor-pointer" onclick="selectInvoiceTemplate('detailed')" id="tpl-detailed"><div class="text-center mb-2"><span class="text-2xl">🔧</span></div><h4 class="font-semibold text-center">Detailed Technical</h4><p class="text-xs text-gray-500 text-center mt-1">Expanded description fields with asset metadata</p></div></div><button onclick="saveInvoiceTemplate()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Save Template Preference</button></div></div></section>
+                <section id="page-settings" class="page-content"><h2 class="text-2xl font-bold text-gray-800 mb-6">System Settings</h2><div class="soft-card overflow-hidden"><div class="p-6 border-b flex justify-between items-center bg-slate-50"><h3 class="font-semibold text-lg">Configurations</h3><button onclick="saveSystemSettings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Save Settings</button></div><div class="p-6 space-y-6"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="block text-sm mb-1">System Name</label><input type="text" id="set_sysName" class="dark-input"></div><div><label class="block text-sm mb-1">Default Currency</label><select id="set_currency" class="dark-input"><option>AED</option><option>USD</option><option>SAR</option></select></div><div><label class="block text-sm mb-1">Timezone</label><select id="set_timezone" class="dark-input"><option>Asia/Dubai</option><option>Asia/Riyadh</option></select></div><div><label class="block text-sm mb-1">Low Stock Alert</label><input type="number" id="set_lowStock" class="dark-input"></div></div><hr><div class="space-y-4"><h4 class="font-medium">Notification Preferences</h4><div class="flex items-center"><input type="checkbox" id="set_emailNotif" class="w-4 h-4"><label for="set_emailNotif" class="ml-2 text-sm">Enable Email Notifications</label></div><div class="flex items-center"><input type="checkbox" id="set_smsNotif" class="w-4 h-4"><label for="set_smsNotif" class="ml-2 text-sm">Enable SMS Notifications</label></div></div></div></div></section>
             </div>
         </div>
     </main>
 
-    <!-- MODAL -->
-    <!-- FIX: Removed 'hidden' and 'flex' classes so the CSS can properly control its visibility -->
     <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4 overflow-y-auto">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 max-h-[90vh] overflow-y-auto border border-gray-200 my-8">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-800">Add New</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-3xl leading-none">&times;</button>
-            </div>
-            <form id="modal-form" class="space-y-4">
-                <div id="modal-fields" class="space-y-4"></div>
-                <div id="modal-error" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center"></div>
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200">Cancel</button>
-                    <button type="submit" id="modal-submit-btn" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Save</button>
-                </div>
-            </form>
+            <div class="flex justify-between items-center mb-6"><h3 id="modal-title" class="text-xl font-bold text-gray-800">Add New</h3><button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-3xl leading-none">&times;</button></div>
+            <form id="modal-form" class="space-y-4"><div id="modal-fields" class="space-y-4"></div><div id="modal-error" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center"></div><div class="flex gap-3 pt-4"><button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200">Cancel</button><button type="submit" id="modal-submit-btn" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Save</button></div></form>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="js/app.js?v=2" defer></script>
-    <script src="js/sidebar.js" defer></script>
-    <script src="js/dashboard.js" defer></script>
-    <script src="js/calendar.js" defer></script>
+    <script src="js/app.js?v=3" defer></script>
+    <script src="js/sidebar.js?v=3" defer></script>
+    <script src="js/dashboard.js?v=3" defer></script>
+    <script src="js/calendar.js?v=3" defer></script>
 </body>
 </html>
