@@ -339,7 +339,32 @@ function handleImageUpload(event, fn, pid) { const f = event.target.files[0]; if
 
 async function loadCompanySettings() { try { const d = await apiFetch('/company'); document.getElementById('set_name').value = d.name||''; document.getElementById('set_trn').value = d.trn||''; document.getElementById('set_phone').value = d.phone||''; document.getElementById('set_email').value = d.email||''; document.getElementById('set_address').value = d.address||''; document.getElementById('set_vat').value = d.vatPercent||5; document.getElementById('set_invPrefix').value = d.invoicePrefix||'INV-'; document.getElementById('set_poPrefix').value = d.poPrefix||'PO-'; document.getElementById('set_woPrefix').value = d.woPrefix||'WO-'; ['logo','header','footer','sig','seal'].forEach(k => { const el = document.getElementById(`img-preview-${k}`); if (d[`${k}Url`]) el.src = d[`${k}Url`]; }); } catch (e) {} }
 
-async function saveCompanySettings() { const d = {name:document.getElementById('set_name').value,trn:document.getElementById('set_trn').value,phone:document.getElementById('set_phone').value,email:document.getElementById('set_email').value,address:document.getElementById('set_address').value,vatPercent:document.getElementById('set_vat').value,invoicePrefix:document.getElementById('set_invPrefix').value,poPrefix:document.getElementById('set_poPrefix').value,woPrefix:document.getElementById('set_woPrefix').value}; try { await apiFetch('/company','POST',d); alert('Saved!'); } catch (e) { alert('Failed: '+e.message); } }
+async function saveCompanySettings() { 
+    // Get the basic text fields
+    const d = {
+        name: document.getElementById('set_name').value,
+        trn: document.getElementById('set_trn').value,
+        phone: document.getElementById('set_phone').value,
+        email: document.getElementById('set_email').value,
+        address: document.getElementById('set_address').value,
+        vatPercent: document.getElementById('set_vat').value,
+        invoicePrefix: document.getElementById('set_invPrefix').value,
+        poPrefix: document.getElementById('set_poPrefix').value,
+        woPrefix: document.getElementById('set_woPrefix').value
+    };
+    
+    // FIX: Merge the temporary image data (Logo, Header, Footer, Signature, Seal) into the data object!
+    Object.assign(d, companyImageData);
+
+    try { 
+        await apiFetch('/company', 'POST', d); 
+        // Clear the temporary image data after successful save so we don't accidentally re-upload base64 strings
+        companyImageData = {}; 
+        alert('Saved!'); 
+    } catch (e) { 
+        alert('Failed: ' + e.message); 
+    } 
+}
 
 async function loadSystemSettings() { try { const d = await apiFetch('/settings'); document.getElementById('set_sysName').value = d.systemName||''; document.getElementById('set_currency').value = d.currency||'AED'; document.getElementById('set_timezone').value = d.timezone||'Asia/Dubai'; document.getElementById('set_lowStock').value = d.lowStockThreshold||5; document.getElementById('set_emailNotif').checked = d.enableEmailNotifications; document.getElementById('set_smsNotif').checked = d.enableSMSNotifications; } catch (e) {} }
 
