@@ -49,7 +49,7 @@ async function fetchDropdown(endpoint) {
     try { 
         const data = await apiFetch(endpoint); 
         if (!Array.isArray(data)) return '<option value="">No options available</option>';
-        return data.map(item => `<option value="${item.id}">${item.name || item.email || item.poNumber || item.sku || item.contractNumber || item.invoiceNumber}</option>`).join(''); 
+        return data.map(item => `<option value="${item.id}">${item.name || item.title || item.email || item.poNumber || item.sku || item.contractNumber || item.invoiceNumber}</option>`).join(''); 
     } catch (e) { 
         return '<option value="">Error loading options</option>'; 
     }
@@ -109,6 +109,7 @@ async function handleSubmit(endpoint, data, successMsg, refreshPage) {
                 'tbody-work-orders': fetchAndRenderWorkOrders, 
                 'tbody-invoices': fetchAndRenderInvoices, 
                 'tbody-inventory': fetchAndRenderAssets, 
+                'tbody-buildings': fetchAndRenderBuildings,
                 'tbody-staff': fetchAndRenderStaff, 
                 'tbody-purchases': fetchAndRenderPurchases, 
                 'tbody-receipts': fetchAndRenderReceipts, 
@@ -212,7 +213,6 @@ async function viewVoucher(id, type) {
         const mb = document.querySelector('#modal > div'); 
         if (mb) { mb.classList.remove('max-w-md'); mb.classList.add('max-w-3xl', 'p-0'); }
         
-        // Handling broken/missing image URLs gracefully to prevent image loading errors
         const logoHtml = comp.logoUrl ? `<img src="${comp.logoUrl}" class="h-12 mb-2" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';"><h1 class="text-xl font-bold text-blue-800" style="display:none;">${comp.name || 'MAK INFRATECH'}</h1>` : `<h1 class="text-xl font-bold text-blue-800">${comp.name || 'MAK INFRATECH'}</h1>`;
         const sealHtml = comp.companySealUrl ? `<img src="${comp.companySealUrl}" class="w-24 h-24 object-contain mx-auto opacity-90" onerror="this.onerror=null; this.style.display='none';">` : '';
 
@@ -336,20 +336,70 @@ function filterWoFlats() {
     } 
 }
 
-// ==================== FLATS ====================
+// ==================== BUILDINGS & FLATS ====================
+async function fetchAndRenderBuildings() {
+    const tbody = document.getElementById('tbody-buildings'); if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+    try {
+        const data = await apiFetch('/buildings');
+        if (!Array.isArray(data) || data.length === 0) { 
+            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Buildings found.</td></tr>`; 
+            return; 
+        }
+        tbody.innerHTML = data.map(item => `<tr>
+            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.name || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.location || item.address || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.flats ? item.flats.length : '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700"><button onclick="deleteBuilding('${item.id}')" class="text-red-600 hover:text-red-800">Del</button></td>
+        </tr>`).join('');
+    } catch (e) { 
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load buildings.</td></tr>`; 
+    }
+}
+
+async function openBuildingModal() {
+    const co = await fetchDropdown('/customers');
+    openModal('New Building', `
+        <div><label class="block text-sm mb-1">Building Name *</label><input type="text" id="bld_name" required class="dark-input"></div>
+        <div><label class="block text-sm mb-1">Customer / Client *</label><select id="bld_customerId" required class="dark-input"><option value="">Select Customer</option>${co}</select></div>
+        <div><label class="block text-sm mb-1">Location / Address</label><input type="text" id="bld_location" class="dark-input"></div>
+    `);
+    if (modalForm) {
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            handleSubmit('/buildings', {
+                name: getInput('bld_name'),
+                customerId: getInput('bld_customerId'),
+                address: getInput('bld_location'),
+                location: getInput('bld_location')
+            }, 'Building created!', { tableId: 'tbody-buildings' });
+        };
+    }
+}
+
+async function deleteBuilding(id) {
+    if (confirm('Are you sure you want to delete this building?')) {
+        try {
+            await apiFetch(`/buildings/${id}`, 'DELETE');
+            fetchAndRenderBuildings();
+        } catch (e) { alert('Failed: ' + e.message); }
+    }
+}
+
 async function fetchAndRenderFlats() {
     const tbody = document.getElementById('tbody-flats'); if (!tbody) return;
     tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
     try {
         const data = await apiFetch('/flats');
         if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Flats found.</td></tr>`; return; }
-        tbody.innerHTML = data.map(item => `<tr><td class="px-4 py-3 text-sm font-medium">${item.unitNumber||'-'}</td><td class="px-4 py-3 text-sm">${item.building?.name||'-'}</td><td class="px-4 py-3 text-sm">${item.floor||'-'}</td><td class="px-4 py-3 text-sm">${item.type||'-'}</td></tr>`).join('');
-    } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed.</td></tr>`; }
+        tbody.innerHTML = data.map(item => `<tr><td class="px-4 py-3 text-sm font-medium text-gray-700">${item.unitNumber||'-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.building?.name||'-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.floor||'-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.type||'-'}</td></tr>`).join('');
+    } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load flats.</td></tr>`; }
 }
 
 async function openFlatModal() {
     const bo = await fetchDropdown('/buildings');
-    openModal('New Flat', `<div><label class="block text-sm mb-1">Building *</label><select id="fl_buildingId" required class="dark-input"><option value="">Select</option>${bo}</select></div><div><label class="block text-sm mb-1">Unit Number *</label><input type="text" id="fl_unitNumber" required class="dark-input"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm mb-1">Floor</label><input type="number" id="fl_floor" class="dark-input"></div><div><label class="block text-sm mb-1">Type</label><input type="text" id="fl_type" class="dark-input"></div></div>`);
+    openModal('New Flat', `<div><label class="block text-sm mb-1">Building *</label><select id="fl_buildingId" required class="dark-input"><option value="">Select Building</option>${bo}</select></div><div><label class="block text-sm mb-1">Unit / Flat Number *</label><input type="text" id="fl_unitNumber" required class="dark-input"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm mb-1">Floor</label><input type="number" id="fl_floor" class="dark-input"></div><div><label class="block text-sm mb-1">Type</label><input type="text" id="fl_type" placeholder="e.g. 2BHK, Studio" class="dark-input"></div></div>`);
     if (modalForm) {
         modalForm.onsubmit = (e) => { 
             e.preventDefault(); 
@@ -374,16 +424,26 @@ async function fetchAndRenderAssets() {
             tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Inventory Assets found.</td></tr>`; 
             return; 
         }
-        tbody.innerHTML = data.map(item => `<tr>
-            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.sku || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.name || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.category || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.quantity !== undefined ? item.quantity : '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.unit || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">AED ${item.unitPrice ? parseFloat(item.unitPrice).toFixed(2) : '0.00'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.location || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewAssetDetails('${item.id}')" class="text-blue-600 hover:text-blue-800">View</button></td>
-        </tr>`).join('');
+        tbody.innerHTML = data.map(item => {
+            const code = item.sku || item.assetTag || item.itemCode || '-';
+            const name = item.name || item.title || item.itemName || '-';
+            const category = item.category || item.type || '-';
+            const qty = item.quantity !== undefined ? item.quantity : (item.qty !== undefined ? item.qty : '-');
+            const unit = item.unit || 'Pcs';
+            const price = item.unitPrice !== undefined ? item.unitPrice : (item.cost !== undefined ? item.cost : 0);
+            const loc = item.location || item.storeLocation || '-';
+
+            return `<tr>
+                <td class="px-4 py-3 text-sm font-medium text-gray-700">${code}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${name}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${category}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${qty}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${unit}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(price).toFixed(2)}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${loc}</td>
+                <td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewAssetDetails('${item.id}')" class="text-blue-600 hover:text-blue-800">View</button></td>
+            </tr>`;
+        }).join('');
     } catch (e) { 
         tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load inventory assets.</td></tr>`; 
     }
@@ -391,7 +451,7 @@ async function fetchAndRenderAssets() {
 
 async function openAssetModal() {
     openModal('New Asset', `
-        <div><label class="block text-sm mb-1">SKU / Item Code *</label><input type="text" id="ast_sku" required class="dark-input"></div>
+        <div><label class="block text-sm mb-1">SKU / Asset Code *</label><input type="text" id="ast_sku" required class="dark-input"></div>
         <div><label class="block text-sm mb-1">Name *</label><input type="text" id="ast_name" required class="dark-input"></div>
         <div class="grid grid-cols-2 gap-4">
             <div><label class="block text-sm mb-1">Category</label><input type="text" id="ast_category" class="dark-input"></div>
@@ -401,7 +461,7 @@ async function openAssetModal() {
             <div><label class="block text-sm mb-1">Quantity</label><input type="number" id="ast_qty" value="0" class="dark-input"></div>
             <div><label class="block text-sm mb-1">Unit Price (AED)</label><input type="number" step="0.01" id="ast_price" value="0.00" class="dark-input"></div>
         </div>
-        <div><label class="block text-sm mb-1">Location / Store</label><input type="text" id="ast_location" class="dark-input"></div>
+        <div><label class="block text-sm mb-1">Location / Warehouse</label><input type="text" id="ast_location" class="dark-input"></div>
     `);
     if (modalForm) {
         modalForm.onsubmit = (e) => {
@@ -411,7 +471,7 @@ async function openAssetModal() {
                 name: getInput('ast_name'),
                 category: getInput('ast_category'),
                 unit: getInput('ast_unit'),
-                quantity: parseInt(getInput('ast_qty')) || 0,
+                quantity: parseInt(getInput('ast_qty'), 10) || 0,
                 unitPrice: parseFloat(getInput('ast_price')) || 0,
                 location: getInput('ast_location')
             }, 'Asset saved!', { tableId: 'tbody-inventory' });
@@ -424,8 +484,8 @@ async function viewAssetDetails(id) {
         const item = await apiFetch(`/inventory/${id}`);
         openModal('Asset Details', `
             <div class="space-y-3 text-sm">
-                <div><strong>SKU:</strong> ${item.sku || 'N/A'}</div>
-                <div><strong>Name:</strong> ${item.name || 'N/A'}</div>
+                <div><strong>SKU:</strong> ${item.sku || item.assetTag || 'N/A'}</div>
+                <div><strong>Name:</strong> ${item.name || item.title || 'N/A'}</div>
                 <div><strong>Category:</strong> ${item.category || 'N/A'}</div>
                 <div><strong>Quantity:</strong> ${item.quantity || 0} ${item.unit || ''}</div>
                 <div><strong>Unit Price:</strong> AED ${parseFloat(item.unitPrice || 0).toFixed(2)}</div>
@@ -670,6 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAndRenderWorkOrders();
     fetchAndRenderReceipts();
     fetchAndRenderPayments();
+    fetchAndRenderBuildings();
     fetchAndRenderFlats();
     fetchAndRenderAssets();
     fetchAndRenderInvoices();
