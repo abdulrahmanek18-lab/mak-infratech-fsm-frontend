@@ -60,7 +60,7 @@ function generateMiniCalendar() {
     
     // Auto-select today on initial load
     if (m === t.getMonth() && y === t.getFullYear()) {
-        selectCalendarDate(`${y}-${String(m + 1).padStart(2, '0')}-${String(t.getDate().padStart(2, '0'))}`);
+        selectCalendarDate(`${y}-${String(m + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`);
     }
 }
 
