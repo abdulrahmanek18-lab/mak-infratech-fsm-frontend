@@ -100,11 +100,11 @@ function closeModal() {
     }
 }
 
-async function handleSubmit(endpoint, data, successMsg, refreshPage) {
+async function handleSubmit(endpoint, data, successMsg, refreshPage, method = 'POST') {
     if (modalSubmitBtn) modalSubmitBtn.innerText = 'Saving...';
     if (modalError) modalError.classList.add('hidden');
     try {
-        await apiFetch(endpoint, 'POST', data);
+        await apiFetch(endpoint, method, data);
         closeModal();
         alert(successMsg);
         if (refreshPage) {
@@ -136,6 +136,436 @@ async function handleSubmit(endpoint, data, successMsg, refreshPage) {
 function getInput(id) { const el = document.getElementById(id); return el ? el.value : ''; }
 function toggleSidebar() { const el = document.getElementById('sidebar'); if (el) el.classList.toggle('-translate-x-full'); }
 function logout() { localStorage.removeItem('fsm_token'); localStorage.removeItem('fsm_role'); window.location.href = 'login.html'; }
+
+// ==================== WORK ORDERS & SERVICE REPORTS ====================
+async function fetchAndRenderWorkOrders() {
+    const tbody = document.getElementById('tbody-work-orders'); if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+    try {
+        const data = await apiFetch('/work-orders');
+        if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`; return; }
+        tbody.innerHTML = data.map(item => {
+            const sc = { 'PENDING':'bg-yellow-100 text-yellow-700','ASSIGNED':'bg-blue-100 text-blue-700','IN_PROGRESS':'bg-amber-100 text-amber-700','PENDING_PARTS':'bg-orange-100 text-orange-700','COMPLETED':'bg-green-100 text-green-700','CANCELLED':'bg-red-100 text-red-700' };
+            const s = item.status || 'PENDING';
+            const cm = ['SUPER_ADMIN','ADMIN','MANAGER','COORDINATOR'].includes(userRole);
+            return `<tr>
+                <td class="px-4 py-3 text-sm font-medium">
+                    <button onclick="openServiceReportModal('${item.id}')" class="text-blue-600 hover:text-blue-800 font-semibold underline hover:no-underline cursor-pointer">${item.woNumber}</button>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name||'-'}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${item.building?.name||'-'} ${item.flat?.unitNumber?'('+item.flat.unitNumber+')':''}</td>
+                <td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">${item.description||item.title}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${item.scheduledDate?new Date(item.scheduledDate).toLocaleString():'N/A'}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${item.technician?.name||'Unassigned'}</td>
+                <td class="px-4 py-3"><select onchange="updateWoStatus('${item.id}',this.value)" class="px-2 py-1 bg-white border border-gray-300 rounded-md text-xs ${sc[s]||''}"><option value="PENDING" ${s==='PENDING'?'selected':''}>Pending</option><option value="ASSIGNED" ${s==='ASSIGNED'?'selected':''}>Scheduled</option><option value="IN_PROGRESS" ${s==='IN_PROGRESS'?'selected':''}>In Progress</option><option value="PENDING_PARTS" ${s==='PENDING_PARTS'?'selected':''}>Pending Parts</option><option value="COMPLETED" ${s==='COMPLETED'?'selected':''}>Completed</option><option value="CANCELLED" ${s==='CANCELLED'?'selected':''}>Cancelled</option></select></td>
+                <td class="px-4 py-3 text-sm flex gap-1">
+                    <button onclick="openServiceReportModal('${item.id}')" class="text-purple-600 hover:text-purple-800 px-1 font-medium">Report</button>
+                    ${cm?`<button onclick="deleteWo('${item.id}')" class="text-red-600 hover:text-red-800 px-1">Del</button>`:''}
+                </td>
+            </tr>`;
+        }).join('');
+    } catch (e) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
+}
+
+async function updateWoStatus(id, status) { try { await apiFetch(`/work-orders/${id}/status`, 'PATCH', { status }); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed: ' + e.message); } }
+async function deleteWo(id) { if (confirm('Delete this WO?')) { try { await apiFetch(`/work-orders/${id}`, 'DELETE'); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed: ' + e.message); } } }
+
+async function openServiceReportModal(workOrderId) {
+    try {
+        const wo = await apiFetch(`/work-orders/${workOrderId}`);
+        const comp = await apiFetch('/company').catch(() => ({}));
+        const mb = document.querySelector('#modal > div'); 
+        if (mb) { mb.classList.remove('max-w-md'); mb.classList.add('max-w-3xl', 'p-0'); }
+
+        const logoHtml = comp.logoUrl ? `<img src="${comp.logoUrl}" class="h-12 mb-2" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';"><h1 class="text-xl font-bold text-blue-800" style="display:none;">${comp.name || 'MAK INFRATECH'}</h1>` : `<h1 class="text-xl font-bold text-blue-800">${comp.name || 'MAK INFRATECH'}</h1>`;
+
+        openModal('Service Report', `
+            <div class="no-print sticky top-0 bg-slate-50 py-2 px-4 flex justify-end gap-2 z-10 border-b">
+                <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-900">Print</button>
+                <button onclick="downloadServiceReportPDF('SR_${wo.woNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">PDF</button>
+                <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Close</button>
+            </div>
+            <div id="print-area" class="a4-page p-8 space-y-4" style="min-height:500px;">
+                <div class="flex justify-between items-start border-b pb-4">
+                    <div>${logoHtml}<p class="text-xs text-gray-600">${comp.address||''}</p></div>
+                    <div class="text-right">
+                        <h2 class="text-xl font-bold uppercase text-blue-900">SERVICE REPORT</h2>
+                        <p class="text-sm font-semibold">WO #: ${wo.woNumber}</p>
+                        <p class="text-xs text-gray-500">Date: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-3 rounded">
+                    <div><strong>Customer:</strong> ${wo.customer?.name || 'N/A'}</div>
+                    <div><strong>Building / Unit:</strong> ${wo.building?.name || 'N/A'} ${wo.flat?.unitNumber ? '(' + wo.flat.unitNumber + ')' : ''}</div>
+                    <div><strong>Technician:</strong> ${wo.technician?.name || 'Unassigned'}</div>
+                    <div><strong>Scheduled Date:</strong> ${wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleString() : 'N/A'}</div>
+                </div>
+
+                <div class="text-sm">
+                    <strong>Complaint / Issue Description:</strong>
+                    <div class="p-2 border rounded bg-white text-gray-800 mt-1">${wo.description || wo.title || 'N/A'}</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">Started At</label><input type="datetime-local" id="sr_startedAt" class="dark-input" value="${wo.startedAt ? new Date(wo.startedAt).toISOString().slice(0,16) : ''}"></div>
+                    <div><label class="block text-sm font-medium mb-1">Completed At</label><input type="datetime-local" id="sr_completedAt" class="dark-input" value="${wo.completedAt ? new Date(wo.completedAt).toISOString().slice(0,16) : ''}"></div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Work Performed *</label>
+                    <textarea id="sr_workPerformed" rows="3" class="dark-input">${wo.workPerformed || ''}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Materials / Parts Used</label>
+                    <textarea id="sr_materials" rows="2" class="dark-input">${typeof wo.materialsUsed === 'object' && wo.materialsUsed ? (wo.materialsUsed.items || '') : (wo.materialsUsed || '')}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Observations / Recommendations</label>
+                    <textarea id="sr_observations" rows="2" class="dark-input">${wo.observations || ''}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Client Signature</label>
+                    <div class="border-2 border-gray-300 rounded-lg p-2 bg-white inline-block">
+                        <canvas id="signature-canvas" width="400" height="120" class="w-full"></canvas>
+                    </div>
+                    <div class="no-print mt-1">
+                        <button type="button" onclick="clearSignature()" class="text-xs text-red-500 underline">Clear Signature</button>
+                    </div>
+                </div>
+
+                <div class="no-print pt-4 border-t flex justify-end gap-3">
+                    <button type="button" onclick="saveServiceReport('${wo.id}')" class="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700">Save Report</button>
+                </div>
+            </div>
+        `, true);
+
+        const canvas = document.getElementById('signature-canvas');
+        if (canvas && typeof SignaturePad !== 'undefined') {
+            signaturePad = new SignaturePad(canvas);
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio; 
+            canvas.height = canvas.offsetHeight * ratio; 
+            canvas.getContext("2d").scale(ratio, ratio);
+            if (wo.clientSignature) {
+                signaturePad.fromDataURL(wo.clientSignature);
+            }
+        }
+    } catch (e) { alert('Failed to load Work Order Service Report'); }
+}
+
+function clearSignature() { if (signaturePad) signaturePad.clear(); }
+
+async function saveServiceReport(workOrderId) {
+    const sa = getInput('sr_startedAt'), ca = getInput('sr_completedAt'), wp = getInput('sr_workPerformed'), m = getInput('sr_materials'), o = getInput('sr_observations'), sd = (signaturePad && !signaturePad.isEmpty()) ? signaturePad.toDataURL() : null;
+    if (!wp) { alert('Please enter work performed.'); return; }
+    try {
+        await apiFetch(`/work-orders/${workOrderId}`, 'PATCH', { 
+            startedAt: sa || null, 
+            completedAt: ca || null, 
+            workPerformed: wp, 
+            materialsUsed: { items: m }, 
+            observations: o, 
+            clientSignature: sd 
+        });
+        await apiFetch(`/work-orders/${workOrderId}/status`, 'PATCH', { status: 'COMPLETED' });
+        alert('Service Report saved successfully!');
+        fetchAndRenderWorkOrders();
+    } catch (e) { alert('Failed: ' + e.message); }
+}
+
+function downloadServiceReportPDF(filename) { 
+    const el = document.getElementById('print-area'); 
+    if (typeof html2pdf !== 'undefined' && el) { 
+        html2pdf().set({margin:5,filename:`${filename}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save(); 
+    } else { 
+        alert('PDF generator library (html2pdf) not loaded.'); 
+    } 
+}
+
+async function openWorkOrderModal(prefillDate) {
+    const customers = await apiFetch('/customers').catch(() => []); 
+    allWoBuildings = await apiFetch('/buildings').catch(() => []); 
+    allWoFlats = await apiFetch('/flats').catch(() => []); 
+    const techs = await apiFetch('/users').catch(() => []);
+    
+    const co = Array.isArray(customers) ? customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('') : '';
+    const to = Array.isArray(techs) ? techs.map(t => `<option value="${t.id}">${t.name}</option>`).join('') : '';
+    
+    openModal('New Work Order', `
+        <div><label class="block text-sm mb-1">Client *</label><select id="wo_customerId" required onchange="filterWoBuildings()" class="dark-input"><option value="">Select</option>${co}</select></div>
+        <div><label class="block text-sm mb-1">Building *</label><select id="wo_buildingId" required onchange="filterWoFlats()" disabled class="dark-input"><option value="">Select Client First</option></select></div>
+        <div><label class="block text-sm mb-1">Flat</label><select id="wo_flatId" disabled class="dark-input"><option value="">Select Building</option></select></div>
+        <div><label class="block text-sm mb-1">Technician</label><select id="wo_technicianId" class="dark-input"><option value="">Unassigned</option>${to}</select></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">Date *</label><input type="date" id="wo_scheduledDate" required class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Time *</label><input type="time" id="wo_scheduledTime" required class="dark-input"></div>
+        </div>
+        <div><label class="block text-sm mb-1">Complaint *</label><textarea id="wo_complaint" required rows="3" class="dark-input"></textarea></div>
+    `);
+    const sd = document.getElementById('wo_scheduledDate');
+    if (sd) sd.valueAsDate = prefillDate ? new Date(prefillDate) : new Date();
+    if (modalForm) {
+        modalForm.onsubmit = (e) => { 
+            e.preventDefault(); 
+            const dv = getInput('wo_scheduledDate'), tv = getInput('wo_scheduledTime'), sdt = new Date(`${dv}T${tv}`); 
+            handleSubmit('/work-orders', { title: 'Service Request', description: getInput('wo_complaint'), customerId: getInput('wo_customerId'), buildingId: getInput('wo_buildingId'), flatId: getInput('wo_flatId')||null, technicianId: getInput('wo_technicianId')||null, scheduledDate: sdt, priority: 'MEDIUM' }, 'WO created!', { tableId: 'tbody-work-orders' }); 
+        };
+    }
+}
+
+function filterWoBuildings() { 
+    const ci = getInput('wo_customerId'); 
+    const bs = document.getElementById('wo_buildingId'); 
+    const fs = document.getElementById('wo_flatId'); 
+    if (!bs || !fs) return;
+    fs.innerHTML = '<option value="">Select Building First</option>'; fs.disabled = true; 
+    bs.innerHTML = '<option value="">Select Building</option>'; 
+    if (ci && Array.isArray(allWoBuildings)) { 
+        bs.disabled = false; 
+        allWoBuildings.filter(b => b.customerId === ci).forEach(b => bs.innerHTML += `<option value="${b.id}">${b.name}</option>`); 
+    } else { 
+        bs.disabled = true; 
+    } 
+}
+
+function filterWoFlats() { 
+    const bi = getInput('wo_buildingId'); 
+    const fs = document.getElementById('wo_flatId'); 
+    if (!fs) return;
+    fs.innerHTML = '<option value="">Select Flat</option>'; 
+    if (bi && Array.isArray(allWoFlats)) { 
+        fs.disabled = false; 
+        allWoFlats.filter(f => f.buildingId === bi).forEach(f => fs.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`); 
+    } else { 
+        fs.disabled = true; 
+    } 
+}
+
+// ==================== BUILDINGS (WITH EDIT) ====================
+async function fetchAndRenderBuildings() {
+    const tbody = document.getElementById('tbody-buildings'); if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+    try {
+        const data = await apiFetch('/buildings');
+        if (!Array.isArray(data) || data.length === 0) { 
+            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Buildings found.</td></tr>`; 
+            return; 
+        }
+        tbody.innerHTML = data.map(item => `<tr>
+            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.name || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.location || item.address || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.flats ? item.flats.length : '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700 flex gap-2">
+                <button onclick="editBuilding('${item.id}')" class="text-blue-600 hover:text-blue-800">Edit</button>
+                <button onclick="deleteBuilding('${item.id}')" class="text-red-600 hover:text-red-800">Del</button>
+            </td>
+        </tr>`).join('');
+    } catch (e) { 
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load buildings.</td></tr>`; 
+    }
+}
+
+async function openBuildingModal(editId = null) {
+    const co = await fetchDropdown('/customers');
+    let bld = {};
+    if (editId) {
+        bld = await apiFetch(`/buildings/${editId}`).catch(() => ({}));
+    }
+
+    openModal(editId ? 'Edit Building' : 'New Building', `
+        <div><label class="block text-sm mb-1">Building Name *</label><input type="text" id="bld_name" required class="dark-input" value="${bld.name || ''}"></div>
+        <div><label class="block text-sm mb-1">Customer / Client *</label><select id="bld_customerId" required class="dark-input"><option value="">Select Customer</option>${co}</select></div>
+        <div><label class="block text-sm mb-1">Location / Address</label><input type="text" id="bld_location" class="dark-input" value="${bld.location || bld.address || ''}"></div>
+    `);
+
+    const sel = document.getElementById('bld_customerId');
+    if (sel && bld.customerId) sel.value = bld.customerId;
+
+    if (modalForm) {
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            const endpoint = editId ? `/buildings/${editId}` : '/buildings';
+            const method = editId ? 'PATCH' : 'POST';
+            handleSubmit(endpoint, {
+                name: getInput('bld_name'),
+                customerId: getInput('bld_customerId'),
+                address: getInput('bld_location'),
+                location: getInput('bld_location')
+            }, editId ? 'Building updated!' : 'Building created!', { tableId: 'tbody-buildings' }, method);
+        };
+    }
+}
+
+function editBuilding(id) { openBuildingModal(id); }
+
+async function deleteBuilding(id) {
+    if (confirm('Are you sure you want to delete this building?')) {
+        try {
+            await apiFetch(`/buildings/${id}`, 'DELETE');
+            fetchAndRenderBuildings();
+        } catch (e) { alert('Failed: ' + e.message); }
+    }
+}
+
+// ==================== FLATS (WITH EDIT) ====================
+async function fetchAndRenderFlats() {
+    const tbody = document.getElementById('tbody-flats'); if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+    try {
+        const data = await apiFetch('/flats');
+        if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Flats found.</td></tr>`; return; }
+        tbody.innerHTML = data.map(item => `<tr>
+            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.unitNumber||'-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.building?.name||'-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.floor||'-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">${item.type||'-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">
+                <button onclick="editFlat('${item.id}')" class="text-blue-600 hover:text-blue-800">Edit</button>
+            </td>
+        </tr>`).join('');
+    } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load flats.</td></tr>`; }
+}
+
+async function openFlatModal(editId = null) {
+    const bo = await fetchDropdown('/buildings');
+    let fl = {};
+    if (editId) {
+        fl = await apiFetch(`/flats/${editId}`).catch(() => ({}));
+    }
+
+    openModal(editId ? 'Edit Flat' : 'New Flat', `
+        <div><label class="block text-sm mb-1">Building *</label><select id="fl_buildingId" required class="dark-input"><option value="">Select Building</option>${bo}</select></div>
+        <div><label class="block text-sm mb-1">Unit / Flat Number *</label><input type="text" id="fl_unitNumber" required class="dark-input" value="${fl.unitNumber || ''}"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">Floor</label><input type="number" id="fl_floor" class="dark-input" value="${fl.floor !== undefined ? fl.floor : ''}"></div>
+            <div><label class="block text-sm mb-1">Type</label><input type="text" id="fl_type" placeholder="e.g. 2BHK, Studio" class="dark-input" value="${fl.type || ''}"></div>
+        </div>
+    `);
+
+    const sel = document.getElementById('fl_buildingId');
+    if (sel && fl.buildingId) sel.value = fl.buildingId;
+
+    if (modalForm) {
+        modalForm.onsubmit = (e) => { 
+            e.preventDefault(); 
+            const floorVal = getInput('fl_floor');
+            const endpoint = editId ? `/flats/${editId}` : '/flats';
+            const method = editId ? 'PATCH' : 'POST';
+            handleSubmit(endpoint, { 
+                buildingId: getInput('fl_buildingId'), 
+                unitNumber: getInput('fl_unitNumber'), 
+                floor: floorVal !== '' ? parseInt(floorVal, 10) : null, 
+                type: getInput('fl_type') 
+            }, editId ? 'Flat updated!' : 'Flat created!', { tableId: 'tbody-flats' }, method); 
+        };
+    }
+}
+
+function editFlat(id) { openFlatModal(id); }
+
+// ==================== ASSETS / INVENTORY (REGISTER & EDIT FIXED) ====================
+async function fetchAndRenderAssets() {
+    const tbody = document.getElementById('tbody-inventory'); if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+    try {
+        let data;
+        try { data = await apiFetch('/assets'); } catch (err) { data = await apiFetch('/inventory'); }
+
+        if (!Array.isArray(data) || data.length === 0) { 
+            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`; 
+            return; 
+        }
+        tbody.innerHTML = data.map(item => {
+            const code = item.sku || item.assetTag || item.itemCode || item.serialNumber || '-';
+            const name = item.name || item.title || item.itemName || item.model || '-';
+            const category = item.category || item.type || '-';
+            const qty = item.quantity !== undefined ? item.quantity : (item.qty !== undefined ? item.qty : 1);
+            const unit = item.unit || 'Pcs';
+            const price = item.unitPrice !== undefined ? item.unitPrice : (item.cost !== undefined ? item.cost : 0);
+            const loc = item.location || item.storeLocation || item.building?.name || '-';
+
+            return `<tr>
+                <td class="px-4 py-3 text-sm font-medium text-gray-700">${code}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${name}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${category}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${qty}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${unit}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(price).toFixed(2)}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${loc}</td>
+                <td class="px-4 py-3 text-sm text-gray-700 flex gap-2">
+                    <button onclick="editAsset('${item.id}')" class="text-blue-600 hover:text-blue-800">Edit</button>
+                    <button onclick="deleteAsset('${item.id}')" class="text-red-600 hover:text-red-800">Del</button>
+                </td>
+            </tr>`;
+        }).join('');
+    } catch (e) { 
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load inventory assets.</td></tr>`; 
+    }
+}
+
+async function openAssetModal(editId = null) {
+    let ast = {};
+    if (editId) {
+        try { ast = await apiFetch(`/assets/${editId}`); } 
+        catch (e) { ast = await apiFetch(`/inventory/${editId}`).catch(() => ({})); }
+    }
+
+    openModal(editId ? 'Edit Asset' : 'New Asset', `
+        <div><label class="block text-sm mb-1">SKU / Asset Code *</label><input type="text" id="ast_sku" required class="dark-input" value="${ast.sku || ast.assetTag || ''}"></div>
+        <div><label class="block text-sm mb-1">Name *</label><input type="text" id="ast_name" required class="dark-input" value="${ast.name || ast.title || ''}"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">Category</label><input type="text" id="ast_category" class="dark-input" value="${ast.category || ''}"></div>
+            <div><label class="block text-sm mb-1">Unit</label><input type="text" id="ast_unit" placeholder="e.g. Pcs, Box, Kg" class="dark-input" value="${ast.unit || ''}"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">Quantity</label><input type="number" id="ast_qty" value="${ast.quantity !== undefined ? ast.quantity : 1}" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Unit Price (AED)</label><input type="number" step="0.01" id="ast_price" value="${ast.unitPrice !== undefined ? ast.unitPrice : '0.00'}" class="dark-input"></div>
+        </div>
+        <div><label class="block text-sm mb-1">Location / Warehouse</label><input type="text" id="ast_location" class="dark-input" value="${ast.location || ''}"></div>
+    `);
+
+    if (modalForm) {
+        modalForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const payload = {
+                sku: getInput('ast_sku'),
+                name: getInput('ast_name'),
+                category: getInput('ast_category'),
+                unit: getInput('ast_unit'),
+                quantity: parseInt(getInput('ast_qty'), 10) || 0,
+                unitPrice: parseFloat(getInput('ast_price')) || 0,
+                location: getInput('ast_location')
+            };
+
+            const primaryRoute = editId ? `/assets/${editId}` : '/assets';
+            const fallbackRoute = editId ? `/inventory/${editId}` : '/inventory';
+            const method = editId ? 'PATCH' : 'POST';
+
+            try {
+                await handleSubmit(primaryRoute, payload, editId ? 'Asset updated!' : 'Asset registered!', { tableId: 'tbody-inventory' }, method);
+            } catch (err) {
+                await handleSubmit(fallbackRoute, payload, editId ? 'Asset updated!' : 'Asset registered!', { tableId: 'tbody-inventory' }, method);
+            }
+        };
+    }
+}
+
+function editAsset(id) { openAssetModal(id); }
+
+async function deleteAsset(id) {
+    if (confirm('Are you sure you want to delete this asset?')) {
+        try {
+            try { await apiFetch(`/assets/${id}`, 'DELETE'); }
+            catch(e) { await apiFetch(`/inventory/${id}`, 'DELETE'); }
+            fetchAndRenderAssets();
+        } catch (e) { alert('Failed to delete asset: ' + e.message); }
+    }
+}
 
 // ==================== RECEIPT & PAYMENT VOUCHERS ====================
 async function fetchAndRenderReceipts() {
@@ -230,292 +660,6 @@ function downloadVoucherPDF(vn) {
     } else { 
         alert('PDF generator library not loaded.'); 
     } 
-}
-
-// ==================== WORK ORDERS ====================
-async function fetchAndRenderWorkOrders() {
-    const tbody = document.getElementById('tbody-work-orders'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/work-orders');
-        if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Work Orders found.</td></tr>`; return; }
-        tbody.innerHTML = data.map(item => {
-            const sc = { 'PENDING':'bg-yellow-100 text-yellow-700','ASSIGNED':'bg-blue-100 text-blue-700','IN_PROGRESS':'bg-amber-100 text-amber-700','PENDING_PARTS':'bg-orange-100 text-orange-700','COMPLETED':'bg-green-100 text-green-700','CANCELLED':'bg-red-100 text-red-700' };
-            const s = item.status || 'PENDING';
-            const cm = ['SUPER_ADMIN','ADMIN','MANAGER','COORDINATOR'].includes(userRole);
-            return `<tr><td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.woNumber}</td><td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name||'-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.building?.name||'-'} ${item.flat?.unitNumber?'('+item.flat.unitNumber+')':''}</td><td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">${item.description||item.title}</td><td class="px-4 py-3 text-sm text-gray-700">${item.scheduledDate?new Date(item.scheduledDate).toLocaleString():'N/A'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.technician?.name||'Unassigned'}</td><td class="px-4 py-3"><select onchange="updateWoStatus('${item.id}',this.value)" class="px-2 py-1 bg-white border border-gray-300 rounded-md text-xs ${sc[s]||''}"><option value="PENDING" ${s==='PENDING'?'selected':''}>Pending</option><option value="ASSIGNED" ${s==='ASSIGNED'?'selected':''}>Scheduled</option><option value="IN_PROGRESS" ${s==='IN_PROGRESS'?'selected':''}>In Progress</option><option value="PENDING_PARTS" ${s==='PENDING_PARTS'?'selected':''}>Pending Parts</option><option value="COMPLETED" ${s==='COMPLETED'?'selected':''}>Completed</option><option value="CANCELLED" ${s==='CANCELLED'?'selected':''}>Cancelled</option></select></td><td class="px-4 py-3 text-sm flex gap-1"><button onclick="viewWorkOrderDetails('${item.id}')" class="text-blue-600 px-1">View</button>${cm?`<button onclick="openServiceReportModal('${item.id}')" class="text-purple-600 px-1">Report</button><button onclick="deleteWo('${item.id}')" class="text-red-600 px-1">Del</button>`:''}</td></tr>`;
-        }).join('');
-    } catch (e) { tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
-}
-
-async function updateWoStatus(id, status) { try { await apiFetch(`/work-orders/${id}/status`, 'PATCH', { status }); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed: ' + e.message); } }
-async function deleteWo(id) { if (confirm('Delete this WO?')) { try { await apiFetch(`/work-orders/${id}`, 'DELETE'); fetchAndRenderWorkOrders(); } catch (e) { alert('Failed: ' + e.message); } } }
-
-async function viewWorkOrderDetails(id) {
-    try {
-        const wo = await apiFetch(`/work-orders/${id}`);
-        const isTech = userRole === 'TECHNICIAN';
-        openModal('WO Details', `<div class="space-y-4"><div class="flex justify-between border-b pb-3"><span class="font-bold text-lg text-blue-600">WO: ${wo.woNumber}</span><span class="text-sm text-gray-500">${new Date(wo.createdAt).toLocaleDateString()}</span></div><div class="grid grid-cols-2 gap-4 text-sm"><div><strong>Client:</strong> ${wo.customer?.name||'N/A'}</div><div><strong>Building:</strong> ${wo.building?.name||'N/A'}</div><div><strong>Tech:</strong> ${wo.technician?.name||'Unassigned'}</div><div><strong>Schedule:</strong> ${wo.scheduledDate?new Date(wo.scheduledDate).toLocaleString():'N/A'}</div></div><div class="text-sm"><strong>Complaint:</strong><br>${wo.description||wo.title}</div>${isTech?`<div class="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm">Phone numbers hidden.</div>`:`<div class="text-sm"><strong>Phone:</strong> ${wo.customer?.phone||'N/A'}</div>`}<div class="flex gap-3 pt-4"><button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 py-3 rounded-lg font-semibold">Close</button><button type="button" onclick="openServiceReportModal('${wo.id}')" class="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold">Service Report</button></div></div>`, true);
-    } catch (e) { alert('Failed to load WO'); }
-}
-
-async function openServiceReportModal(workOrderId) {
-    try {
-        const wo = await apiFetch(`/work-orders/${workOrderId}`);
-        openModal('Service Report', `<div class="space-y-4"><div class="flex justify-between border-b pb-3"><span class="font-bold text-lg text-blue-600">Service Report</span><span class="text-sm text-gray-500">WO: ${wo.woNumber}</span></div><div class="text-sm"><strong>Complaint:</strong><br>${wo.description||wo.title}</div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm mb-1">Started</label><input type="datetime-local" id="sr_startedAt" class="dark-input"></div><div><label class="block text-sm mb-1">Ended</label><input type="datetime-local" id="sr_completedAt" class="dark-input"></div></div><div><label class="block text-sm mb-1">Work Performed</label><textarea id="sr_workPerformed" rows="3" class="dark-input"></textarea></div><div><label class="block text-sm mb-1">Materials</label><textarea id="sr_materials" rows="2" class="dark-input"></textarea></div><div><label class="block text-sm mb-1">Observations</label><textarea id="sr_observations" rows="2" class="dark-input"></textarea></div><div><label class="block text-sm mb-1">Signature</label><div class="border-2 border-gray-300 rounded-lg p-2 bg-white"><canvas id="signature-canvas" width="400" height="150" class="w-full"></canvas></div><button type="button" onclick="clearSignature()" class="text-xs text-red-500 mt-1">Clear</button></div><div class="flex gap-3 pt-4"><button type="button" onclick="closeModal()" class="flex-1 bg-gray-100 py-3 rounded-lg font-semibold">Cancel</button><button type="button" onclick="saveAndDownloadPDF('${wo.id}')" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold">Save & PDF</button></div></div>`, true);
-        const canvas = document.getElementById('signature-canvas');
-        if (canvas && typeof SignaturePad !== 'undefined') {
-            signaturePad = new SignaturePad(canvas);
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio; canvas.getContext("2d").scale(ratio, ratio);
-        }
-    } catch (e) { alert('Failed to load WO'); }
-}
-
-function clearSignature() { if (signaturePad) signaturePad.clear(); }
-
-async function saveAndDownloadPDF(workOrderId) {
-    const sa = getInput('sr_startedAt'), ca = getInput('sr_completedAt'), wp = getInput('sr_workPerformed'), m = getInput('sr_materials'), o = getInput('sr_observations'), sd = (signaturePad && !signaturePad.isEmpty()) ? signaturePad.toDataURL() : null;
-    if (!wp || !sa || !ca) { alert('Fill all fields.'); return; }
-    try {
-        await apiFetch(`/work-orders/${workOrderId}`, 'PATCH', { startedAt: sa, completedAt: ca, workPerformed: wp, materialsUsed: { items: m }, observations: o, clientSignature: sd, technicianName: 'Admin' });
-        await apiFetch(`/work-orders/${workOrderId}/status`, 'PATCH', { status: 'COMPLETED' });
-        const pc = document.createElement('div'); pc.style.padding = '20px'; pc.style.fontFamily = 'Arial'; pc.style.color = '#333';
-        pc.innerHTML = `<h2 style="text-align:center;color:#1e3a8a;border-bottom:2px solid #333;padding-bottom:10px;">Service Report</h2><p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p><hr><div style="display:flex;justify-content:space-between"><p><strong>Start:</strong> ${new Date(sa).toLocaleString()}</p><p><strong>End:</strong> ${new Date(ca).toLocaleString()}</p></div><h4>Work:</h4><p>${wp}</p><h4>Materials:</h4><p>${m}</p><h4>Observations:</h4><p>${o}</p><hr><div style="display:flex;justify-content:space-between;align-items:flex-end"><p><strong>Tech:</strong> Admin</p><div style="text-align:center">${sd?`<img src="${sd}" height="80" width="200"><br>`:''}<span style="border-top:1px solid #000;padding-top:5px;display:inline-block;width:200px">Signature</span></div></div>`;
-        document.body.appendChild(pc);
-        if (typeof html2pdf !== 'undefined') {
-            html2pdf().set({margin:10,filename:`SR_${workOrderId.substring(0,8)}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(pc).save().then(() => document.body.removeChild(pc));
-        }
-        closeModal(); fetchAndRenderWorkOrders();
-    } catch (e) { alert('Failed: ' + e.message); }
-}
-
-async function openWorkOrderModal(prefillDate) {
-    const customers = await apiFetch('/customers').catch(() => []); 
-    allWoBuildings = await apiFetch('/buildings').catch(() => []); 
-    allWoFlats = await apiFetch('/flats').catch(() => []); 
-    const techs = await apiFetch('/users').catch(() => []);
-    
-    const co = Array.isArray(customers) ? customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('') : '';
-    const to = Array.isArray(techs) ? techs.map(t => `<option value="${t.id}">${t.name}</option>`).join('') : '';
-    
-    openModal('New Work Order', `<div><label class="block text-sm mb-1">Client *</label><select id="wo_customerId" required onchange="filterWoBuildings()" class="dark-input"><option value="">Select</option>${co}</select></div><div><label class="block text-sm mb-1">Building *</label><select id="wo_buildingId" required onchange="filterWoFlats()" disabled class="dark-input"><option value="">Select Client First</option></select></div><div><label class="block text-sm mb-1">Flat</label><select id="wo_flatId" disabled class="dark-input"><option value="">Select Building</option></select></div><div><label class="block text-sm mb-1">Technician</label><select id="wo_technicianId" class="dark-input"><option value="">Unassigned</option>${to}</select></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm mb-1">Date *</label><input type="date" id="wo_scheduledDate" required class="dark-input"></div><div><label class="block text-sm mb-1">Time *</label><input type="time" id="wo_scheduledTime" required class="dark-input"></div></div><div><label class="block text-sm mb-1">Complaint *</label><textarea id="wo_complaint" required rows="3" class="dark-input"></textarea></div>`);
-    const sd = document.getElementById('wo_scheduledDate');
-    if (sd) sd.valueAsDate = prefillDate ? new Date(prefillDate) : new Date();
-    if (modalForm) {
-        modalForm.onsubmit = (e) => { 
-            e.preventDefault(); 
-            const dv = getInput('wo_scheduledDate'), tv = getInput('wo_scheduledTime'), sdt = new Date(`${dv}T${tv}`); 
-            handleSubmit('/work-orders', { title: 'Service Request', description: getInput('wo_complaint'), customerId: getInput('wo_customerId'), buildingId: getInput('wo_buildingId'), flatId: getInput('wo_flatId')||null, technicianId: getInput('wo_technicianId')||null, scheduledDate: sdt, priority: 'MEDIUM' }, 'WO created!', { tableId: 'tbody-work-orders' }); 
-        };
-    }
-}
-
-function filterWoBuildings() { 
-    const ci = getInput('wo_customerId'); 
-    const bs = document.getElementById('wo_buildingId'); 
-    const fs = document.getElementById('wo_flatId'); 
-    if (!bs || !fs) return;
-    fs.innerHTML = '<option value="">Select Building First</option>'; fs.disabled = true; 
-    bs.innerHTML = '<option value="">Select Building</option>'; 
-    if (ci && Array.isArray(allWoBuildings)) { 
-        bs.disabled = false; 
-        allWoBuildings.filter(b => b.customerId === ci).forEach(b => bs.innerHTML += `<option value="${b.id}">${b.name}</option>`); 
-    } else { 
-        bs.disabled = true; 
-    } 
-}
-
-function filterWoFlats() { 
-    const bi = getInput('wo_buildingId'); 
-    const fs = document.getElementById('wo_flatId'); 
-    if (!fs) return;
-    fs.innerHTML = '<option value="">Select Flat</option>'; 
-    if (bi && Array.isArray(allWoFlats)) { 
-        fs.disabled = false; 
-        allWoFlats.filter(f => f.buildingId === bi).forEach(f => fs.innerHTML += `<option value="${f.id}">${f.unitNumber}</option>`); 
-    } else { 
-        fs.disabled = true; 
-    } 
-}
-
-// ==================== BUILDINGS & FLATS ====================
-async function fetchAndRenderBuildings() {
-    const tbody = document.getElementById('tbody-buildings'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/buildings');
-        if (!Array.isArray(data) || data.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Buildings found.</td></tr>`; 
-            return; 
-        }
-        tbody.innerHTML = data.map(item => `<tr>
-            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.name || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.location || item.address || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.flats ? item.flats.length : '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700"><button onclick="deleteBuilding('${item.id}')" class="text-red-600 hover:text-red-800">Del</button></td>
-        </tr>`).join('');
-    } catch (e) { 
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load buildings.</td></tr>`; 
-    }
-}
-
-async function openBuildingModal() {
-    const co = await fetchDropdown('/customers');
-    openModal('New Building', `
-        <div><label class="block text-sm mb-1">Building Name *</label><input type="text" id="bld_name" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Customer / Client *</label><select id="bld_customerId" required class="dark-input"><option value="">Select Customer</option>${co}</select></div>
-        <div><label class="block text-sm mb-1">Location / Address</label><input type="text" id="bld_location" class="dark-input"></div>
-    `);
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/buildings', {
-                name: getInput('bld_name'),
-                customerId: getInput('bld_customerId'),
-                address: getInput('bld_location'),
-                location: getInput('bld_location')
-            }, 'Building created!', { tableId: 'tbody-buildings' });
-        };
-    }
-}
-
-async function deleteBuilding(id) {
-    if (confirm('Are you sure you want to delete this building?')) {
-        try {
-            await apiFetch(`/buildings/${id}`, 'DELETE');
-            fetchAndRenderBuildings();
-        } catch (e) { alert('Failed: ' + e.message); }
-    }
-}
-
-async function fetchAndRenderFlats() {
-    const tbody = document.getElementById('tbody-flats'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/flats');
-        if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Flats found.</td></tr>`; return; }
-        tbody.innerHTML = data.map(item => `<tr><td class="px-4 py-3 text-sm font-medium text-gray-700">${item.unitNumber||'-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.building?.name||'-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.floor||'-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.type||'-'}</td></tr>`).join('');
-    } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load flats.</td></tr>`; }
-}
-
-async function openFlatModal() {
-    const bo = await fetchDropdown('/buildings');
-    openModal('New Flat', `<div><label class="block text-sm mb-1">Building *</label><select id="fl_buildingId" required class="dark-input"><option value="">Select Building</option>${bo}</select></div><div><label class="block text-sm mb-1">Unit / Flat Number *</label><input type="text" id="fl_unitNumber" required class="dark-input"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm mb-1">Floor</label><input type="number" id="fl_floor" class="dark-input"></div><div><label class="block text-sm mb-1">Type</label><input type="text" id="fl_type" placeholder="e.g. 2BHK, Studio" class="dark-input"></div></div>`);
-    if (modalForm) {
-        modalForm.onsubmit = (e) => { 
-            e.preventDefault(); 
-            const floorVal = getInput('fl_floor');
-            handleSubmit('/flats', { 
-                buildingId: getInput('fl_buildingId'), 
-                unitNumber: getInput('fl_unitNumber'), 
-                floor: floorVal !== '' ? parseInt(floorVal, 10) : null, 
-                type: getInput('fl_type') 
-            }, 'Flat created!', { tableId: 'tbody-flats' }); 
-        };
-    }
-}
-
-// ==================== ASSETS / INVENTORY (FIXED ROUTE) ====================
-async function fetchAndRenderAssets() {
-    const tbody = document.getElementById('tbody-inventory'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        // Fallback check between /assets and /inventory endpoints
-        let data;
-        try {
-            data = await apiFetch('/assets');
-        } catch (err) {
-            data = await apiFetch('/inventory');
-        }
-
-        if (!Array.isArray(data) || data.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`; 
-            return; 
-        }
-        tbody.innerHTML = data.map(item => {
-            const code = item.sku || item.assetTag || item.itemCode || item.serialNumber || '-';
-            const name = item.name || item.title || item.itemName || item.model || '-';
-            const category = item.category || item.type || '-';
-            const qty = item.quantity !== undefined ? item.quantity : (item.qty !== undefined ? item.qty : 1);
-            const unit = item.unit || 'Pcs';
-            const price = item.unitPrice !== undefined ? item.unitPrice : (item.cost !== undefined ? item.cost : 0);
-            const loc = item.location || item.storeLocation || item.building?.name || '-';
-
-            return `<tr>
-                <td class="px-4 py-3 text-sm font-medium text-gray-700">${code}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">${name}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">${category}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">${qty}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">${unit}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(price).toFixed(2)}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">${loc}</td>
-                <td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewAssetDetails('${item.id}')" class="text-blue-600 hover:text-blue-800">View</button></td>
-            </tr>`;
-        }).join('');
-    } catch (e) { 
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Failed to load inventory assets.</td></tr>`; 
-    }
-}
-
-async function openAssetModal() {
-    openModal('New Asset', `
-        <div><label class="block text-sm mb-1">SKU / Asset Code *</label><input type="text" id="ast_sku" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Name *</label><input type="text" id="ast_name" required class="dark-input"></div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">Category</label><input type="text" id="ast_category" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Unit</label><input type="text" id="ast_unit" placeholder="e.g. Pcs, Box, Kg" class="dark-input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">Quantity</label><input type="number" id="ast_qty" value="1" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Unit Price (AED)</label><input type="number" step="0.01" id="ast_price" value="0.00" class="dark-input"></div>
-        </div>
-        <div><label class="block text-sm mb-1">Location / Warehouse</label><input type="text" id="ast_location" class="dark-input"></div>
-    `);
-    if (modalForm) {
-        modalForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const payload = {
-                sku: getInput('ast_sku'),
-                name: getInput('ast_name'),
-                category: getInput('ast_category'),
-                unit: getInput('ast_unit'),
-                quantity: parseInt(getInput('ast_qty'), 10) || 0,
-                unitPrice: parseFloat(getInput('ast_price')) || 0,
-                location: getInput('ast_location')
-            };
-            
-            // Try POSTing to /assets first, fallback to /inventory
-            try {
-                await handleSubmit('/assets', payload, 'Asset saved!', { tableId: 'tbody-inventory' });
-            } catch (err) {
-                await handleSubmit('/inventory', payload, 'Asset saved!', { tableId: 'tbody-inventory' });
-            }
-        };
-    }
-}
-
-async function viewAssetDetails(id) {
-    try {
-        let item;
-        try {
-            item = await apiFetch(`/assets/${id}`);
-        } catch(e) {
-            item = await apiFetch(`/inventory/${id}`);
-        }
-        openModal('Asset Details', `
-            <div class="space-y-3 text-sm">
-                <div><strong>SKU:</strong> ${item.sku || item.assetTag || 'N/A'}</div>
-                <div><strong>Name:</strong> ${item.name || item.title || 'N/A'}</div>
-                <div><strong>Category:</strong> ${item.category || 'N/A'}</div>
-                <div><strong>Quantity:</strong> ${item.quantity || 0} ${item.unit || ''}</div>
-                <div><strong>Unit Price:</strong> AED ${parseFloat(item.unitPrice || 0).toFixed(2)}</div>
-                <div><strong>Location:</strong> ${item.location || 'N/A'}</div>
-                <div class="pt-4"><button type="button" onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded">Close</button></div>
-            </div>
-        `, true);
-    } catch (e) { alert('Failed to fetch asset details.'); }
 }
 
 // ==================== INVOICES ====================
