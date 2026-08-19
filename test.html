@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Connection Test</title>
+</head>
+<body>
+    <h1>Backend API Test</h1>
+    <button onclick="testApi()" style="padding: 10px; font-size: 16px; cursor: pointer;">Fetch Work Orders from Backend</button>
+    <pre id="output" style="background: #f4f4f4; padding: 20px; margin-top: 20px; border: 1px solid #ccc; white-space: pre-wrap; word-wrap: break-word;">Waiting for test...</pre>
+
+    <script>
+        async function testApi() {
+            const output = document.getElementById('output');
+            output.innerText = "Fetching from https://makinfratech-api.onrender.com/api/work-orders ...";
+            
+            try {
+                const res = await fetch('https://makinfratech-api.onrender.com/api/work-orders');
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    output.innerText = "❌ ERROR: Status " + res.status + "\n\nResponse:\n" + errorText;
+                    return;
+                }
+                
+                const data = await res.json();
+                output.innerText = "✅ SUCCESS! Backend is working!\n\nData received:\n" + JSON.stringify(data, null, 2);
+                
+            } catch (e) {
+                output.innerText = "❌ NETWORK/CORS ERROR:\n" + e.message + "\n\nMake sure your backend URL is correct and CORS is enabled in main.ts.";
+            }
+        }
+    </script>
+</body>
+</html>
