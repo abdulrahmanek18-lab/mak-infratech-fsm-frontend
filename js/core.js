@@ -15,12 +15,15 @@ let allInvBuildings = [], allInvFlats = [];
 async function apiFetch(endpoint, method = 'GET', body = null) {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}` 
+        },
         body: body ? JSON.stringify(body) : null
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({ message: 'API Error' }));
-        throw new Error(err.message || 'Failed to fetch');
+        throw new Error(err.message || `HTTP ${res.status} Error`);
     }
     return res.json();
 }
@@ -414,24 +417,31 @@ async function openFlatModal() {
     }
 }
 
-// ==================== ASSETS / INVENTORY ====================
+// ==================== ASSETS / INVENTORY (FIXED ROUTE) ====================
 async function fetchAndRenderAssets() {
     const tbody = document.getElementById('tbody-inventory'); if (!tbody) return;
     tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
     try {
-        const data = await apiFetch('/inventory');
+        // Fallback check between /assets and /inventory endpoints
+        let data;
+        try {
+            data = await apiFetch('/assets');
+        } catch (err) {
+            data = await apiFetch('/inventory');
+        }
+
         if (!Array.isArray(data) || data.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Inventory Assets found.</td></tr>`; 
+            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">No Assets found.</td></tr>`; 
             return; 
         }
         tbody.innerHTML = data.map(item => {
-            const code = item.sku || item.assetTag || item.itemCode || '-';
-            const name = item.name || item.title || item.itemName || '-';
+            const code = item.sku || item.assetTag || item.itemCode || item.serialNumber || '-';
+            const name = item.name || item.title || item.itemName || item.model || '-';
             const category = item.category || item.type || '-';
-            const qty = item.quantity !== undefined ? item.quantity : (item.qty !== undefined ? item.qty : '-');
+            const qty = item.quantity !== undefined ? item.quantity : (item.qty !== undefined ? item.qty : 1);
             const unit = item.unit || 'Pcs';
             const price = item.unitPrice !== undefined ? item.unitPrice : (item.cost !== undefined ? item.cost : 0);
-            const loc = item.location || item.storeLocation || '-';
+            const loc = item.location || item.storeLocation || item.building?.name || '-';
 
             return `<tr>
                 <td class="px-4 py-3 text-sm font-medium text-gray-700">${code}</td>
@@ -458,15 +468,15 @@ async function openAssetModal() {
             <div><label class="block text-sm mb-1">Unit</label><input type="text" id="ast_unit" placeholder="e.g. Pcs, Box, Kg" class="dark-input"></div>
         </div>
         <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">Quantity</label><input type="number" id="ast_qty" value="0" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Quantity</label><input type="number" id="ast_qty" value="1" class="dark-input"></div>
             <div><label class="block text-sm mb-1">Unit Price (AED)</label><input type="number" step="0.01" id="ast_price" value="0.00" class="dark-input"></div>
         </div>
         <div><label class="block text-sm mb-1">Location / Warehouse</label><input type="text" id="ast_location" class="dark-input"></div>
     `);
     if (modalForm) {
-        modalForm.onsubmit = (e) => {
+        modalForm.onsubmit = async (e) => {
             e.preventDefault();
-            handleSubmit('/inventory', {
+            const payload = {
                 sku: getInput('ast_sku'),
                 name: getInput('ast_name'),
                 category: getInput('ast_category'),
@@ -474,14 +484,26 @@ async function openAssetModal() {
                 quantity: parseInt(getInput('ast_qty'), 10) || 0,
                 unitPrice: parseFloat(getInput('ast_price')) || 0,
                 location: getInput('ast_location')
-            }, 'Asset saved!', { tableId: 'tbody-inventory' });
+            };
+            
+            // Try POSTing to /assets first, fallback to /inventory
+            try {
+                await handleSubmit('/assets', payload, 'Asset saved!', { tableId: 'tbody-inventory' });
+            } catch (err) {
+                await handleSubmit('/inventory', payload, 'Asset saved!', { tableId: 'tbody-inventory' });
+            }
         };
     }
 }
 
 async function viewAssetDetails(id) {
     try {
-        const item = await apiFetch(`/inventory/${id}`);
+        let item;
+        try {
+            item = await apiFetch(`/assets/${id}`);
+        } catch(e) {
+            item = await apiFetch(`/inventory/${id}`);
+        }
         openModal('Asset Details', `
             <div class="space-y-3 text-sm">
                 <div><strong>SKU:</strong> ${item.sku || item.assetTag || 'N/A'}</div>
