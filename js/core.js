@@ -826,26 +826,6 @@ async function fetchAndRenderStaff() {
     }
 }
 
-async function openStaffModal() {
-    openModal('New Staff Member', `
-        <div><label class="block text-sm mb-1">Full Name *</label><input type="text" id="st_name" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Role *</label><input type="text" id="st_role" placeholder="e.g. Technician, AC Specialist" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Phone</label><input type="text" id="st_phone" class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Email</label><input type="email" id="st_email" class="dark-input"></div>
-    `);
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/staff', {
-                name: getInput('st_name'),
-                role: getInput('st_role'),
-                phone: getInput('st_phone'),
-                email: getInput('st_email')
-            }, 'Staff Saved!', { tableId: 'tbody-staff' });
-        };
-    }
-}
-
 async function fetchAndRenderUsers() {
     const tbody = document.getElementById('tbody-users'); if (!tbody) return;
     tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
@@ -866,6 +846,120 @@ async function fetchAndRenderUsers() {
     }
 }
 
+// ==================== STAFF & INVOICE MODALS ====================
+let staffPhotoData = null;
+
+function handleStaffPhotoUpload(event) { 
+    const f = event.target.files[0]; 
+    if (!f) return; 
+    const r = new FileReader(); 
+    r.onload = (e) => { 
+        staffPhotoData = e.target.result; 
+        const prev = document.getElementById('staff_photo_preview');
+        if (prev) prev.src = e.target.result; 
+    }; 
+    r.readAsDataURL(f); 
+}
+
+async function openStaffModal() {
+    staffPhotoData = null; 
+    openModal('New Staff Member', `
+        <div class="flex flex-col items-center mb-4">
+            <img id="staff_photo_preview" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNiIvPjwvc3ZnPg==" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 mb-2">
+            <input type="file" accept="image/*" onchange="handleStaffPhotoUpload(event)" class="text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">First Name *</label><input type="text" id="st_fname" required class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Last Name *</label><input type="text" id="st_lname" required class="dark-input"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-2">
+            <div><label class="block text-sm mb-1">Gender</label><select id="st_gender" class="dark-input"><option>Male</option><option>Female</option></select></div>
+            <div><label class="block text-sm mb-1">Date of Birth</label><input type="date" id="st_dob" class="dark-input"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-2">
+            <div><label class="block text-sm mb-1">Nationality</label><input type="text" id="st_nat" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Job Position</label><input type="text" id="st_job" class="dark-input"></div>
+        </div>
+        <hr class="my-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">Passport Number</label><input type="text" id="st_pp" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Passport Expiry</label><input type="date" id="st_ppExp" class="dark-input"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-2">
+            <div><label class="block text-sm mb-1">EID Number</label><input type="text" id="st_eid" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">EID Expiry</label><input type="date" id="st_eidExp" class="dark-input"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-2">
+            <div><label class="block text-sm mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Salary (AED)</label><input type="number" id="st_salary" class="dark-input"></div>
+        </div>
+        <hr class="my-4">
+        <div class="grid grid-cols-3 gap-4">
+            <div><label class="block text-sm mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Policy Number</label><input type="text" id="st_insNum" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Insurance Expiry</label><input type="date" id="st_insExp" class="dark-input"></div>
+        </div>
+    `);
+    
+    if (modalForm) {
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            handleSubmit('/staff', {
+                firstName: getInput('st_fname'),
+                lastName: getInput('st_lname'),
+                photoUrl: staffPhotoData,
+                gender: getInput('st_gender'),
+                dob: getInput('st_dob'),
+                nationality: getInput('st_nat'),
+                jobPosition: getInput('st_job'),
+                passportNumber: getInput('st_pp'),
+                passportExpiry: getInput('st_ppExp'),
+                emiratesId: getInput('st_eid'),
+                emiratesIdExpiry: getInput('st_eidExp'),
+                visaExpiry: getInput('st_visaExp'),
+                salary: parseFloat(getInput('st_salary')) || 0,
+                insuranceProvider: getInput('st_insProv'),
+                insuranceNumber: getInput('st_insNum'),
+                insuranceExpiry: getInput('st_insExp')
+            }, 'Staff added!', { tableId: 'tbody-staff' });
+        };
+    }
+}
+
+async function openInvoiceModal() {
+    const co = await fetchDropdown('/customers');
+    openModal('New Invoice', `
+        <div><label class="block text-sm mb-1">Customer *</label><select id="inv_customerId" required class="dark-input"><option value="">Select</option>${co}</select></div>
+        <div class="grid grid-cols-2 gap-4 mt-2">
+            <div><label class="block text-sm mb-1">Invoice Date *</label><input type="date" id="inv_date" required class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Due Date</label><input type="date" id="inv_dueDate" class="dark-input"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-2">
+            <div><label class="block text-sm mb-1">Total Amount (AED) *</label><input type="number" step="0.01" id="inv_totalAmount" required class="dark-input" oninput="document.getElementById('inv_balanceDue').value = this.value"></div>
+            <div><label class="block text-sm mb-1">Balance Due (AED)</label><input type="number" step="0.01" id="inv_balanceDue" readonly class="dark-input bg-gray-100"></div>
+        </div>
+        <div><label class="block text-sm mb-1 mt-2">Notes</label><textarea id="inv_notes" class="dark-input" placeholder="Description of services..."></textarea></div>
+    `);
+    
+    const dateEl = document.getElementById('inv_date');
+    if (dateEl) dateEl.valueAsDate = new Date();
+    
+    if (modalForm) {
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            const tot = parseFloat(getInput('inv_totalAmount')) || 0;
+            handleSubmit('/invoices', {
+                customerId: getInput('inv_customerId'),
+                date: getInput('inv_date'),
+                dueDate: getInput('inv_dueDate') || null,
+                totalAmount: tot,
+                balanceDue: tot, // Default balance to total amount
+                notes: getInput('inv_notes'),
+                status: 'UNPAID'
+            }, 'Invoice Created!', { tableId: 'tbody-invoices' });
+        };
+    }
+}
 async function openUserModal() {
     openModal('New System User', `
         <div><label class="block text-sm mb-1">Name *</label><input type="text" id="usr_name" required class="dark-input"></div>
