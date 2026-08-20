@@ -5,7 +5,7 @@ let userRole = (localStorage.getItem('fsm_role') || 'SUPER_ADMIN').toUpperCase()
 let selectedInvoiceTemplate = localStorage.getItem('invoice_template') || 'modern';
 let editingInvoiceId = null;
 let signaturePad = null;
-let companyImageData = {};
+let companyImageData = { logo: null, header: null, footer: null };
 let staffPhotoData = null;
 let purchaseReceiptData = null;
 let allWoBuildings = [], allWoFlats = [];
@@ -424,8 +424,9 @@ async function fetchAndRenderFlats() {
             <td class="px-4 py-3 text-sm text-gray-700">${item.building?.name||'-'}</td>
             <td class="px-4 py-3 text-sm text-gray-700">${item.floor||'-'}</td>
             <td class="px-4 py-3 text-sm text-gray-700">${item.type||'-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">
+            <td class="px-4 py-3 text-sm text-gray-700 flex gap-2">
                 <button onclick="editFlat('${item.id}')" class="text-blue-600 hover:text-blue-800">Edit</button>
+                <button onclick="deleteFlat('${item.id}')" class="text-red-600 hover:text-red-800">Del</button>
             </td>
         </tr>`).join('');
     } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load flats.</td></tr>`; }
@@ -468,7 +469,16 @@ async function openFlatModal(editId = null) {
 
 function editFlat(id) { openFlatModal(id); }
 
-// ==================== ASSETS / INVENTORY (REGISTER & EDIT FIXED) ====================
+async function deleteFlat(id) {
+    if (confirm('Are you sure you want to delete this flat?')) {
+        try {
+            await apiFetch(`/flats/${id}`, 'DELETE');
+            fetchAndRenderFlats();
+        } catch (e) { alert('Failed: ' + e.message); }
+    }
+}
+
+// ==================== ASSETS / INVENTORY ====================
 async function fetchAndRenderAssets() {
     const tbody = document.getElementById('tbody-inventory'); if (!tbody) return;
     tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
@@ -541,16 +551,9 @@ async function openAssetModal(editId = null) {
                 unitPrice: parseFloat(getInput('ast_price')) || 0,
                 location: getInput('ast_location')
             };
-
-            const primaryRoute = editId ? `/assets/${editId}` : '/assets';
-            const fallbackRoute = editId ? `/inventory/${editId}` : '/inventory';
+            const endpoint = editId ? `/assets/${editId}` : '/assets';
             const method = editId ? 'PATCH' : 'POST';
-
-            try {
-                await handleSubmit(primaryRoute, payload, editId ? 'Asset updated!' : 'Asset registered!', { tableId: 'tbody-inventory' }, method);
-            } catch (err) {
-                await handleSubmit(fallbackRoute, payload, editId ? 'Asset updated!' : 'Asset registered!', { tableId: 'tbody-inventory' }, method);
-            }
+            handleSubmit(endpoint, payload, editId ? 'Asset updated!' : 'Asset added!', { tableId: 'tbody-inventory' }, method);
         };
     }
 }
@@ -558,555 +561,133 @@ async function openAssetModal(editId = null) {
 function editAsset(id) { openAssetModal(id); }
 
 async function deleteAsset(id) {
-    if (confirm('Are you sure you want to delete this asset?')) {
+    if (confirm('Delete this asset item?')) {
         try {
-            try { await apiFetch(`/assets/${id}`, 'DELETE'); }
-            catch(e) { await apiFetch(`/inventory/${id}`, 'DELETE'); }
+            await apiFetch(`/assets/${id}`, 'DELETE');
             fetchAndRenderAssets();
-        } catch (e) { alert('Failed to delete asset: ' + e.message); }
+        } catch (e) { alert('Failed: ' + e.message); }
     }
-}
-
-// ==================== RECEIPT & PAYMENT VOUCHERS ====================
-async function fetchAndRenderReceipts() {
-    const tbody = document.getElementById('tbody-receipts'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/receipts');
-        if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No Receipts found.</td></tr>`; return; }
-        tbody.innerHTML = data.map(item => `<tr><td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.paymentMode || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td><td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'receipt')" class="text-blue-600 hover:text-blue-800 text-sm px-1">View</button></td></tr>`).join('');
-    } catch (e) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
-}
-
-async function openReceiptModal() {
-    const co = await fetchDropdown('/customers');
-    openModal('New Receipt Voucher', `<div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label><input type="date" id="rv_date" required class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Client *</label><select id="rv_customerId" required onchange="loadUnpaidInvoices()" class="dark-input"><option value="">Select Client</option>${co}</select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Link to Invoice</label><select id="rv_invoiceId" onchange="autoFillReceiptAmount()" class="dark-input"><option value="">Select Client First</option></select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Amount (AED) *</label><input type="number" step="0.01" id="rv_amount" required class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label><select id="rv_mode" onchange="toggleChequeFields('rv')" class="dark-input"><option value="CASH">Cash</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CHEQUE">Cheque</option><option value="CARD">Credit Card</option><option value="ONLINE">Online</option></select></div><div id="rv_cheque_fields" style="display:none;"><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque No.</label><input type="text" id="rv_chequeNo" class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label><input type="text" id="rv_bankName" class="dark-input"></div></div><div class="grid grid-cols-2 gap-4 mt-2"><div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque Date</label><input type="date" id="rv_chequeDate" class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label><select id="rv_chequeStatus" class="dark-input"><option value="RECEIVED">Received</option><option value="DEPOSITED">Deposited</option><option value="CLEARED">Cleared</option><option value="BOUNCED">Bounced</option></select></div></div></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="rv_desc" class="dark-input"></textarea></div>`);
-    const dateEl = document.getElementById('rv_date');
-    if (dateEl) dateEl.valueAsDate = new Date();
-    if (modalForm) {
-        modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/receipts', { date: getInput('rv_date'), customerId: getInput('rv_customerId'), invoiceId: getInput('rv_invoiceId') || null, amount: parseFloat(getInput('rv_amount')), paymentMode: getInput('rv_mode'), chequeNumber: getInput('rv_chequeNo'), bankName: getInput('rv_bankName'), chequeDate: getInput('rv_chequeDate'), chequeStatus: getInput('rv_chequeStatus'), description: getInput('rv_desc') }, 'Receipt saved!', { tableId: 'tbody-receipts' }); };
-    }
-}
-
-async function loadUnpaidInvoices() {
-    const ci = getInput('rv_customerId'); const is = document.getElementById('rv_invoiceId');
-    if (!is) return;
-    is.innerHTML = '<option value="">Loading...</option>';
-    if (ci) { 
-        try {
-            const invs = await apiFetch('/invoices'); 
-            const up = Array.isArray(invs) ? invs.filter(inv => inv.customerId === ci && inv.status !== 'PAID' && inv.status !== 'VOID') : []; 
-            is.innerHTML = '<option value="">None / Unlinked</option>' + up.map(inv => `<option value="${inv.id}" data-balance="${inv.balanceDue}">${inv.invoiceNumber} (Bal: AED ${inv.balanceDue})</option>`).join(''); 
-        } catch(e) {
-            is.innerHTML = '<option value="">Error loading invoices</option>';
-        }
-    } else { 
-        is.innerHTML = '<option value="">Select Client First</option>'; 
-    }
-}
-
-function autoFillReceiptAmount() { 
-    const is = document.getElementById('rv_invoiceId'); 
-    if (!is || is.selectedIndex < 0) return;
-    const opt = is.options[is.selectedIndex];
-    const b = opt ? opt.getAttribute('data-balance') : null; 
-    if (b) { const amt = document.getElementById('rv_amount'); if (amt) amt.value = b; }
-}
-
-async function fetchAndRenderPayments() {
-    const tbody = document.getElementById('tbody-payments'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/payments');
-        if (!Array.isArray(data) || data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No Payments found.</td></tr>`; return; }
-        tbody.innerHTML = data.map(item => `<tr><td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.voucherNumber || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.payeeName || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">${item.paymentMode || '-'}</td><td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td><td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewVoucher('${item.id}', 'payment')" class="text-blue-600 hover:text-blue-800 text-sm px-1">View</button></td></tr>`).join('');
-    } catch (e) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`; }
-}
-
-async function openPaymentModal() {
-    openModal('New Payment Voucher', `<div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label><input type="date" id="pv_date" required class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Payee *</label><input type="text" id="pv_payee" required class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Amount (AED) *</label><input type="number" step="0.01" id="pv_amount" required class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label><select id="pv_mode" onchange="toggleChequeFields('pv')" class="dark-input"><option value="CASH">Cash</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CHEQUE">Cheque</option><option value="CARD">Credit Card</option><option value="ONLINE">Online</option></select></div><div id="pv_cheque_fields" style="display:none;"><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque No.</label><input type="text" id="pv_chequeNo" class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label><input type="text" id="pv_bankName" class="dark-input"></div></div><div class="grid grid-cols-2 gap-4 mt-2"><div><label class="block text-sm font-medium text-gray-700 mb-1">Cheque Date</label><input type="date" id="pv_chequeDate" class="dark-input"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label><select id="pv_chequeStatus" class="dark-input"><option value="ISSUED">Issued</option><option value="CLEARED">Cleared</option><option value="BOUNCED">Bounced</option></select></div></div></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea id="pv_desc" class="dark-input"></textarea></div>`);
-    const dateEl = document.getElementById('pv_date');
-    if (dateEl) dateEl.valueAsDate = new Date();
-    if (modalForm) {
-        modalForm.onsubmit = (e) => { e.preventDefault(); handleSubmit('/payments', { date: getInput('pv_date'), payeeName: getInput('pv_payee'), amount: parseFloat(getInput('pv_amount')), paymentMode: getInput('pv_mode'), chequeNumber: getInput('pv_chequeNo'), bankName: getInput('pv_bankName'), chequeDate: getInput('pv_chequeDate'), chequeStatus: getInput('pv_chequeStatus'), description: getInput('pv_desc') }, 'Payment saved!', { tableId: 'tbody-payments' }); };
-    }
-}
-
-function toggleChequeFields(p) { 
-    const modeEl = document.getElementById(`${p}_mode`);
-    const cd = document.getElementById(`${p}_cheque_fields`); 
-    if (modeEl && cd) cd.style.display = modeEl.value === 'CHEQUE' ? 'block' : 'none'; 
-}
-
-async function viewVoucher(id, type) {
-    try {
-        const v = await apiFetch(type === 'receipt' ? `/receipts/${id}` : `/payments/${id}`);
-        const comp = await apiFetch('/company').catch(() => ({}));
-        const ir = type === 'receipt'; const aw = numberToWords(parseFloat(v.amount || 0));
-        const mb = document.querySelector('#modal > div'); 
-        if (mb) { mb.classList.remove('max-w-md'); mb.classList.add('max-w-3xl', 'p-0'); }
-        
-        const logoHtml = comp.logoUrl ? `<img src="${comp.logoUrl}" class="h-12 mb-2" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';"><h1 class="text-xl font-bold text-blue-800" style="display:none;">${comp.name || 'MAK INFRATECH'}</h1>` : `<h1 class="text-xl font-bold text-blue-800">${comp.name || 'MAK INFRATECH'}</h1>`;
-        const sealHtml = comp.companySealUrl ? `<img src="${comp.companySealUrl}" class="w-24 h-24 object-contain mx-auto opacity-90" onerror="this.onerror=null; this.style.display='none';">` : '';
-
-        openModal('Voucher Document', `<div class="no-print sticky top-0 bg-slate-50 py-2 px-4 flex justify-end gap-2 z-10 border-b"><button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded text-sm">Print</button><button onclick="downloadVoucherPDF('${v.voucherNumber}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">PDF</button><button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded text-sm">Close</button></div><div id="print-area" class="a4-page" style="min-height:500px;padding:40px;"><div class="a4-header"><div>${logoHtml}<p class="text-xs text-gray-600">${comp.address||''}</p><p class="text-xs text-gray-600">TRN: ${comp.trn||'N/A'}</p></div><div class="text-right"><h2 class="text-xl font-bold uppercase">${ir?'RECEIPT VOUCHER':'PAYMENT VOUCHER'}</h2></div></div><div class="grid grid-cols-2 gap-4 mb-6 text-sm"><div><strong>Voucher No:</strong> ${v.voucherNumber}</div><div><strong>Date:</strong> ${v.date?new Date(v.date).toLocaleDateString():'N/A'}</div><div><strong>Mode:</strong> ${v.paymentMode}</div>${v.chequeNumber?`<div><strong>Cheque:</strong> ${v.chequeNumber} (${v.bankName})</div>`:''}</div><div class="border p-4 rounded mb-6"><div class="text-sm mb-2"><strong>${ir?'From':'To'}:</strong> ${ir?v.customer?.name:v.payeeName||'N/A'}</div><div class="text-sm mb-2"><strong>Amount:</strong> AED ${parseFloat(v.amount || 0).toFixed(2)}</div><div class="text-sm mb-2"><strong>In Words:</strong> <span class="italic">${aw}</span></div><div class="text-sm"><strong>Desc:</strong> ${v.description||'N/A'}</div></div><div class="flex justify-between mt-12 text-sm items-end"><div class="text-center">${sealHtml}<span class="text-xs text-gray-500 mt-1 block">Seal</span></div><div class="text-center"><div class="text-xs text-gray-500 mb-1">Prepared By</div><div class="h-8"></div><div class="border-t border-gray-800 w-40 pt-1">Signatory</div></div><div class="text-center"><div class="text-xs text-gray-500 mb-1">Received By</div><div class="h-8"></div><div class="border-t border-gray-800 w-40 pt-1">Signature</div></div></div></div>`, true);
-    } catch (e) { alert('Failed to load voucher'); }
-}
-
-function downloadVoucherPDF(vn) { 
-    const el = document.getElementById('print-area'); 
-    if (typeof html2pdf !== 'undefined' && el) { 
-        html2pdf().set({margin:0,filename:`${vn}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save(); 
-    } else { 
-        alert('PDF generator library not loaded.'); 
-    } 
 }
 
 // ==================== INVOICES ====================
 async function fetchAndRenderInvoices() {
-    const tbody = document.getElementById('tbody-invoices'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/invoices');
-        if (!Array.isArray(data) || data.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">No Invoices found.</td></tr>`; 
-            return; 
-        }
-        tbody.innerHTML = data.map(item => `<tr>
-            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.invoiceNumber || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.customer?.name || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.totalAmount || 0).toFixed(2)}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.balanceDue || 0).toFixed(2)}</td>
-            <td class="px-4 py-3 text-sm text-gray-700"><span class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">${item.status || 'DRAFT'}</span></td>
-            <td class="px-4 py-3 text-sm text-gray-700 flex gap-2">
-                <button onclick="viewInvoiceDetails('${item.id}')" class="text-blue-600 hover:text-blue-800">View</button>
-                <button onclick="deleteInvoice('${item.id}')" class="text-red-600 hover:text-red-800">Del</button>
-            </td>
-        </tr>`).join('');
-    } catch (e) { 
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load invoices.</td></tr>`; 
-    }
-}
-
-async function openInvoiceModal() {
-    const co = await fetchDropdown('/customers');
-    openModal('New Invoice', `
-        <div><label class="block text-sm mb-1">Customer *</label><select id="inv_customerId" required class="dark-input"><option value="">Select Customer</option>${co}</select></div>
-        <div><label class="block text-sm mb-1">Date *</label><input type="date" id="inv_date" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Due Date</label><input type="date" id="inv_dueDate" class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Total Amount (AED) *</label><input type="number" step="0.01" id="inv_totalAmount" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Notes</label><textarea id="inv_notes" class="dark-input"></textarea></div>
-    `);
-    const dateEl = document.getElementById('inv_date');
-    if (dateEl) dateEl.valueAsDate = new Date();
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            const tot = parseFloat(getInput('inv_totalAmount')) || 0;
-            handleSubmit('/invoices', {
-                customerId: getInput('inv_customerId'),
-                date: getInput('inv_date'),
-                dueDate: getInput('inv_dueDate') || null,
-                totalAmount: tot,
-                balanceDue: tot,
-                notes: getInput('inv_notes'),
-                status: 'UNPAID'
-            }, 'Invoice Created!', { tableId: 'tbody-invoices' });
-        };
-    }
-}
-
-async function viewInvoiceDetails(id) {
-    try {
-        const inv = await apiFetch(`/invoices/${id}`);
-        openModal('Invoice Details', `
-            <div class="space-y-3 text-sm">
-                <div><strong>Invoice #:</strong> ${inv.invoiceNumber}</div>
-                <div><strong>Customer:</strong> ${inv.customer?.name || 'N/A'}</div>
-                <div><strong>Date:</strong> ${inv.date ? new Date(inv.date).toLocaleDateString() : 'N/A'}</div>
-                <div><strong>Total:</strong> AED ${parseFloat(inv.totalAmount || 0).toFixed(2)}</div>
-                <div><strong>Balance Due:</strong> AED ${parseFloat(inv.balanceDue || 0).toFixed(2)}</div>
-                <div><strong>Status:</strong> ${inv.status}</div>
-                <div class="pt-4"><button type="button" onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded">Close</button></div>
-            </div>
-        `, true);
-    } catch (e) { alert('Failed to fetch invoice details.'); }
-}
-
-async function deleteInvoice(id) {
-    if (confirm('Are you sure you want to delete this invoice?')) {
-        try {
-            await apiFetch(`/invoices/${id}`, 'DELETE');
-            fetchAndRenderInvoices();
-        } catch (e) { alert('Failed to delete invoice: ' + e.message); }
-    }
-}
-
-// ==================== PURCHASES ====================
-async function fetchAndRenderPurchases() {
-    const tbody = document.getElementById('tbody-purchases'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/purchases');
-        if (!Array.isArray(data) || data.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">No Purchase Orders found.</td></tr>`; 
-            return; 
-        }
-        tbody.innerHTML = data.map(item => `<tr>
-            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.poNumber || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.supplierName || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">AED ${parseFloat(item.amount || 0).toFixed(2)}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.status || 'PENDING'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700"><button onclick="viewPurchaseDetails('${item.id}')" class="text-blue-600 hover:text-blue-800">View</button></td>
-        </tr>`).join('');
-    } catch (e) { 
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load purchases.</td></tr>`; 
-    }
-}
-
-async function openPurchaseModal() {
-    openModal('New Purchase Order', `
-        <div><label class="block text-sm mb-1">Supplier Name *</label><input type="text" id="po_supplier" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Date *</label><input type="date" id="po_date" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Total Amount (AED) *</label><input type="number" step="0.01" id="po_amount" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Description</label><textarea id="po_desc" class="dark-input"></textarea></div>
-    `);
-    const dateEl = document.getElementById('po_date');
-    if (dateEl) dateEl.valueAsDate = new Date();
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/purchases', {
-                supplierName: getInput('po_supplier'),
-                date: getInput('po_date'),
-                amount: parseFloat(getInput('po_amount')) || 0,
-                description: getInput('po_desc')
-            }, 'Purchase Saved!', { tableId: 'tbody-purchases' });
-        };
-    }
-}
-
-async function viewPurchaseDetails(id) {
-    try {
-        const item = await apiFetch(`/purchases/${id}`);
-        openModal('PO Details', `
-            <div class="space-y-3 text-sm">
-                <div><strong>PO #:</strong> ${item.poNumber || 'N/A'}</div>
-                <div><strong>Supplier:</strong> ${item.supplierName || 'N/A'}</div>
-                <div><strong>Date:</strong> ${item.date ? new Date(item.date).toLocaleDateString() : 'N/A'}</div>
-                <div><strong>Amount:</strong> AED ${parseFloat(item.amount || 0).toFixed(2)}</div>
-                <div><strong>Description:</strong> ${item.description || 'N/A'}</div>
-                <div class="pt-4"><button type="button" onclick="closeModal()" class="w-full bg-gray-200 py-2 rounded">Close</button></div>
-            </div>
-        `, true);
-    } catch (e) { alert('Failed to load purchase details.'); }
+    fetchAndRender('/invoices', 'tbody-invoices', ['invoiceNumber', 'customer.name', 'issueDate', 'dueDate', 'total', 'status']);
 }
 
 // ==================== STAFF & USERS ====================
 async function fetchAndRenderStaff() {
-    const tbody = document.getElementById('tbody-staff'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
-    try {
-        const data = await apiFetch('/staff');
-        if (!Array.isArray(data) || data.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">No Staff members found.</td></tr>`; 
-            return; 
-        }
-        tbody.innerHTML = data.map(item => `<tr>
-            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.name || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.role || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.phone || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.email || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.status || 'ACTIVE'}</td>
-        </tr>`).join('');
-    } catch (e) { 
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Failed to load staff list.</td></tr>`; 
-    }
+    fetchAndRender('/staff', 'tbody-staff', ['employeeId', 'name', 'designation', 'phone', 'email']);
 }
 
 async function fetchAndRenderUsers() {
-    const tbody = document.getElementById('tbody-users'); if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>`;
+    fetchAndRender('/users', 'tbody-users', ['name', 'email', 'role']);
+}
+
+// ==================== PURCHASES, RECEIPTS & PAYMENTS ====================
+async function fetchAndRenderPurchases() {
+    fetchAndRender('/purchases', 'tbody-purchases', ['poNumber', 'vendorName', 'date', 'totalAmount', 'status']);
+}
+
+async function fetchAndRenderReceipts() {
+    fetchAndRender('/receipts', 'tbody-receipts', ['receiptNumber', 'customer.name', 'date', 'amount', 'paymentMode']);
+}
+
+async function fetchAndRenderPayments() {
+    fetchAndRender('/payments', 'tbody-payments', ['paymentNumber', 'vendorName', 'date', 'amount', 'paymentMode']);
+}
+
+// ==================== COMPANY PROFILE & BRANDING ====================
+async function loadCompanyProfile() {
     try {
-        const data = await apiFetch('/users');
-        if (!Array.isArray(data) || data.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No Users found.</td></tr>`; 
-            return; 
+        const comp = await apiFetch('/company');
+        if (comp) {
+            ['comp-name', 'comp-trn', 'comp-phone', 'comp-email', 'comp-address'].forEach(id => {
+                const key = id.replace('comp-', '');
+                const el = document.getElementById(id);
+                if (el && comp[key]) el.value = comp[key];
+            });
+
+            if (comp.logoUrl) renderCompanyImagePreview('logo', comp.logoUrl);
+            if (comp.headerUrl) renderCompanyImagePreview('header', comp.headerUrl);
+            if (comp.footerUrl) renderCompanyImagePreview('footer', comp.footerUrl);
         }
-        tbody.innerHTML = data.map(item => `<tr>
-            <td class="px-4 py-3 text-sm font-medium text-gray-700">${item.name || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.email || '-'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.role || 'USER'}</td>
-            <td class="px-4 py-3 text-sm text-gray-700">${item.active ? 'Active' : 'Inactive'}</td>
-        </tr>`).join('');
-    } catch (e) { 
-        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Failed to load users.</td></tr>`; 
+    } catch (e) { console.log('No company profile found or error fetching profile:', e); }
+}
+
+function handleCompanyImageUpload(event, type) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Data = e.target.result;
+        companyImageData[type] = base64Data;
+        renderCompanyImagePreview(type, base64Data);
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeCompanyImage(type) {
+    companyImageData[type] = null;
+    const input = document.getElementById(`comp-${type}-input`);
+    if (input) input.value = '';
+
+    const previewContainer = document.getElementById(`comp-${type}-preview-container`);
+    const previewImg = document.getElementById(`comp-${type}-preview`);
+
+    if (previewContainer && previewImg) {
+        previewImg.removeAttribute('src');
+        previewImg.classList.add('hidden');
+        previewContainer.classList.add('hidden');
+        previewContainer.classList.remove('flex');
     }
 }
 
-// ==================== STAFF & INVOICE MODALS ====================
-let staffPhotoData = null;
+function renderCompanyImagePreview(type, src) {
+    const previewContainer = document.getElementById(`comp-${type}-preview-container`);
+    const previewImg = document.getElementById(`comp-${type}-preview`);
 
-function handleStaffPhotoUpload(event) { 
-    const f = event.target.files[0]; 
-    if (!f) return; 
-    const r = new FileReader(); 
-    r.onload = (e) => { 
-        staffPhotoData = e.target.result; 
-        const prev = document.getElementById('staff_photo_preview');
-        if (prev) prev.src = e.target.result; 
-    }; 
-    r.readAsDataURL(f); 
-}
-
-async function openStaffModal() {
-    staffPhotoData = null; 
-    openModal('New Staff Member', `
-        <div class="flex flex-col items-center mb-4">
-            <img id="staff_photo_preview" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNiIvPjwvc3ZnPg==" class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 mb-2">
-            <input type="file" accept="image/*" onchange="handleStaffPhotoUpload(event)" class="text-sm">
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">First Name *</label><input type="text" id="st_fname" required class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Last Name *</label><input type="text" id="st_lname" required class="dark-input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mt-2">
-            <div><label class="block text-sm mb-1">Gender</label><select id="st_gender" class="dark-input"><option>Male</option><option>Female</option></select></div>
-            <div><label class="block text-sm mb-1">Date of Birth</label><input type="date" id="st_dob" class="dark-input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mt-2">
-            <div><label class="block text-sm mb-1">Nationality</label><input type="text" id="st_nat" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Job Position</label><input type="text" id="st_job" class="dark-input"></div>
-        </div>
-        <hr class="my-4">
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">Passport Number</label><input type="text" id="st_pp" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Passport Expiry</label><input type="date" id="st_ppExp" class="dark-input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mt-2">
-            <div><label class="block text-sm mb-1">EID Number</label><input type="text" id="st_eid" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">EID Expiry</label><input type="date" id="st_eidExp" class="dark-input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mt-2">
-            <div><label class="block text-sm mb-1">Visa Expiry</label><input type="date" id="st_visaExp" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Salary (AED)</label><input type="number" id="st_salary" class="dark-input"></div>
-        </div>
-        <hr class="my-4">
-        <div class="grid grid-cols-3 gap-4">
-            <div><label class="block text-sm mb-1">Insurance Provider</label><input type="text" id="st_insProv" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Policy Number</label><input type="text" id="st_insNum" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Insurance Expiry</label><input type="date" id="st_insExp" class="dark-input"></div>
-        </div>
-    `);
-    
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/staff', {
-                firstName: getInput('st_fname'),
-                lastName: getInput('st_lname'),
-                photoUrl: staffPhotoData,
-                gender: getInput('st_gender'),
-                dob: getInput('st_dob'),
-                nationality: getInput('st_nat'),
-                jobPosition: getInput('st_job'),
-                passportNumber: getInput('st_pp'),
-                passportExpiry: getInput('st_ppExp'),
-                emiratesId: getInput('st_eid'),
-                emiratesIdExpiry: getInput('st_eidExp'),
-                visaExpiry: getInput('st_visaExp'),
-                salary: parseFloat(getInput('st_salary')) || 0,
-                insuranceProvider: getInput('st_insProv'),
-                insuranceNumber: getInput('st_insNum'),
-                insuranceExpiry: getInput('st_insExp')
-            }, 'Staff added!', { tableId: 'tbody-staff' });
-        };
+    if (src && previewContainer && previewImg) {
+        previewImg.src = src;
+        previewImg.classList.remove('hidden');
+        previewContainer.classList.remove('hidden');
+        previewContainer.classList.add('flex');
+    } else {
+        removeCompanyImage(type);
     }
 }
 
-async function openInvoiceModal() {
-    const co = await fetchDropdown('/customers');
-    openModal('New Invoice', `
-        <div><label class="block text-sm mb-1">Customer *</label><select id="inv_customerId" required class="dark-input"><option value="">Select</option>${co}</select></div>
-        <div class="grid grid-cols-2 gap-4 mt-2">
-            <div><label class="block text-sm mb-1">Invoice Date *</label><input type="date" id="inv_date" required class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Due Date</label><input type="date" id="inv_dueDate" class="dark-input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mt-2">
-            <div><label class="block text-sm mb-1">Total Amount (AED) *</label><input type="number" step="0.01" id="inv_totalAmount" required class="dark-input" oninput="document.getElementById('inv_balanceDue').value = this.value"></div>
-            <div><label class="block text-sm mb-1">Balance Due (AED)</label><input type="number" step="0.01" id="inv_balanceDue" readonly class="dark-input bg-gray-100"></div>
-        </div>
-        <div><label class="block text-sm mb-1 mt-2">Notes</label><textarea id="inv_notes" class="dark-input" placeholder="Description of services..."></textarea></div>
-    `);
-    
-    const dateEl = document.getElementById('inv_date');
-    if (dateEl) dateEl.valueAsDate = new Date();
-    
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            const tot = parseFloat(getInput('inv_totalAmount')) || 0;
-            handleSubmit('/invoices', {
-                customerId: getInput('inv_customerId'),
-                date: getInput('inv_date'),
-                dueDate: getInput('inv_dueDate') || null,
-                totalAmount: tot,
-                balanceDue: tot, // Default balance to total amount
-                notes: getInput('inv_notes'),
-                status: 'UNPAID'
-            }, 'Invoice Created!', { tableId: 'tbody-invoices' });
-        };
-    }
-}
-async function openUserModal() {
-    openModal('New System User', `
-        <div><label class="block text-sm mb-1">Name *</label><input type="text" id="usr_name" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Email *</label><input type="email" id="usr_email" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Role *</label>
-            <select id="usr_role" required class="dark-input">
-                <option value="TECHNICIAN">Technician</option>
-                <option value="COORDINATOR">Coordinator</option>
-                <option value="MANAGER">Manager</option>
-                <option value="ADMIN">Admin</option>
-            </select>
-        </div>
-    `);
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/users', {
-                name: getInput('usr_name'),
-                email: getInput('usr_email'),
-                role: getInput('usr_role')
-            }, 'User created!', { tableId: 'tbody-users' });
-        };
-    }
+async function saveCompanyProfile(event) {
+    if (event) event.preventDefault();
+    const payload = {
+        name: getInput('comp-name'),
+        trn: getInput('comp-trn'),
+        phone: getInput('comp-phone'),
+        email: getInput('comp-email'),
+        address: getInput('comp-address'),
+        logoUrl: companyImageData.logo || null,
+        headerUrl: companyImageData.header || null,
+        footerUrl: companyImageData.footer || null
+    };
+
+    try {
+        await apiFetch('/company', 'POST', payload);
+        alert('Company profile saved successfully!');
+    } catch (e) { alert('Failed to save company profile: ' + e.message); }
 }
 
-// ==================== CUSTOMERS, BUILDINGS, AMC MODALS ====================
-async function openCustomerModal() {
-    openModal('New Customer', `
-        <div><label class="block text-sm mb-1">Name *</label><input type="text" id="c_name" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Phone</label><input type="text" id="c_phone" class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Email</label><input type="email" id="c_email" class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Address</label><input type="text" id="c_address" class="dark-input"></div>
-    `);
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/customers', {
-                name: getInput('c_name'),
-                phone: getInput('c_phone'),
-                email: getInput('c_email'),
-                address: getInput('c_address')
-            }, 'Customer created!', { endpoint: '/customers', tableId: 'tbody-customers', columns: ['name', 'phone', 'email', 'address'] });
-        };
-    }
-}
-
-async function openBuildingModal() {
-    const co = await fetchDropdown('/customers');
-    openModal('New Building', `
-        <div><label class="block text-sm mb-1">Client Name *</label><select id="b_customerId" required class="dark-input"><option value="">Select Client</option>${co}</select></div>
-        <div><label class="block text-sm mb-1">Building Name *</label><input type="text" id="b_name" required class="dark-input"></div>
-        <div><label class="block text-sm mb-1">City</label><input type="text" id="b_city" class="dark-input"></div>
-        <div><label class="block text-sm mb-1">Emirate</label><input type="text" id="b_emirate" class="dark-input"></div>
-    `);
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/buildings', {
-                customerId: getInput('b_customerId'),
-                name: getInput('b_name'),
-                city: getInput('b_city'),
-                emirate: getInput('b_emirate')
-            }, 'Building created!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] });
-        };
-    }
-}
-
-async function openAmcModal() {
-    const co = await fetchDropdown('/customers');
-    openModal('New AMC Contract', `
-        <div><label class="block text-sm mb-1">Client Name *</label><select id="a_customerId" required class="dark-input"><option value="">Select Client</option>${co}</select></div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">Contract Period (Months)</label><input type="number" id="a_period" value="12" oninput="calcAmcDates()" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Value (AED)</label><input type="number" id="a_value" required class="dark-input"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">Start Date</label><input type="date" id="a_startDate" required onchange="calcAmcDates()" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">End Date</label><input type="date" id="a_endDate" readonly class="dark-input bg-gray-100"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">PPM Count</label><input type="number" id="a_ppmCount" value="4" oninput="calcPpmDate()" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">Next PPM Date</label><input type="date" id="a_ppmDate" readonly class="dark-input bg-gray-100"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm mb-1">EMI Payment Amount</label><input type="number" id="a_emiAmount" class="dark-input"></div>
-            <div><label class="block text-sm mb-1">EMI Date</label><input type="date" id="a_emiDate" class="dark-input"></div>
-        </div>
-    `);
-    
-    const startDateEl = document.getElementById('a_startDate');
-    if (startDateEl) startDateEl.valueAsDate = new Date();
-    
-    if (modalForm) {
-        modalForm.onsubmit = (e) => {
-            e.preventDefault();
-            handleSubmit('/amc', {
-                customerId: getInput('a_customerId'),
-                value: parseFloat(getInput('a_value')) || 0,
-                startDate: getInput('a_startDate'),
-                endDate: getInput('a_endDate'),
-                ppmCount: parseInt(getInput('a_ppmCount')) || 0,
-                ppmDate: getInput('a_ppmDate'),
-                emiAmount: parseFloat(getInput('a_emiAmount')) || 0,
-                emiDate: getInput('a_emiDate')
-            }, 'AMC Created!', { endpoint: '/amc', tableId: 'tbody-amc', columns: ['contractNumber', 'value', 'status'] });
-        };
-    }
-}
-
-function calcAmcDates() {
-    const period = parseInt(getInput('a_period')) || 12;
-    const startDateStr = getInput('a_startDate');
-    if (!startDateStr) return;
-    
-    const startDate = new Date(startDateStr);
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + period);
-    
-    const endDateEl = document.getElementById('a_endDate');
-    if (endDateEl) endDateEl.value = endDate.toISOString().split('T')[0];
-    
-    calcPpmDate();
-}
-
-function calcPpmDate() {
-    const ppmCount = parseInt(getInput('a_ppmCount')) || 0;
-    const startDateStr = getInput('a_startDate');
-    if (!startDateStr || ppmCount === 0) return;
-    
-    const startDate = new Date(startDateStr);
-    const interval = 12 / ppmCount; // Months between PPMs
-    const nextPpm = new Date(startDate);
-    nextPpm.setMonth(nextPpm.getMonth() + interval);
-    
-    const ppmDateEl = document.getElementById('a_ppmDate');
-    if (ppmDateEl) ppmDateEl.value = nextPpm.toISOString().split('T')[0];
-}
-// ==================== AUTO-INITIALIZATION ====================
+// ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndRenderWorkOrders();
-    fetchAndRenderReceipts();
-    fetchAndRenderPayments();
     fetchAndRenderBuildings();
     fetchAndRenderFlats();
     fetchAndRenderAssets();
-    fetchAndRenderInvoices();
-    fetchAndRenderPurchases();
-    fetchAndRenderStaff();
-    fetchAndRenderUsers();
+    loadCompanyProfile();
+
+    ['logo', 'header', 'footer'].forEach(type => {
+        const img = document.getElementById(`comp-${type}-preview`);
+        if (img) {
+            img.onerror = () => removeCompanyImage(type);
+        }
+    });
 });
