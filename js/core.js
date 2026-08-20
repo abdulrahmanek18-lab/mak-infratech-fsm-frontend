@@ -891,6 +891,118 @@ async function openUserModal() {
     }
 }
 
+// ==================== CUSTOMERS, BUILDINGS, AMC MODALS ====================
+async function openCustomerModal() {
+    openModal('New Customer', `
+        <div><label class="block text-sm mb-1">Name *</label><input type="text" id="c_name" required class="dark-input"></div>
+        <div><label class="block text-sm mb-1">Phone</label><input type="text" id="c_phone" class="dark-input"></div>
+        <div><label class="block text-sm mb-1">Email</label><input type="email" id="c_email" class="dark-input"></div>
+        <div><label class="block text-sm mb-1">Address</label><input type="text" id="c_address" class="dark-input"></div>
+    `);
+    if (modalForm) {
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            handleSubmit('/customers', {
+                name: getInput('c_name'),
+                phone: getInput('c_phone'),
+                email: getInput('c_email'),
+                address: getInput('c_address')
+            }, 'Customer created!', { endpoint: '/customers', tableId: 'tbody-customers', columns: ['name', 'phone', 'email', 'address'] });
+        };
+    }
+}
+
+async function openBuildingModal() {
+    const co = await fetchDropdown('/customers');
+    openModal('New Building', `
+        <div><label class="block text-sm mb-1">Client Name *</label><select id="b_customerId" required class="dark-input"><option value="">Select Client</option>${co}</select></div>
+        <div><label class="block text-sm mb-1">Building Name *</label><input type="text" id="b_name" required class="dark-input"></div>
+        <div><label class="block text-sm mb-1">City</label><input type="text" id="b_city" class="dark-input"></div>
+        <div><label class="block text-sm mb-1">Emirate</label><input type="text" id="b_emirate" class="dark-input"></div>
+    `);
+    if (modalForm) {
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            handleSubmit('/buildings', {
+                customerId: getInput('b_customerId'),
+                name: getInput('b_name'),
+                city: getInput('b_city'),
+                emirate: getInput('b_emirate')
+            }, 'Building created!', { endpoint: '/buildings', tableId: 'tbody-buildings', columns: ['name', 'city', 'emirate'] });
+        };
+    }
+}
+
+async function openAmcModal() {
+    const co = await fetchDropdown('/customers');
+    openModal('New AMC Contract', `
+        <div><label class="block text-sm mb-1">Client Name *</label><select id="a_customerId" required class="dark-input"><option value="">Select Client</option>${co}</select></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">Contract Period (Months)</label><input type="number" id="a_period" value="12" oninput="calcAmcDates()" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Value (AED)</label><input type="number" id="a_value" required class="dark-input"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">Start Date</label><input type="date" id="a_startDate" required onchange="calcAmcDates()" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">End Date</label><input type="date" id="a_endDate" readonly class="dark-input bg-gray-100"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">PPM Count</label><input type="number" id="a_ppmCount" value="4" oninput="calcPpmDate()" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">Next PPM Date</label><input type="date" id="a_ppmDate" readonly class="dark-input bg-gray-100"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm mb-1">EMI Payment Amount</label><input type="number" id="a_emiAmount" class="dark-input"></div>
+            <div><label class="block text-sm mb-1">EMI Date</label><input type="date" id="a_emiDate" class="dark-input"></div>
+        </div>
+    `);
+    
+    const startDateEl = document.getElementById('a_startDate');
+    if (startDateEl) startDateEl.valueAsDate = new Date();
+    
+    if (modalForm) {
+        modalForm.onsubmit = (e) => {
+            e.preventDefault();
+            handleSubmit('/amc', {
+                customerId: getInput('a_customerId'),
+                value: parseFloat(getInput('a_value')) || 0,
+                startDate: getInput('a_startDate'),
+                endDate: getInput('a_endDate'),
+                ppmCount: parseInt(getInput('a_ppmCount')) || 0,
+                ppmDate: getInput('a_ppmDate'),
+                emiAmount: parseFloat(getInput('a_emiAmount')) || 0,
+                emiDate: getInput('a_emiDate')
+            }, 'AMC Created!', { endpoint: '/amc', tableId: 'tbody-amc', columns: ['contractNumber', 'value', 'status'] });
+        };
+    }
+}
+
+function calcAmcDates() {
+    const period = parseInt(getInput('a_period')) || 12;
+    const startDateStr = getInput('a_startDate');
+    if (!startDateStr) return;
+    
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + period);
+    
+    const endDateEl = document.getElementById('a_endDate');
+    if (endDateEl) endDateEl.value = endDate.toISOString().split('T')[0];
+    
+    calcPpmDate();
+}
+
+function calcPpmDate() {
+    const ppmCount = parseInt(getInput('a_ppmCount')) || 0;
+    const startDateStr = getInput('a_startDate');
+    if (!startDateStr || ppmCount === 0) return;
+    
+    const startDate = new Date(startDateStr);
+    const interval = 12 / ppmCount; // Months between PPMs
+    const nextPpm = new Date(startDate);
+    nextPpm.setMonth(nextPpm.getMonth() + interval);
+    
+    const ppmDateEl = document.getElementById('a_ppmDate');
+    if (ppmDateEl) ppmDateEl.value = nextPpm.toISOString().split('T')[0];
+}
 // ==================== AUTO-INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
     fetchAndRenderWorkOrders();
